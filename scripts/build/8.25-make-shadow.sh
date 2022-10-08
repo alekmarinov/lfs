@@ -6,6 +6,8 @@ echo "Required disk space: 46 MB"
 
 # 8.25. Shadow
 # The Shadow package contains programs for handling passwords in a secure way.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/shadow.html
+
 tar -xf /sources/shadow-*.tar.xz -C /tmp/ \
   && mv /tmp/shadow-* /tmp/shadow \
   && pushd /tmp/shadow

@@ -5,7 +5,11 @@ echo "Approximate build time: 3.2 SBU"
 echo "Required disk space: 88 MB"
 
 # 8.15. Tcl
-VER=$(ls /sources/tcl*-src.tar.gz | grep -oP "tcl[\d.]*" | sed 's/^tcl//')
+# The Tcl package contains the Tool Command Language, a robust general-purpose
+# scripting language. The Expect package is written in the Tcl language.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/tcl.html
+
+VER=$(ls /sources/tcl*-src.tar.gz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/tcl*-src.tar.gz -C /tmp/ \
     && mv /tmp/tcl* /tmp/tcl \
     && pushd /tmp/tcl \
@@ -36,8 +40,8 @@ tar -xf /sources/tcl*-src.tar.gz -C /tmp/ \
     && ln -sfv tclsh8.6 /usr/bin/tclsh \
     && mv /usr/share/man/man3/{Thread,Tcl_Thread}.3 \
     && if [ $LFS_DOCS -eq 1 ]; then \
-        mkdir -v -p /usr/share/doc/tcl-$VER \
-        cp -v -r  ../html/* /usr/share/doc/tcl-$VER \
+        mkdir -v -p /usr/share/doc/tcl-$VER; \
+        cp -v -r  ../html/* /usr/share/doc/tcl-$VER; \
     fi \
     && popd \
     && rm -rf /tmp/tcl

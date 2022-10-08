@@ -11,7 +11,7 @@ echo "Required disk space: 16 MB"
 # with the traditional gzip or bzip2 commands.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/xz.html
 
-VER=$(ls /$LFS/sources/xz-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+VER=$(ls $LFS/sources/xz-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf xz-*.tar.xz -C /tmp/ \
     && mv /tmp/xz-* /tmp/xz \
     && pushd /tmp/xz \

@@ -10,6 +10,8 @@ echo "Required disk space: 13 MB"
 # similar to the standard UNIX dbm. The library provides primitives for storing
 # key/data pairs, searching and retrieving the data by its key and deleting a
 # key along with its data.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/gdbm.html
+
 tar -xf /sources/gdbm-*.tar.gz -C /tmp/ \
     && mv /tmp/gdbm-* /tmp/gdbm \
     && pushd /tmp/gdbm \

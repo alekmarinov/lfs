@@ -8,7 +8,9 @@ echo "Required disk space: 235 MB"
 # The Gettext package contains utilities for internationalization and localization.
 # These allow programs to be compiled with NLS (Native Language Support),
 # enabling them to output messages in the user's native language.
-VER=$(ls /sources/gettext-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/gettext.html
+
+VER=$(ls /sources/gettext-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/gettext-*.tar.xz -C /tmp/ \
     && mv /tmp/gettext-* /tmp/gettext \
     && pushd /tmp/gettext \

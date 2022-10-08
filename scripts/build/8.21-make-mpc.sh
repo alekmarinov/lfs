@@ -7,7 +7,9 @@ echo "Required disk space: 21 MB"
 # 8.21. MPC
 # The MPC package contains a library for the arithmetic of complex numbers
 # with arbitrarily high precision and correct rounding of the result.
-VER=$(ls /sources/mpc-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/mpc.html
+
+VER=$(ls /sources/mpc-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/mpc-*.tar.gz -C /tmp/ \
     && mv /tmp/mpc-* /tmp/mpc \
     && pushd /tmp/mpc \

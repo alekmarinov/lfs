@@ -11,7 +11,7 @@ echo "Required disk space: 1.1 GB"
 # depends on glibc, which was not yet available in the target directory.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter05/gcc-libstdc++.html
 
-GCC_VER=$(ls $LFS/sources/gcc-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+GCC_VER=$(ls $LFS/sources/gcc-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf gcc-*.tar.xz -C /tmp/ \
     && mv /tmp/gcc-* /tmp/gcc \
     && pushd /tmp/gcc \

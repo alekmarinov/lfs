@@ -9,17 +9,20 @@ echo "Required disk space: 40 MB"
 # perform various other kinds of archive manipulation. Tar can be used on
 # previously created archives to extract files, to store additional files,
 # or to update or list files which were already stored.
-VER=$(ls /sources/tar-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/tar.html
+
+VER=$(ls /sources/tar-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/tar-*.tar.xz -C /tmp/ \
     && mv /tmp/tar-* /tmp/tar \
     && pushd /tmp/tar \
-    && FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/usr \
+    && FORCE_UNSAFE_CONFIGURE=1 ./configure \
+        --prefix=/usr \
         --bindir=/bin \
     && make \
     && if [ $LFS_TEST -eq 1 ]; then make check; fi \
     && make install \
     && if [ $LFS_DOCS -eq 1 ]; then \
-        make -C doc install-html docdir=/usr/share/doc/tar-$VER
+        make -C doc install-html docdir=/usr/share/doc/tar-$VER; \
     fi \
     && popd \
     && rm -rf /tmp/tar

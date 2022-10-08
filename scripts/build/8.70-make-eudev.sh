@@ -6,6 +6,8 @@ echo "Required disk space: 83 MB"
 
 # 8.70. Eudev
 # The Eudev package contains programs for dynamic creation of device nodes.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/eudev.html
+
 tar -xf /sources/eudev-*.tar.gz -C /tmp/ \
     && mv /tmp/eudev-* /tmp/eudev \
     && pushd /tmp/eudev \
@@ -25,4 +27,3 @@ tar -xf /sources/eudev-*.tar.gz -C /tmp/ \
     && udevadm hwdb --update \
     && popd \
     && rm -rf /tmp/eudev
-

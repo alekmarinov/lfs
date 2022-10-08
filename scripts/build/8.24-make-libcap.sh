@@ -8,6 +8,8 @@ echo "Required disk space: 2.7 MB"
 # The Libcap package implements the user-space interfaces to the
 # POSIX 1003.1e capabilities available in Linux kernels. These capabilities
 # are a partitioning of the all powerful root privilege into a set of distinct privileges.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/libcap.html
+
 tar -xf /sources/libcap-*.tar.xz -C /tmp/ \
     && mv /tmp/libcap-* /tmp/libcap \
     && pushd /tmp/libcap \

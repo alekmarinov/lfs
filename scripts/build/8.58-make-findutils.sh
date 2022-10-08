@@ -1,14 +1,16 @@
 #!/bin/bash
 set -e
 echo "Building findutils.."
-echo "Approximate build time: 0.8 SBU"
-echo "Required disk space: 52 MB"
+echo "Approximate build time: 0.2 SBU"
+echo "Required disk space: 42 MB"
 
 # 8.58. Findutils
 # The Findutils package contains programs to find files.
 # These programs are provided to recursively search through a directory tree
 # and to create, maintain, and search a database
-tar -xf /sources/findutils-*.tar.gz -C /tmp/ \
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/findutils.html
+
+tar -xf /sources/findutils-*.tar.xz -C /tmp/ \
     && mv /tmp/findutils-* /tmp/findutils \
     && pushd /tmp/findutils \
     && case $(uname -m) in \
@@ -17,8 +19,8 @@ tar -xf /sources/findutils-*.tar.gz -C /tmp/ \
     esac \
     && make \
     && if [ $LFS_TEST -eq 1 ]; then \
-        chown -Rv tester . \
-        su tester -c "PATH=$PATH make check" \
+        chown -Rv tester .; \
+        su tester -c "PATH=$PATH make check"; \
     fi \
     && make install \
     && popd \

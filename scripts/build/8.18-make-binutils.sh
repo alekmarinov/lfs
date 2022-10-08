@@ -5,6 +5,9 @@ echo "Approximate build time: 8.2 SBU"
 echo "Required disk space: 2.7 Gb"
 
 # 8.18. Binutils
+# The Binutils package contains a linker, an assembler, and other tools for handling object files.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/binutils.html
+
 tar -xf /sources/binutils-*.tar.xz -C /tmp/ \
     && mv /tmp/binutils-* /tmp/binutils \
     && pushd /tmp/binutils \

@@ -6,8 +6,10 @@ echo "Required disk space: 236 MB"
 
 # 8.41. Perl
 # The Perl package contains the Practical Extraction and Report Language.
-VER=$(ls /sources/perl-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
-SHORT_VER=${VER%.*}
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/perl.html
+
+VER=$(ls /sources/perl-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
+VER_SHORT=${VER%.*}
 tar -xf /sources/perl-*.tar.xz -C /tmp/ \
     && mv /tmp/perl-* /tmp/perl \
     && pushd /tmp/perl \
@@ -17,12 +19,12 @@ tar -xf /sources/perl-*.tar.xz -C /tmp/ \
         -des \
         -Dprefix=/usr \
         -Dvendorprefix=/usr \
-        -Dprivlib=/usr/lib/perl5/$SHORT_VER/core_perl \
-        -Darchlib=/usr/lib/perl5/$SHORT_VER/core_perl \
-        -Dsitelib=/usr/lib/perl5/$SHORT_VER/site_perl \
-        -Dsitearch=/usr/lib/perl5/$SHORT_VER/site_perl \
-        -Dvendorlib=/usr/lib/perl5/$SHORT_VER/vendor_perl \
-        -Dvendorarch=/usr/lib/perl5/$SHORT_VER/vendor_perl \
+        -Dprivlib=/usr/lib/perl5/$VER_SHORT/core_perl \
+        -Darchlib=/usr/lib/perl5/$VER_SHORT/core_perl \
+        -Dsitelib=/usr/lib/perl5/$VER_SHORT/site_perl \
+        -Dsitearch=/usr/lib/perl5/$VER_SHORT/site_perl \
+        -Dvendorlib=/usr/lib/perl5/$VER_SHORT/vendor_perl \
+        -Dvendorarch=/usr/lib/perl5/$VER_SHORT/vendor_perl \
         -Dman1dir=/usr/share/man/man1 \
         -Dman3dir=/usr/share/man/man3 \
         -Dpager="/usr/bin/less -isR" \

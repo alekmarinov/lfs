@@ -6,7 +6,9 @@ echo "Required disk space: 31 MB"
 
 # 8.29. Sed
 # The Sed package contains a stream editor.
-VER=$(ls /sources/sed-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/sed.html
+
+VER=$(ls /sources/sed-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/sed-*.tar.xz -C /tmp/ \
     && mv /tmp/sed-* /tmp/sed \
     && pushd /tmp/sed \
@@ -15,13 +17,13 @@ tar -xf /sources/sed-*.tar.xz -C /tmp/ \
     && make \
     && make html \
     && if [ $LFS_TEST -eq 1 ]; then \
-        chown -Rv tester . \
-        su tester -c "PATH=$PATH make check" \
+        chown -Rv tester .; \
+        su tester -c "PATH=$PATH make check"; \
     fi \
     && make install \
     && if [ $LFS_DOCS -eq 1 ]; then \
-        install -d -m755           /usr/share/doc/sed-$VER \
-        install -m644 doc/sed.html /usr/share/doc/sed-$VER \
+        install -d -m755 /usr/share/doc/sed-$VER; \
+        install -m644 doc/sed.html /usr/share/doc/sed-$VER; \
     fi \
     && popd \
     && rm -rf /tmp/sed

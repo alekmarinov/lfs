@@ -12,15 +12,14 @@ echo "Required disk space: 821 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter05/glibc.html
 
 case $(uname -m) in
-    i?86)
-        ln -sfv ld-linux.so.2 $LFS/lib/ld-lsb.so.3
+    i?86)   ln -sfv ld-linux.so.2 $LFS/lib/ld-lsb.so.3
     ;;
-    x86_64) mkdir -v $LFS/lib64
-        ln -sfv ../lib/ld-linux-x86-64.so.2 $LFS/lib64
-        ln -sfv ../lib/ld-linux-x86-64.so.2 $LFS/lib64/ld-lsb-x86-64.so.3
+    x86_64) ln -sfv ../lib/ld-linux-x86-64.so.2 $LFS/lib64
+            ln -sfv ../lib/ld-linux-x86-64.so.2 $LFS/lib64/ld-lsb-x86-64.so.3
     ;;
 esac
-GCC_VER=$(ls /$LFS/sources/gcc-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+
+GCC_VER=$(ls /$LFS/sources/gcc-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf glibc-*.tar.xz -C /tmp/ \
     && mv /tmp/glibc-* /tmp/glibc \
     && pushd /tmp/glibc \

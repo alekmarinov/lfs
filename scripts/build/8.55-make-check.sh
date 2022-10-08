@@ -6,7 +6,9 @@ echo "Required disk space: 12 MB"
 
 # 8.55. Check
 # Check is a unit testing framework for C.
-VER=$(ls /sources/check-*.tar.gz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/check.html
+
+VER=$(ls /sources/check-*.tar.gz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/check-*.tar.gz -C /tmp/ \
     && mv /tmp/check-* /tmp/check \
     && pushd /tmp/check \

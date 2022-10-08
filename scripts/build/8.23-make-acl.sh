@@ -8,8 +8,10 @@ echo "Required disk space: 6.1 MB"
 # The Acl package contains utilities to administer Access Control Lists,
 # which are used to define more fine-grained discretionary access rights
 # for files and directories.
-VER=$(ls /sources/acl-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
-tar -xf /sources/acl-*.tar.gz -C /tmp/ \
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/acl.html
+
+VER=$(ls /sources/acl-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
+tar -xf /sources/acl-*.tar.xz -C /tmp/ \
     && mv /tmp/acl-* /tmp/acl \
     && pushd /tmp/acl \
     && ./configure \

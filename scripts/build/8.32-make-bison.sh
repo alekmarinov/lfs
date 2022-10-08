@@ -6,7 +6,9 @@ echo "Required disk space: 63 MB"
 
 # 8.32. Bison
 # The Bison package contains a parser generator.
-VER=$(ls /sources/bison-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/bison.html
+
+VER=$(ls /sources/bison-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/bison-*.tar.xz -C /tmp/ \
     && mv /tmp/bison-* /tmp/bison \
     && pushd /tmp/bison \

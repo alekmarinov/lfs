@@ -6,6 +6,8 @@ echo "Required disk space: 31 MB"
 
 # 8.39. Inetutils
 # The Inetutils package contains programs for basic networking.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/inetutils.html
+
 tar -xf /sources/inetutils-*.tar.xz -C /tmp/ \
     && mv /tmp/inetutils-* /tmp/inetutils \
     && pushd /tmp/inetutils \

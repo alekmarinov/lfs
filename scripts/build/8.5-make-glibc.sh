@@ -1,14 +1,21 @@
 #!/bin/bash
 set -e
 echo "Building glibc.."
-echo "Approximate build time: 20 SBU"
-echo "Required disk space: 2.0 Gb"
+echo "Approximate build time: 24 SBU"
+echo "Required disk space: 2.8 Gb"
 
-# 6.9. Glibc package contains the main C library
+# 8.5. Glibc
+# The Glibc package contains the main C library.
+# This library provides the basic routines for allocating memory, searching directories,
+# opening and closing files, reading and writing files, string handling, pattern matching,
+# arithmetic, and so on.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/glibc.html
+
+VER=$(ls /sources/glibc-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/glibc-*.tar.xz -C /tmp/ \
     && mv /tmp/glibc-* /tmp/glibc \
     && pushd /tmp/glibc \
-    && patch -Np1 -i /sources/glibc-2.36-fhs-1.patch \
+    && patch -Np1 -i /sources/glibc-$VER-fhs-1.patch \
     && mkdir -v build \
     && pushd build \
     && echo "rootsbindir=/usr/sbin" > configparms \
@@ -25,8 +32,7 @@ tar -xf /sources/glibc-*.tar.xz -C /tmp/ \
     && make install \
     && sed '/RTLDLIST=/s@/usr@@g' -i /usr/bin/ldd \
     && cp -v ../nscd/nscd.conf /etc/nscd.conf \
-    && mkdir -pv /var/cache/nscd \
-    && popd
+    && mkdir -pv /var/cache/nscd
 
 mkdir -pv /usr/lib/locale
 localedef -i POSIX -f UTF-8 C.UTF-8 2> /dev/null || true
@@ -70,8 +76,9 @@ localedef -i POSIX -f UTF-8 C.UTF-8 2> /dev/null || true
 localedef -i ja_JP -f SHIFT_JIS ja_JP.SJIS 2> /dev/null || true
 
 # cleanup
-popd && \
-  rm -rf /tmp/glibc
+popd \
+    && popd \
+    && rm -rf /tmp/glibc
 
 # 8.5.2. Configuring Glibc
 # 8.5.2.1. Adding nsswitch.conf
@@ -95,8 +102,8 @@ EOF
 
 # 8.5.2.2. Adding time zone data
 mkdir /tmp/tzdata \
-  && tar -xf /sources/tzdata*.tar.gz -C /tmp/tzdata \
-  && pushd /tmp/tzdata
+    && tar -xf /sources/tzdata*.tar.gz -C /tmp/tzdata \
+    && pushd /tmp/tzdata
 
 ZONEINFO=/usr/share/zoneinfo
 mkdir -pv $ZONEINFO/{posix,right}
@@ -113,7 +120,7 @@ zic -d $ZONEINFO -p America/New_York
 unset ZONEINFO
 
 popd && \
-  rm -rf /tmp/tzdata
+    rm -rf /tmp/tzdata
 
 # set time zone info
 ln -sfv /usr/share/zoneinfo/America/New_York /etc/localtime

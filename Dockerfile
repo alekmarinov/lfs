@@ -1,4 +1,4 @@
-FROM debian:10
+FROM debian:11
 
 # image info
 LABEL description="Automated LFS build"
@@ -12,7 +12,7 @@ ENV LFS=/mnt/lfs
 ENV LC_ALL=POSIX
 ENV LFS_TGT=x86_64-lfs-linux-gnu
 ENV PATH=/tools/bin:/bin:/usr/bin:/sbin:/usr/sbin
-ENV MAKEFLAGS="-j 2"
+ENV MAKEFLAGS="-j4"
 
 # Defines how toolchain is fetched
 # 0 use LFS wget file
@@ -70,8 +70,14 @@ RUN mkdir -pv     $LFS/sources \
 WORKDIR $LFS/sources
 
 # create tools directory and symlink
-RUN mkdir -pv $LFS/tools   \
- && ln    -sv $LFS/tools /
+RUN mkdir -pv $LFS/{tools,etc,var} $LFS/usr/{bin,lib,sbin} \
+    && for i in bin lib sbin; do \
+        ln -sv usr/$i $LFS/$i; \
+    done \
+    && ln -sv $LFS/tools / \
+    && case $(uname -m) in \
+        x86_64) mkdir -pv $LFS/lib64 ;; \
+    esac
 
 # copy local binaries if present
 COPY ["toolchain/", "$LFS/sources/"]
@@ -89,22 +95,28 @@ COPY [ "config/kernel.config", "$LFS/tools/" ]
 
 # check environment
 RUN chmod +x $LFS/tools/*.sh    \
- && sync                        \
- && $LFS/tools/version-check.sh \
- && $LFS/tools/library-check.sh
+    && sync                        \
+    && $LFS/tools/version-check.sh \
+    && $LFS/tools/library-check.sh
 
 # create lfs user with 'lfs' password
 RUN groupadd lfs                                    \
- && useradd -s /bin/bash -g lfs -m -k /dev/null lfs \
- && echo "lfs:lfs" | chpasswd
+    && useradd -s /bin/bash -g lfs -m -k /dev/null lfs \
+    && echo "lfs:lfs" | chpasswd
 RUN adduser lfs sudo
-
-# give lfs user ownership of $LFS directory
-RUN chown -Rv lfs $LFS
 
 # avoid sudo password
 RUN echo "lfs ALL = NOPASSWD : ALL" >> /etc/sudoers
 RUN echo 'Defaults env_keep += "LFS LC_ALL LFS_TGT PATH MAKEFLAGS FETCH_TOOLCHAIN_MODE LFS_TEST LFS_DOCS JOB_COUNT LOOP IMAGE_SIZE INITRD_TREE IMAGE"' >> /etc/sudoers
+
+RUN chown -v lfs $LFS/{usr{,/*},lib,var,etc,bin,sbin,tools} \
+    && case $(uname -m) in \
+        x86_64) chown -v lfs $LFS/lib64 ;; \
+    esac
+
+# This file has the potential to modify the lfs user's environment
+# in ways that can affect the building of critical LFS packages.
+RUN [ ! -e /etc/bash.bashrc ] || mv -v /etc/bash.bashrc /etc/bash.bashrc.NOUSE
 
 # login as lfs user
 USER lfs

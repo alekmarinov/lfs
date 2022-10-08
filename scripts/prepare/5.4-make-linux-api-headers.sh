@@ -7,6 +7,7 @@ echo "Required disk space: 1.4 MB"
 # 5.4. Linux API Headers
 # Expose the kernel's API for use by Glibc.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter05/linux-headers.html
+
 tar -xf linux-*.tar.xz -C /tmp/ \
     && mv /tmp/linux-* /tmp/linux \
     && pushd /tmp/linux \

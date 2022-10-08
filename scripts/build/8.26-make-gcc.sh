@@ -6,7 +6,9 @@ echo "Required disk space: 5.1 GB"
 
 # 8.26. GCC
 # The GCC package contains the GNU compiler collection, which includes the C and C++ compilers.
-VER=$(ls /sources/gcc-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/gcc.html
+
+VER=$(ls /sources/gcc-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/gcc-*.tar.xz -C /tmp/ \
     && mv /tmp/gcc-* /tmp/gcc \
     && pushd /tmp/gcc
@@ -22,7 +24,7 @@ esac
 # The GCC documentation recommends building GCC in a dedicated
 # build directory:
 mkdir -v build
-cd       build
+cd build
 
 # prepare for compilation
 ../configure \
@@ -87,4 +89,4 @@ mv -v /usr/lib/*gdb.py /usr/share/gdb/auto-load/usr/lib
 
 # Cleanup
 popd \
-  && rm -rf /tmp/gcc
+    && rm -rf /tmp/gcc

@@ -7,10 +7,12 @@ echo "Required disk space: 1.5 MB"
 # 8.43. Intltool
 # The Intltool is an internationalization tool used for extracting translatable
 # strings from source files.
-VER=$(ls /sources/intltool-*.tar.gz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/intltool.html
+
+VER=$(ls /sources/intltool-*.tar.gz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/intltool-*.tar.gz -C /tmp/ \
     && mv /tmp/intltool-* /tmp/intltool \
-    && pushd /tmp/intltool
+    && pushd /tmp/intltool \
     && sed -i 's:\\\${:\\\$\\{:' intltool-update.in \
     && ./configure \
         --prefix=/usr \
@@ -18,7 +20,7 @@ tar -xf /sources/intltool-*.tar.gz -C /tmp/ \
     && if [ $LFS_TEST -eq 1 ]; then make check; fi \
     && make install \
     && if [ $LFS_DOCS -eq 1 ]; then \
-        install -v -Dm644 doc/I18N-HOWTO /usr/share/doc/intltool-$VER/I18N-HOWTO \
+        install -v -Dm644 doc/I18N-HOWTO /usr/share/doc/intltool-$VER/I18N-HOWTO; \
     fi \
     && popd \
     && rm -rf /tmp/intltool

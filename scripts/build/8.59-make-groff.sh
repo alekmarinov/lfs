@@ -6,6 +6,8 @@ echo "Required disk space: 88 MB"
 
 # 8.59. Groff
 # The Groff package contains programs for processing and formatting text.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/groff.html
+
 tar -xf /sources/groff-*.tar.gz -C /tmp/ \
     && mv /tmp/groff-* /tmp/groff \
     && pushd /tmp/groff \

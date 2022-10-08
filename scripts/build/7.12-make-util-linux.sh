@@ -6,7 +6,9 @@ echo "Required disk space: 283 MB"
 
 # 7.12. Util-linux
 # The Util-linux package contains miscellaneous utility programs. Among them are utilities for handling file systems, consoles, partitions, and messages.
-VER=$(ls /sources/util-linux-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter07/util-linux.html
+
+VER=$(ls /sources/util-linux-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/util-linux-*.tar.xz -C /tmp/ \
     && mv /tmp/util-linux-* /tmp/util-linux \
     && pushd /tmp/util-linux \

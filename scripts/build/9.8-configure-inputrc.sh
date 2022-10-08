@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-echo "Setup bash shell.."
+echo "Setup inputrc.."
 
 # 9.8. Creating the /etc/inputrc File
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter09/inputrc.html

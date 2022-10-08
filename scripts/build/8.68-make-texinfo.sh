@@ -6,10 +6,13 @@ echo "Required disk space: 114 MB"
 
 # 8.68. Texinfo
 # The Texinfo package contains programs for reading, writing, and converting info pages.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/texinfo.html
+
 tar -xf /sources/texinfo-*.tar.xz -C /tmp/ \
     && mv /tmp/texinfo-* /tmp/texinfo \
     && pushd /tmp/texinfo \
-    && ./configure --prefix=/usr \
+    && ./configure \
+        --prefix=/usr \
     && make \
     && if [ $LFS_TEST -eq 1 ]; then make check; fi \
     && make install \

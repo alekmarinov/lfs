@@ -6,9 +6,11 @@ echo "Required disk space: 24 MB"
 
 # 8.44. Autoconf
 # The Autoconf package contains programs for producing shell scripts that can automatically configure source code.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/autoconf.html
+
 tar -xf /sources/autoconf-*.tar.xz -C /tmp/ \
     && mv /tmp/autoconf-* /tmp/autoconf \
-    && pushd /tmp/autoconf
+    && pushd /tmp/autoconf \
     && ./configure \
         --prefix=/usr \
     && make \

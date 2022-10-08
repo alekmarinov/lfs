@@ -14,7 +14,7 @@ sh /tools/7.9-make-perl.sh
 sh /tools/7.10-make-python.sh
 sh /tools/7.11-make-texinfo.sh
 sh /tools/7.12-make-util-linux.sh
-sh /tools/7.13-cleanup-save.sh
+sh /tools/7.13-cleanup.sh
 sh /tools/8.3-make-man-pages.sh
 sh /tools/8.4-make-iana-etc.sh
 sh /tools/8.5-make-glibc.sh

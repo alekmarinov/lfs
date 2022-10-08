@@ -7,6 +7,8 @@ echo "Required disk space: 94 MB"
 # 8.74. E2fsprogs
 # The e2fsprogs package contains the utilities for handling the ext2 file
 # system. It also supports the ext3 and ext4 journaling file systems.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/e2fsprogs.html
+
 tar -xf /sources/e2fsprogs-*.tar.gz -C /tmp/ \
     && mv /tmp/e2fsprogs-* /tmp/e2fsprogs \
     && pushd /tmp/e2fsprogs \
@@ -27,9 +29,9 @@ tar -xf /sources/e2fsprogs-*.tar.gz -C /tmp/ \
     && gunzip -v /usr/share/info/libext2fs.info.gz \
     && install-info --dir-file=/usr/share/info/dir /usr/share/info/libext2fs.info \
     && if [ $LFS_DOCS -eq 1 ]; then \
-        makeinfo -o      doc/com_err.info ../lib/et/com_err.texinfo \
-        install -v -m644 doc/com_err.info /usr/share/info \
-        install-info --dir-file=/usr/share/info/dir /usr/share/info/com_err.info \
+        makeinfo -o      doc/com_err.info ../lib/et/com_err.texinfo; \
+        install -v -m644 doc/com_err.info /usr/share/info; \
+        install-info --dir-file=/usr/share/info/dir /usr/share/info/com_err.info; \
     fi \
     && popd \
     && rm -rf /tmp/e2fsprogs

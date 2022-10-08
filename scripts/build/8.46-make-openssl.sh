@@ -5,7 +5,10 @@ echo "Approximate build time: 5.0 SBU"
 echo "Required disk space: 476 MB"
 
 # 8.46. OpenSSL
-VER=$(ls /sources/openssl-*.tar.gz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+# The OpenSSL package contains management tools and libraries relating to cryptography. 
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/openssl.html
+
+VER=$(ls /sources/openssl-*.tar.gz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/openssl-*.tar.gz -C /tmp/ \
     && mv /tmp/openssl-* /tmp/openssl \
     && pushd /tmp/openssl \
@@ -21,7 +24,7 @@ tar -xf /sources/openssl-*.tar.gz -C /tmp/ \
     && make MANSUFFIX=ssl install \
     && mv -v /usr/share/doc/openssl /usr/share/doc/openssl-$VER \
     && if [ $LFS_DOCS -eq 1 ]; then \
-        cp -vfr doc/* /usr/share/doc/openssl-$VER \
+        cp -vfr doc/* /usr/share/doc/openssl-$VER; \
     fi \
     && popd \
     && rm -rf /tmp/openssl

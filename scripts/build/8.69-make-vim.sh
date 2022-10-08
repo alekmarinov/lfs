@@ -6,21 +6,24 @@ echo "Required disk space: 217 MB"
 
 # 8.69. Vim
 # The Vim package contains a powerful text editor.
-VER=$(ls /sources/vim-*.tar.bz2 | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
-tar -xf /sources/vim-*.tar.bz2 -C /tmp/ \
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/vim.html
+
+VER=$(ls /sources/vim-*.tar.gz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
+tar -xf /sources/vim-*.tar.gz -C /tmp/ \
     && mv /tmp/vim* /tmp/vim \
     && pushd /tmp/vim \
     && echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h \
-    && ./configure --prefix=/usr \
+    && ./configure \
+      --prefix=/usr \
     && make \
     && if [ $LFS_TEST -eq 1 ]; then \
-        chown -Rv tester .  \
-        su tester -c "LANG=en_US.UTF-8 make -j1 test" &> vim-test.log \
+        chown -Rv tester .; \
+        su tester -c "LANG=en_US.UTF-8 make -j1 test" &> vim-test.log; \
     fi \
     && make install \
     && ln -sv vim /usr/bin/vi \
     && for L in  /usr/share/man/{,*/}man1/vim.1; do \
-        ln -sv vim.1 $(dirname $L)/vi.1 \
+        ln -sv vim.1 $(dirname $L)/vi.1; \
     done \
     && ln -sv ../vim/vim90/doc /usr/share/doc/vim-$VER
 

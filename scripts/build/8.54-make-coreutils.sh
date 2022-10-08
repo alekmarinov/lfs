@@ -4,8 +4,10 @@ echo "Building coreutils.."
 echo "Approximate build time: 2.8 SBU"
 echo "Required disk space: 159 MB"
 
-# 6.56. The Coreutils package contains utilities for showing and
-# setting the basic system characteristics.
+# 8.54. Coreutils
+# The Coreutils package contains utilities for showing and setting the basic system characteristics.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/coreutils.html
+
 tar -xf /sources/coreutils-*.tar.xz -C /tmp/ \
     && mv /tmp/coreutils-* /tmp/coreutils \
     && pushd /tmp/coreutils \
@@ -16,11 +18,11 @@ tar -xf /sources/coreutils-*.tar.xz -C /tmp/ \
         --enable-no-install-program=kill,uptime \
     && make \
     && if [ $LFS_TEST -eq 1 ]; then \
-        make NON_ROOT_USERNAME=tester check-root \
-        echo "dummy:x:102:tester" >> /etc/group \
-        chown -Rv tester . \
-        su tester -c "PATH=$PATH make RUN_EXPENSIVE_TESTS=yes check" \
-        sed -i '/dummy/d' /etc/group \
+        make NON_ROOT_USERNAME=tester check-root; \
+        echo "dummy:x:102:tester" >> /etc/group; \
+        chown -Rv tester .; \
+        su tester -c "PATH=$PATH make RUN_EXPENSIVE_TESTS=yes check"; \
+        sed -i '/dummy/d' /etc/group; \
     fi \
     && make install \
     && mv -v /usr/bin/chroot /usr/sbin \

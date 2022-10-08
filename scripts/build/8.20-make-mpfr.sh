@@ -6,7 +6,9 @@ echo "Required disk space: 39 MB"
 
 # 8.20. MPFR
 # The MPFR package contains functions for multiple precision math.
-VER=$(ls /sources/mpfr-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/mpfr.html
+
+VER=$(ls /sources/mpfr-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/mpfr-*.tar.xz -C /tmp/ \
     && mv /tmp/mpfr-* /tmp/mpfr \
     && pushd /tmp/mpfr \
@@ -14,7 +16,7 @@ tar -xf /sources/mpfr-*.tar.xz -C /tmp/ \
         --prefix=/usr \
         --disable-static \
         --enable-thread-safe \
-        --docdir=/usr/share/doc/mpfr-4.1.0 \
+        --docdir=/usr/share/doc/mpfr-$VER \
     && make \
     && make html \
     && if [ $LFS_TEST -eq 1 ]; then make check; fi \

@@ -19,8 +19,8 @@ Use the following command:
 
     docker rm lfs                                        && \
     docker build --tag lfs:11.2 .                        && \
-    sudo docker run -it --privileged --name lfs lfs:11.2 && \
-    sudo docker cp lfs:/tmp/lfs.iso .
+    docker run -it --privileged --name lfs lfs:11.2 && \
+    docker cp lfs:/tmp/lfs.iso .
     # Ramdisk you can find here: /tmp/ramdisk.img
 
 Please note, that extended privileges are required by docker container

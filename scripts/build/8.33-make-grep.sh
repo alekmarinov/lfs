@@ -6,6 +6,8 @@ echo "Required disk space: 37 MB"
 
 # 8.33. Grep
 # The Grep package contains programs for searching through the contents of files.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/grep.html
+
 tar -xf /sources/grep-*.tar.xz -C /tmp/ \
     && mv /tmp/grep-* /tmp/grep \
     && pushd /tmp/grep \

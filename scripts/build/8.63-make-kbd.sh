@@ -6,7 +6,9 @@ echo "Required disk space: 35 MB"
 
 # 8.63. Kbd
 # The Kbd package contains key-table files, console fonts, and keyboard utilities.
-VER=$(ls /sources/kbd-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/kbd.html
+
+VER=$(ls /sources/kbd-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/kbd-*.tar.xz -C /tmp/ \
     && mv /tmp/kbd-* /tmp/kbd \
     && pushd /tmp/kbd \
@@ -20,8 +22,8 @@ tar -xf /sources/kbd-*.tar.xz -C /tmp/ \
     && if [ $LFS_TEST -eq 1 ]; then make check; fi \
     && make install \
     && if [ $LFS_DOCS -eq 1 ]; then \
-        mkdir -v /usr/share/doc/kbd-$VER \
-        cp -R -v docs/doc/* /usr/share/doc/kbd-$VER \
-    fi
+        mkdir -v /usr/share/doc/kbd-$VER; \
+        cp -R -v docs/doc/* /usr/share/doc/kbd-$VER; \
+    fi \
     && popd \
     && rm -rf /tmp/kbd

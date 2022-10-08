@@ -7,6 +7,8 @@ echo "Required disk space: 0.6 MB"
 # 8.75. Sysklogd
 # The sysklogd package contains programs for logging system messages,
 # such as those given by the kernel when unusual things happen.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/sysklogd.html
+
 tar -xf /sources/sysklogd-*.tar.gz -C /tmp/ \
     && mv /tmp/sysklogd-* /tmp/sysklogd \
     && pushd /tmp/sysklogd \

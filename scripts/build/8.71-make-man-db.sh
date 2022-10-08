@@ -6,10 +6,12 @@ echo "Required disk space: 40 MB"
 
 # 8.71. Man-DB
 # The Man-DB package contains programs for finding and viewing man pages.
-VER=$(ls /sources/man-db-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/man-db.html
+
+VER=$(ls /sources/man-db-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/man-db-*.tar.xz -C /tmp/ \
     && mv /tmp/man-db-* /tmp/man-db \
-    && pushd /tmp/man-db
+    && pushd /tmp/man-db \
     && ./configure \
         --prefix=/usr \
         --docdir=/usr/share/doc/man-db-$VER \

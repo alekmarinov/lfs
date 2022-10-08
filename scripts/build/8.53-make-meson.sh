@@ -6,6 +6,8 @@ echo "Required disk space: 38 MB"
 
 # 8.53. Meson
 # Meson is an open source build system meant to be both extremely fast and as user friendly as possible.
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/meson.html
+
 tar -xf /sources/meson-*.tar.gz -C /tmp/ \
     && mv /tmp/meson-* /tmp/meson \
     && pushd /tmp/meson \

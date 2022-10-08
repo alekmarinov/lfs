@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-echo "Setup bash shell.."
+echo "Setup shells.."
 
 # 9.9. Creating the /etc/shells File
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter09/etcshells.html

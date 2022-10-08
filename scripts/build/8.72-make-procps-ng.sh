@@ -6,7 +6,9 @@ echo "Required disk space: 19 MB"
 
 # 8.72. Procps-ng
 # The Procps-ng package contains programs for monitoring processes.
-VER=$(ls /sources/man-db-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/procps-ng.html
+
+VER=$(ls /sources/procps-ng-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/procps-ng-*.tar.xz -C /tmp/ \
     && mv /tmp/procps-ng-* /tmp/procps-ng \
     && pushd /tmp/procps-ng \
