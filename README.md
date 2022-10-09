@@ -17,8 +17,8 @@ it makes sense. Some deviations are done to make a bootable iso image.
 
 Use the following command:
 
-    docker rm lfs                                        && \
-    docker build --tag lfs:11.2 .                        && \
+    docker rm lfs                                   && \
+    docker build --tag lfs:11.2 .                   && \
     docker run -it --privileged --name lfs lfs:11.2 && \
     docker cp lfs:/tmp/lfs.iso .
     # Ramdisk you can find here: /tmp/ramdisk.img

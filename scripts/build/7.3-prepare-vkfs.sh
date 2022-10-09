@@ -1,6 +1,16 @@
 #!/bin/bash
 echo "Preparing Virtual Kernel File Systems.."
 
+# 7.2. Changing Ownership
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter07/changingowner.html
+
+chown -R root:root $LFS/{usr,lib,var,etc,bin,sbin,tools}
+case $(uname -m) in
+  x86_64) chown -R root:root $LFS/lib64 ;;
+esac
+# prevent "bad interpreter: Text file busy"
+sync
+
 # 7.3. Preparing Virtual Kernel File Systems
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter07/kernfs.html
 

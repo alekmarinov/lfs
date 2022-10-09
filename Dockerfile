@@ -27,14 +27,14 @@ ENV LFS_TEST=0
 ENV LFS_DOCS=0
 
 # degree of parallelism for compilation
-ENV JOB_COUNT=1
+ENV JOB_COUNT=4
 
-# loop device
-ENV LOOP=/dev/loop0
+# loop device (loop0 and loop1 are allocated by docker)
+ENV LOOP=/dev/loop2
 
 # inital ram disk size in KB
 # must be in sync with CONFIG_BLK_DEV_RAM_SIZE
-ENV IMAGE_SIZE=900000
+ENV IMAGE_SIZE=4000000
 
 # location of initrd tree
 ENV INITRD_TREE=/mnt/lfs

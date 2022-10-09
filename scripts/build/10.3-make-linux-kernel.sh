@@ -32,7 +32,7 @@ make
 make modules_install
 
 # copy kernel image
-VER=$(ls /sources/linux-*.tar.xz | grep -oP "\-[\d.]*" | sed 's/^.\(.*\).$/\1/')
+VER=$(ls /sources/linux-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 cp -iv arch/x86/boot/bzImage /boot/vmlinuz-$VER-lfs-11.2
 # copy symbols
 cp -iv System.map /boot/System.map-$VER
