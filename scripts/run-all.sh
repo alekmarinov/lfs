@@ -3,10 +3,10 @@ set -e
 echo "Start.."
 
 # prepare to build
-sh /tools/run-prepare.sh
+sh /tools/prepare/run-prepare.sh
 
 # execute rest as root
 exec sudo -E -u root /bin/sh - <<EOF
-sh /tools/run-build.sh
-sh /tools/run-image.sh
+sh /tools/build/run-build.sh
+sh /tools/image/run-image.sh
 EOF

@@ -21,4 +21,4 @@ tar -xf /sources/procps-ng-*.tar.xz -C /tmp/ \
     && if [ $LFS_TEST -eq 1 ]; then make check || true; fi \
     && make install \
     popd \
-    && rm -rf /tmp/procps-ng
+    && rm -rf /tmp/procps-ng || true

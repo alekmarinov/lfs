@@ -23,7 +23,7 @@ make mrproper
 # copy premade config
 # NOTE manual way is by launching:
 # make menuconfig
-cp /tools/kernel.config .config
+cp /sources/kernel-5.19.2.config .config
 
 # compile
 make

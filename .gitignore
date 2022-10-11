@@ -1,3 +1,7 @@
 /.idea/
 /toolchain/
 lfs.iso
+/sources/*.tar.*
+/sources/*.tgz
+/sources/*.zip
+/sources/*.patch
