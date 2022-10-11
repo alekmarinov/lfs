@@ -8,9 +8,9 @@ echo "Required disk space: 22 MB"
 # The userspace-rcu package provides a set of userspace RCU (read-copy-update) libraries. 
 # https://www.linuxfromscratch.org/blfs/view/stable/general/liburcu.html
 
-VER=$(ls /sources/liburcu-*.tar.bz2 | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
-tar -xf /sources/liburcu-*.tar.bz2 -C /tmp/ \
-    && mv /tmp/liburcu-* /tmp/liburcu \
+VER=$(ls /sources/userspace-rcu-*.tar.bz2 | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
+tar -xf /sources/userspace-rcu-*.tar.bz2 -C /tmp/ \
+    && mv /tmp/userspace-rcu-* /tmp/liburcu \
     && pushd /tmp/liburcu \
     && ./configure \
         --prefix=/usr \

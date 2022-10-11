@@ -11,8 +11,7 @@ echo "Required disk space: 329 MB"
 # https://www.linuxfromscratch.org/blfs/view/stable/general/icu.html
 
 tar -xf /sources/icu4c-*.tgz -C /tmp/ \
-    && mv /tmp/icu4c-* /tmp/icu4c \
-    && pushd /tmp/icu4c \
+    && pushd /tmp/icu \
     && cd source \
     && ./configure \
         --prefix=/usr \
@@ -20,4 +19,4 @@ tar -xf /sources/icu4c-*.tgz -C /tmp/ \
     && if [ $LFS_TEST -eq 1 ]; then make check || true; fi \
     && make install \
     && popd \
-    && rm -rf /tmp/icu4c
+    && rm -rf /tmp/icu

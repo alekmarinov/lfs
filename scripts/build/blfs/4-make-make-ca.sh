@@ -16,7 +16,7 @@ echo "Required disk space: 6.6 MB"
 # https://www.linuxfromscratch.org/blfs/view/stable/postlfs/make-ca.html
 
 VER=$(ls /sources/make-ca-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
-tar -xf /sources/make-ca-*.tar.bz2 -C /tmp/ \
+tar -xf /sources/make-ca-*.tar.xz -C /tmp/ \
     && mv /tmp/make-ca-* /tmp/make-ca \
     && pushd /tmp/make-ca \
     && make install \

@@ -11,7 +11,7 @@ echo "Required disk space: 76 MB"
 
 VER_PACK=$(ls /sources/sqlite-autoconf-*.tar.gz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 VER=${VER_PACK:0:1}.${VER_PACK:1:2}.$(echo ${VER_PACK:3:2} | bc)
-tar -xf /sources/sqlite-*.tar.bz2 -C /tmp/ \
+tar -xf /sources/sqlite-*.tar.gz -C /tmp/ \
     && mv /tmp/sqlite-* /tmp/sqlite \
     && pushd /tmp/sqlite \
     && if [ $LFS_DOCS -eq 1 ]; then unzip -q /sources/sqlite-doc-$VER_PACK.zip; fi \

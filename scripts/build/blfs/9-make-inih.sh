@@ -8,7 +8,7 @@ echo "Required disk space: 704 KB"
 # This package is a simple .INI file parser written in C.
 # https://www.linuxfromscratch.org/blfs/view/stable/general/inih.html
 
-tar -xf /sources/inih-*.tar.xz -C /tmp/ \
+tar -xf /sources/inih-*.tar.gz -C /tmp/ \
     && mv /tmp/inih-* /tmp/inih \
     && pushd /tmp/inih \
     && mkdir build \

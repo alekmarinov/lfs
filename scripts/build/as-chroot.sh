@@ -116,7 +116,29 @@ sh /scripts/build/blfs/5-make-xfsprogs.sh
 sh /scripts/build/blfs/13-make-six.sh
 sh /scripts/build/blfs/13-make-gdb.sh
 sh /scripts/build/blfs/9-make-libuv.sh
-sh /scripts/build/blfs/13-make-cmake.sh
 sh /scripts/build/blfs/9-make-libtasn1.sh
+sh /scripts/build/blfs/4-make-p11-kit.sh
+sh /scripts/build/blfs/9-make-nspr.sh
+sh /scripts/build/blfs/22-make-sqlite.sh
+sh /scripts/build/blfs/4-make-nss.sh
+sh /scripts/build/blfs/12-make-fcron.sh
+sh /scripts/build/blfs/4-make-make-ca.sh
+sh /scripts/build/blfs/17-make-curl.sh
+sh /scripts/build/blfs/9-make-libxml2.sh
+sh /scripts/build/blfs/9-make-lzo.sh
+sh /scripts/build/blfs/9-make-nettle.sh
+sh /scripts/build/blfs/9-make-libarchive.sh
+sh /scripts/build/blfs/13-make-cmake.sh
+sh /scripts/build/blfs/11-make-sharutils.sh
+sh /scripts/build/blfs/17-rpcsvc-proto.sh
+sh /scripts/build/blfs/17-libtirpc.sh
+sh /scripts/build/blfs/17-make-libnsl.sh
+sh /scripts/build/blfs/22-make-db.sh
+sh /scripts/build/blfs/4-make-linux-pam.sh
+sh /scripts/build/blfs/4-make-shadow.sh # must rebuild after linux-pam
+sh /scripts/build/blfs/48-make-sgml-common.sh
+sh /scripts/build/blfs/12-make-unzip.sh
+sh /scripts/build/blfs/49-docbook-xml.sh
+sh /scripts/build/blfs/9-make-libxslt.sh
 
 exit

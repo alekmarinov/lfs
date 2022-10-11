@@ -14,8 +14,8 @@ tar -xf /sources/p11-kit-*.tar.xz -C /tmp/ \
     && mv /tmp/p11-kit-* /tmp/p11-kit \
     && pushd /tmp/p11-kit
 
-psed '20,$ d' -i trust/trust-extract-compat
-pcat >> trust/trust-extract-compat << "EOF"
+sed '20,$ d' -i trust/trust-extract-compat
+cat >> trust/trust-extract-compat << "EOF"
 # Copy existing anchor modifications to /etc/ssl/local
 /usr/libexec/make-ca/copy-trust-modifications
 
