@@ -1,6 +1,4 @@
-/.idea/
-/toolchain/
-lfs.iso
+# Ignore file patterns coming from download sources
 /sources/*.tar.*
 /sources/*.tgz
 /sources/*.zip

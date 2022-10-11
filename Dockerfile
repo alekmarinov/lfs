@@ -14,12 +14,6 @@ ENV LFS_TGT=x86_64-lfs-linux-gnu
 ENV PATH=/tools/bin:/bin:/usr/bin:/sbin:/usr/sbin
 ENV MAKEFLAGS="-j4"
 
-# Defines how toolchain is fetched
-# 0 use LFS wget file
-# 1 use binaries from toolchain folder
-# 2 use github release artifacts
-ENV FETCH_TOOLCHAIN_MODE=1
-
 # set 1 to run tests; running tests takes much more time
 ENV LFS_TEST=0
 

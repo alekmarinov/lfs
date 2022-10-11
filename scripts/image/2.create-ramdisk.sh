@@ -29,7 +29,7 @@ rm -rf $LOOP_DIR/lost+found
 
 # copy LFS system without build artifacts
 pushd $INITRD_TREE
-cp -dpR $(ls -A | grep -Ev "sources|tools") $LOOP_DIR
+cp -dpR $(ls -A | grep -Ev "sources|tools|scripts") $LOOP_DIR
 popd
 
 # show statistics
