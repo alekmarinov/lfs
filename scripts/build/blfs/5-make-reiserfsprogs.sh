@@ -13,13 +13,13 @@ echo "Required disk space: 13 MB"
 # File systems --->
 #   <*/M> Reiserfs support [CONFIG_REISERFS_FS]
 
-tar -xf /sources/reiserfs-*.tar.xz -C /tmp/ \
-    && mv /tmp/reiserfs-* /tmp/reiserfs \
-    && pushd /tmp/reiserfs \
+tar -xf /sources/reiserfsprogs-*.tar.xz -C /tmp/ \
+    && mv /tmp/reiserfsprogs-* /tmp/reiserfsprogs \
+    && pushd /tmp/reiserfsprogs \
     && sed -i '/parse_time.h/i #define _GNU_SOURCE' lib/parse_time.c \
     && autoreconf -fiv \
     && ./configure --prefix=/usr \
     && make \
-    && make install
+    && make install \
     && popd \
-    && rm -rf /tmp/reiserfs
+    && rm -rf /tmp/reiserfsprogs
