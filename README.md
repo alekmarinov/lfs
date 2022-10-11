@@ -26,6 +26,7 @@ Please note, that extended privileges are required by docker container
 in order to execute some commands (e.g. mount).
 
 Use this command to hack:
+
     docker run -it --privileged --name lfs -v $(pwd)/sources:/mnt/lfs/sources -v $(pwd)/scripts:/mnt/lfs/scripts
     --entrypoint bash lfs:11.2
 
