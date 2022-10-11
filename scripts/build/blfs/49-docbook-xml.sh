@@ -12,7 +12,7 @@ echo "Required disk space: 1.2 MB"
 
 VER=$(ls /sources/docbook-xml-*.zip | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 mkdir /tmp/docbook \
-    && unzip docbook-xml-*.zip -d /tmp/docbook \
+    && unzip /sources/docbook-xml-*.zip -d /tmp/docbook \
     && pushd /tmp/docbook \
     && install -v -d -m755 /usr/share/xml/docbook/xml-dtd-$VER \
     && install -v -d -m755 /etc/xml \

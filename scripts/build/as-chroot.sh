@@ -127,7 +127,7 @@ sh /scripts/build/blfs/4-make-make-ca.sh
 sh /scripts/build/blfs/17-make-curl.sh
 sh /scripts/build/blfs/9-make-libxml2.sh
 sh /scripts/build/blfs/9-make-lzo.sh
-sh /scripts/build/blfs/9-make-nettle.sh
+sh /scripts/build/blfs/4-make-nettle.sh
 sh /scripts/build/blfs/9-make-libarchive.sh
 sh /scripts/build/blfs/13-make-cmake.sh
 sh /scripts/build/blfs/11-make-sharutils.sh

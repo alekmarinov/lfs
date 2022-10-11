@@ -10,9 +10,9 @@ echo "Required disk space: 9 MB"
 
 VER=$(ls /sources/unzip60.tar.gz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/unzip60.tar.gz -C /tmp/ \
-    && pushd /tmp/unzip \
+    && pushd /tmp/unzip60 \
     && patch -Np1 -i /sources/unzip-6.0-consolidated_fixes-1.patch \
     && make -f unix/Makefile generic \
     && make prefix=/usr MANDIR=/usr/share/man/man1 -f unix/Makefile install \
     && popd \
-    && rm -rf /tmp/cpio
+    && rm -rf /tmp/unzip60

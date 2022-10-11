@@ -32,4 +32,4 @@ tar -xf /sources/shadow-*.tar.xz -C /tmp/ \
     && make \
     && make exec_prefix=/usr install \
     && popd \
-    && rm -rf /tmp/cpio
+    && rm -rf /tmp/shadow
