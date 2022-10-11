@@ -15,7 +15,7 @@ sh $LFS/scripts/build/7.3-prepare-vkfs.sh
     LFS_TGT="$LFS_TGT" MAKEFLAGS="$MAKEFLAGS" \
     LFS_TEST="$LFS_TEST" LFS_DOCS="$LFS_DOCS" \
     JOB_COUNT="$JOB_COUNT" \
-    /bin/bash --login +h -c "sh /scripts/as-chroot.sh"
+    /bin/bash --login +h -c "sh /scripts/build/as-chroot.sh"
 
 # cleanup
 sh $LFS/scripts/build/11.x-cleanup.sh
