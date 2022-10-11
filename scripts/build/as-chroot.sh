@@ -102,6 +102,7 @@ sh /scripts/build/lfs/10.4-setup-grub.sh
 sh /scripts/build/lfs/11.1-the-end.sh
 
 # build blfs packages
+sh /scripts/build/blfs/2-blfs-bootscripts.sh
 sh /scripts/build/blfs/5-make-mkinitramfs.sh
 sh /scripts/build/blfs/12-make-cpio.sh
 sh /scripts/build/blfs/9-make-libaio.sh
