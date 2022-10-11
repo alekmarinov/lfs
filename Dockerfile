@@ -107,4 +107,4 @@ COPY [ "config/.bash_profile", "config/.bashrc", "/home/lfs/" ]
 RUN source ~/.bash_profile
 
 # let's the party begin
-ENTRYPOINT [ "$LFS/scripts/run-all.sh" ]
+ENTRYPOINT [ "../scripts/run-all.sh" ]
