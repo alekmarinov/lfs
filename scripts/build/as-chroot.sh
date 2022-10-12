@@ -112,7 +112,6 @@ sh /scripts/build/blfs/13-make-valgrind.sh
 sh /scripts/build/blfs/12-make-which.sh
 sh /scripts/build/blfs/9-make-inih.sh
 sh /scripts/build/blfs/9-make-liburcu.sh
-sh /scripts/build/blfs/13-make-llvm.sh
 sh /scripts/build/blfs/9-make-icu.sh
 sh /scripts/build/blfs/5-make-xfsprogs.sh
 sh /scripts/build/blfs/13-make-six.sh
@@ -131,6 +130,7 @@ sh /scripts/build/blfs/9-make-lzo.sh
 sh /scripts/build/blfs/4-make-nettle.sh
 sh /scripts/build/blfs/9-make-libarchive.sh
 sh /scripts/build/blfs/13-make-cmake.sh
+sh /scripts/build/blfs/13-make-llvm.sh
 sh /scripts/build/blfs/11-make-sharutils.sh
 sh /scripts/build/blfs/17-rpcsvc-proto.sh
 sh /scripts/build/blfs/17-libtirpc.sh
@@ -142,10 +142,10 @@ sh /scripts/build/blfs/48-make-sgml-common.sh
 sh /scripts/build/blfs/12-make-unzip.sh
 sh /scripts/build/blfs/49-docbook-xml.sh
 sh /scripts/build/blfs/9-make-libxslt.sh
-sh /scripts/build/blfs/5-make-efibootmgr.sh
+sh /scripts/build/blfs/9-make-popt.sh
 sh /scripts/build/blfs/11-make-mandoc.sh
 sh /scripts/build/blfs/5-make-efivar.sh
-sh /scripts/build/blfs/9-make-popt.sh
+sh /scripts/build/blfs/5-make-efibootmgr.sh
 sh /scripts/build/blfs/13-make-doxygen.sh
 sh /scripts/build/blfs/9-make-libgpg-error.sh
 sh /scripts/build/blfs/9-make-libassuan.sh
@@ -153,9 +153,9 @@ sh /scripts/build/blfs/9-make-libgcrypt.sh
 sh /scripts/build/blfs/9-make-libunistring.sh
 sh /scripts/build/blfs/4-make-gnutls.sh
 sh /scripts/build/blfs/11-make-pinentry.sh
+sh /scripts/build/blfs/9-make-npth.sh
 sh /scripts/build/blfs/4-make-gnupg.sh
 sh /scripts/build/blfs/9-make-libksba.sh
-sh /scripts/build/blfs/9-make-npth.sh
 sh /scripts/build/blfs/13-make-git.sh
 sh /scripts/build/blfs/10-make-libpng.sh
 sh /scripts/build/blfs/10-make-freetype.sh # install without harfbuzz
