@@ -6,8 +6,9 @@ echo "Required disk space: 135 MB"
 
 # 10. harfbuzz
 # The HarfBuzz package contains an OpenType text shaping engine.
-# recommended: gobject-introspection(for gnome),glib,(for pango),
-#              graphite2(for texlive/libre),icu,freetype2
+# required: graphite2
+# recommended: gobject-introspection(for gnome),glib(for pango),
+#              icu,freetype2
 # optional: cairo,git,gtk-doc
 # https://www.linuxfromscratch.org/blfs/view/svn/general/harfbuzz.html
 

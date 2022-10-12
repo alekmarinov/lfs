@@ -43,7 +43,7 @@ esac
     --enable-grub-mkfont \
     --with-platform=efi \
     --target=x86_64 \
-    --disable-werror 
+    --disable-werror \
     && unset TARGET_CC \
     && make \
     && make install && \

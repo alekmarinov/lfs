@@ -159,6 +159,7 @@ sh /scripts/build/blfs/4-make-gnupg.sh
 sh /scripts/build/blfs/13-make-git.sh
 sh /scripts/build/blfs/10-make-libpng.sh
 sh /scripts/build/blfs/10-make-freetype.sh # install without harfbuzz
+sh /scripts/build/blfs/10-make-graphite2.sh
 sh /scripts/build/blfs/10-make-harfbuzz.sh
 sh /scripts/build/blfs/10-make-freetype.sh # reinstall with harfbuzz
 sh /scripts/build/blfs/5-make-grub.sh
