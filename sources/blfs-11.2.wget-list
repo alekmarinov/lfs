@@ -65,3 +65,7 @@ https://downloads.sourceforge.net/freetype/freetype-doc-2.12.1.tar.xz
 https://downloads.sourceforge.net/libpng/libpng-1.6.38.tar.xz
 https://downloads.sourceforge.net/sourceforge/libpng-apng/libpng-1.6.38-apng.patch.gz
 https://github.com/harfbuzz/harfbuzz/releases/download/5.2.0/harfbuzz-5.2.0.tar.xz
+https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/llvm-14.0.6.src.tar.xz
+https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/clang-14.0.6.src.tar.xz
+https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/compiler-rt-14.0.6.src.tar.xz
+https://www.linuxfromscratch.org/patches/blfs/11.2/compiler-rt-14.0.6-glibc_2_36-1.patch
