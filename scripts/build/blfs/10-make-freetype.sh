@@ -11,8 +11,8 @@ echo "Required disk space: 31 MB"
 # optional: brotli,docwriter(for doc)
 # https://www.linuxfromscratch.org/blfs/view/svn/general/freetype2.html
 
-VER=$(ls /sources/freetype-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
-tar -xf /sources/freetype-*.tar.xz -C /tmp/ \
+VER=$(ls /sources/freetype-*.tar.xz | head -1 | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
+tar -xf /sources/freetype-$VER.tar.xz -C /tmp/ \
     && mv /tmp/freetype-* /tmp/freetype2 \
     && pushd /tmp/freetype2 \
     && if [ $LFS_DOCS -eq 1 ]; then \
