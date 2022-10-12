@@ -154,8 +154,8 @@ sh /scripts/build/blfs/9-make-libunistring.sh
 sh /scripts/build/blfs/4-make-gnutls.sh
 sh /scripts/build/blfs/11-make-pinentry.sh
 sh /scripts/build/blfs/9-make-npth.sh
-sh /scripts/build/blfs/4-make-gnupg.sh
 sh /scripts/build/blfs/9-make-libksba.sh
+sh /scripts/build/blfs/4-make-gnupg.sh
 sh /scripts/build/blfs/13-make-git.sh
 sh /scripts/build/blfs/10-make-libpng.sh
 sh /scripts/build/blfs/10-make-freetype.sh # install without harfbuzz
