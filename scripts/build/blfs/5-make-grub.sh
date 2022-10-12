@@ -46,7 +46,7 @@ esac
     --disable-werror \
     && unset TARGET_CC \
     && make \
-    && make install && \
+    && make install \
     && mv -v /etc/bash_completion.d/grub /usr/share/bash-completion/completions \
     && popd \
     && rm -rf /tmp/grub
