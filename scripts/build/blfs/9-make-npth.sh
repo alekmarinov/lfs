@@ -10,8 +10,8 @@ echo "Required disk space: 2.6 MB"
 # multiple threads of execution (multithreading) inside event-driven applications. 
 # https://www.linuxfromscratch.org/blfs/view/svn/general/npth.html
 
-VER=$(ls /sources/npth-*.tar.gz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
-tar -xf /sources/npth-*.tar.gz -C /tmp/ \
+VER=$(ls /sources/npth-*.tar.bz2 | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
+tar -xf /sources/npth-*.tar.bz2 -C /tmp/ \
     && mv /tmp/npth-* /tmp/npth \
     && pushd /tmp/npth \
     && ./configure \
