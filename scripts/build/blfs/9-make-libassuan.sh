@@ -35,6 +35,7 @@ tar -xf /sources/libassuan-*.tar.bz2 -C /tmp/ \
         && install -v -m644 doc/assuan.{txt,texi} \
             /usr/share/doc/libassuan-$VER;
         install -v -m644 doc/assuan.{pdf,ps,dvi} \
-                  /usr/share/doc/libassuan-$VER;
+                  /usr/share/doc/libassuan-$VER; \
+    fi \
     && popd \
     && rm -rf /tmp/libassuan
