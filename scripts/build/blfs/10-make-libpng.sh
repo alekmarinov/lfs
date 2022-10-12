@@ -11,7 +11,7 @@ echo "Required disk space: 15 MB"
 # https://www.linuxfromscratch.org/blfs/view/svn/general/libpng.html
 
 VER=$(ls /sources/libpng-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
-tar -xf /sources/libpng-* -C /tmp/ \
+tar -xf /sources/libpng-*.tar.xz -C /tmp/ \
     && mv /tmp/libpng-* /tmp/libpng \
     && pushd /tmp/libpng \
     && gzip -cd /sources/libpng-$VER-apng.patch.gz | patch -p1 \
