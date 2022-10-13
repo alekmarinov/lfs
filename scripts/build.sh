@@ -32,13 +32,14 @@ script_name=$(basename -- "$script_path")
 flag_file="/tmp/${script_name%.*}.ready"
 log_file="/tmp/${script_name%.*}.log"
 if [[ ! -f "$flag_file" || $force_build -eq 1 ]]; then
-    time sh "$script_path" 2>&1 | tee "$log_file"
+    echo -ne "...... $script_path -> $log_file"
+    sh "$script_path" > "$log_file" 2>&1
     if [ $? -eq 0 ]; then
-        echo "$script_path passed"
+        echo -ne "\rpassed"; echo
         touch "$flag_file"
     else
-        echo "$script_path failed"
+        echo -ne "\rfailed"; echo
     fi
 else
-    echo "Skipping $script_path flagged as built: $flag_file"
+    echo "skipped $script_path"
 fi

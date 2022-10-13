@@ -4,6 +4,7 @@ echo "Preparing Virtual Kernel File Systems.."
 # 7.2. Changing Ownership
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter07/changingowner.html
 
+echo "Chown as root $LFS/{usr,lib,var,etc,bin,sbin}"
 chown -R root:root $LFS/{usr,lib,var,etc,bin,sbin}
 case $(uname -m) in
   x86_64) chown -R root:root $LFS/lib64 ;;
@@ -14,6 +15,7 @@ sync
 # 7.3. Preparing Virtual Kernel File Systems
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter07/kernfs.html
 
+echo "Mounting vkfs $LFS/{dev,proc,sys,run}"
 mkdir -pv $LFS/{dev,proc,sys,run}
 
 # mount and populate /dev

@@ -31,4 +31,4 @@ $build $LFS/scripts/prepare/6.16-make-xz.sh
 $build $LFS/scripts/prepare/6.17-make-binutils.sh
 $build $LFS/scripts/prepare/6.18-make-gcc.sh
 
-echo "run-prepare.sh $LFS/scripts/prepare/finished."
+echo "run-prepare.sh finished."

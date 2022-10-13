@@ -166,4 +166,3 @@ $build /scripts/build/blfs/10-make-harfbuzz.sh
 $build -f /scripts/build/blfs/10-make-freetype.sh # reinstall with harfbuzz
 $build /scripts/build/blfs/5-make-grub.sh
 
-exit
