@@ -39,6 +39,8 @@ if [[ ! -f "$flag_file" || $force_build -eq 1 ]]; then
         touch "$flag_file"
     else
         echo -ne "\rfailed"; echo
+        tail "$log_file"
+        echo
     fi
 else
     echo "skipped $script_path"
