@@ -89,7 +89,6 @@ $build /scripts/rootfs/lfs/8.74-make-e2fsprogs.sh
 $build /scripts/rootfs/lfs/8.75-make-sysklogd.sh
 $build /scripts/rootfs/lfs/8.76-make-sysvinit.sh
 $build /scripts/rootfs/lfs/8.78-strip.sh
-$build /scripts/rootfs/lfs/8.79-clean.sh
 # configure system
 $build /scripts/rootfs/lfs/9.2-make-lfs-bootscripts.sh
 $build /scripts/rootfs/lfs/9.4-managing-devices.sh
@@ -165,3 +164,6 @@ $build /scripts/rootfs/blfs/10-make-graphite2.sh
 $build /scripts/rootfs/blfs/10-make-harfbuzz.sh
 $build -f /scripts/rootfs/blfs/10-make-freetype.sh # reinstall with harfbuzz
 $build /scripts/rootfs/blfs/5-make-grub.sh
+
+# clean up
+$build /scripts/rootfs/lfs/8.79-clean.sh
