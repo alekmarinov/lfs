@@ -1,5 +1,6 @@
 # Ignore file patterns coming from download sources
 /sources/*.tar.*
 /sources/*.tgz
+/sources/*.gz
 /sources/*.zip
 /sources/*.patch

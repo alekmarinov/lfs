@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-echo "Cleanup.."
+echo "Unmounting Virtual Kernel File Systems.."
 
 # unmount VFS
 umount -v $LFS/dev/pts

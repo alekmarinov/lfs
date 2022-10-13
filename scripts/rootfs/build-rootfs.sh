@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
-echo "Running build.."
+echo "Running build rootfs..."
 
-# prepartion
-sh $LFS/scripts/build/7.3-prepare-vkfs.sh
+# mount vkfs
+sh $LFS/scripts/rootfs/7.3-mount-vkfs.sh
 
 # enter and continue in chroot environment
 /usr/sbin/chroot "$LFS" /usr/bin/env -i \
@@ -15,7 +15,7 @@ sh $LFS/scripts/build/7.3-prepare-vkfs.sh
     LFS_TGT="$LFS_TGT" MAKEFLAGS="$MAKEFLAGS" \
     LFS_TEST="$LFS_TEST" LFS_DOCS="$LFS_DOCS" \
     JOB_COUNT="$JOB_COUNT" \
-    /bin/bash --login +h -c "sh /scripts/build/as-chroot.sh"
+    /bin/bash --login +h -c "sh /scripts/rootfs/as-chroot.sh"
 
-# cleanup
-sh $LFS/scripts/build/11.x-cleanup.sh
+# unmount vkfs
+sh $LFS/scripts/rootfs/11-unmount-vkfs.sh
