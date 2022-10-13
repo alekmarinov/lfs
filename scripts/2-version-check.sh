@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# 2. Preparing the Host System
+# https://www.linuxfromscratch.org/lfs/view/11.2/chapter02/hostreqs.html
+
 # Simple script to list version numbers of critical development tools
 export LC_ALL=C
 bash --version | head -n1 | cut -d" " -f2-4
