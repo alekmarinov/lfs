@@ -31,4 +31,5 @@ Final result is bootable iso image with LFS system.
 
 ## License
 
-The work is based on Ilya Builuk https://github.com/reinterpretcat/lfs and [Linux from Scratch](http://www.linuxfromscratch.org/lfs) project and provided with MIT license.
+The work is based on [Linux from Scratch](http://www.linuxfromscratch.org/lfs) project and provided with MIT license.
+The initiative is influenced by Ilya Builuk https://github.com/reinterpretcat/lfs

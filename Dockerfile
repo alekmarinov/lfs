@@ -69,7 +69,7 @@ RUN chmod -R +x $LFS/scripts \
     && $LFS/scripts/2-version-check.sh
 
 # create tools directory and symlink
-RUN mkdir -pv $LFS/{tools/{lfs,blfs},etc,var} $LFS/usr/{bin,lib,sbin} \
+RUN mkdir -pv $LFS/{tools/{lfs,blfs},etc,var,tmp} $LFS/usr/{bin,lib,sbin} \
     && for i in bin lib sbin; do \
         ln -sv usr/$i $LFS/$i; \
     done \
