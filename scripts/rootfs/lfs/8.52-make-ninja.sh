@@ -27,4 +27,4 @@ tar -xf /sources/ninja-*.tar.gz -C /tmp/ \
     && install -vDm644 misc/bash-completion /usr/share/bash-completion/completions/ninja \
     && install -vDm644 misc/zsh-completion  /usr/share/zsh/site-functions/_ninja \
     && popd \
-    && rm -rf /tmp/python
+    && rm -rf /tmp/ninja

@@ -15,4 +15,4 @@ tar -xf /sources/wheel-*.tar.gz -C /tmp/ \
     && pushd /tmp/wheel \
     && pip3 install --no-index $PWD \
     && popd \
-    && rm -rf /tmp/python
+    && rm -rf /tmp/wheel
