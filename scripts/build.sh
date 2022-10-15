@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
         ;;
     esac
 done
-if [ $script_path == "" ]; then
+if [ "$script_path" == "" ]; then
     echo "Missing argument: script_path"
     exit 1
 fi

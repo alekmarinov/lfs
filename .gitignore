@@ -1,4 +1,6 @@
 # Ignore file patterns coming from download sources
+/tmp
+/overlay
 /sources/*.tar.*
 /sources/*.tgz
 /sources/*.gz

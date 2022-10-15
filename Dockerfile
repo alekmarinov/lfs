@@ -7,6 +7,8 @@ LABEL maintainer="alekmarinov@gmail.com"
 
 # LFS mount point
 ENV LFS=/mnt/lfs
+ENV LFS_BASE=/mnt/base
+ENV LFS_PACKAGE=/mnt/package
 
 # Setup environment
 ENV LC_ALL=POSIX
@@ -52,31 +54,11 @@ RUN apt-get update -y \
     && apt-get -q -y autoremove \
     && rm -rf /var/lib/apt/lists/*
 
-# create sources directory as writable and sticky
-RUN mkdir -pv     $LFS/sources \
- && chmod -v a+wt $LFS/sources
-WORKDIR $LFS/sources
-
 # copy scripts
-COPY [ "scripts", "$LFS/scripts/" ]
-
-# make all scripts executable and check environment
-RUN chmod -R +x $LFS/scripts \
-    && sync \
-    && $LFS/scripts/2-version-check.sh
-
-# create tools directory and symlink
-RUN mkdir -pv $LFS/{tools/{lfs,blfs},etc,var,tmp} $LFS/usr/{bin,lib,sbin} \
-    && for i in bin lib sbin; do \
-        ln -sv usr/$i $LFS/$i; \
-    done \
-    && ln -sv $LFS/tools / \
-    && case $(uname -m) in \
-        x86_64) mkdir -pv $LFS/lib64 ;; \
-    esac
+# COPY [ "scripts", "$LFS_BASE/scripts/" ]
 
 # Prevent environment interference
 RUN [ ! -e /etc/bash.bashrc ] || cat /dev/null > /etc/bash.bashrc
 
 # The entrypoint
-ENTRYPOINT [ "../scripts/start.sh" ]
+ENTRYPOINT [ "$LFS_BASE/scripts/start.sh" ]
