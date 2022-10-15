@@ -1,6 +1,5 @@
 #!/bin/bash
 # Builds bootable image with uefi in the current directory
-# The script requires root privileges and expects the folowing environment variables:
 set -e
 
 # The linux rootfs directory is expected in 'LFS' variable
@@ -120,11 +119,11 @@ echo "Copying rootfs files '$LFS' -> '$ROOTFS_DIR'..."
 pushd "$LFS"
 cp -dpR $(ls -A | grep -Ev "sources|tools|scripts") "$ROOTFS_DIR"
 popd
+sync
 
 # grub-install expects the efi partition mounted to /boot/efi
 mkdir -v "$ROOTFS_DIR/boot/efi"
 echo "Mounting efi directory '${LOOP}p1' -> '$ROOTFS_DIR/boot/efi'..."
-sync
 mount "${LOOP}p1" "$ROOTFS_DIR/boot/efi"
 
 echo "Mounting vkfs in rootfs directory $ROOTFS_DIR..."
