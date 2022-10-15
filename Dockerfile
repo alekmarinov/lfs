@@ -34,22 +34,23 @@ WORKDIR /bin
 RUN rm sh && ln -s bash sh
 
 # install required packages
-RUN apt-get update && apt-get install -y \
-    build-essential                      \
-    bison                                \
-    file                                 \
-    gawk                                 \
-    texinfo                              \
-    wget                                 \
-    sudo                                 \
-    genisoimage                          \
-    libelf-dev                           \
-    bc                                   \
-    libssl-dev                           \
-    rsync                                \
-    python3-dev                          \
- && apt-get -q -y autoremove             \
- && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y \
+    && apt-get install -y \
+        build-essential \
+        bison \
+        file \
+        gawk \
+        texinfo \
+        wget \
+        sudo \
+        genisoimage \
+        libelf-dev \
+        bc \
+        libssl-dev \
+        rsync \
+        python3-dev \
+    && apt-get -q -y autoremove \
+    && rm -rf /var/lib/apt/lists/*
 
 # create sources directory as writable and sticky
 RUN mkdir -pv     $LFS/sources \

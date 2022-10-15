@@ -1,5 +1,5 @@
 #!/bin/bash
-# Builds bootable image with uefi in the current directory
+# Builds bootable image with uefi
 set -e
 
 # The linux rootfs directory is expected in 'LFS' variable
@@ -19,7 +19,7 @@ IMAGE_SIZE=${IMAGE_SIZE:-10240}
 ROOT_DEV=${ROOT_DEV:-/dev/sdb2}
 
 # the directory to mount the rootfs partition
-ROOTFS_DIR="$PWD/rootfs"
+ROOTFS_DIR="$(dirname $IMAGE_FILE)/rootfs"
 
 echo "Using IMAGE_FILE=$IMAGE_FILE, IMAGE_SIZE=$IMAGE_SIZE, ROOT_DEV=$ROOT_DEV"
 
