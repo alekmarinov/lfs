@@ -23,37 +23,34 @@ ENV LFS_DOCS=0
 # degree of parallelism for compilation
 ENV JOB_COUNT=4
 
-# inital ram disk size in KB
-# must be in sync with CONFIG_BLK_DEV_RAM_SIZE
-ENV IMAGE_SIZE=4000000
+# size of the output image in MB
+ENV IMAGE_SIZE=10000
 
-# location of initrd tree
-ENV INITRD_TREE=/mnt/lfs
-
-# output image
-ENV IMAGE=isolinux/ramdisk.img
+# output image file name
+ENV IMAGE_FILE=/tmp/lfs.img
 
 # set bash as default shell
 WORKDIR /bin
 RUN rm sh && ln -s bash sh
 
 # install required packages
-RUN apt-get update && apt-get install -y \
-    build-essential                      \
-    bison                                \
-    file                                 \
-    gawk                                 \
-    texinfo                              \
-    wget                                 \
-    sudo                                 \
-    genisoimage                          \
-    libelf-dev                           \
-    bc                                   \
-    libssl-dev                           \
-    rsync                                \
-    python3-dev                          \
- && apt-get -q -y autoremove             \
- && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y \
+    && apt-get install -y \
+        build-essential \
+        bison \
+        file \
+        gawk \
+        texinfo \
+        wget \
+        sudo \
+        genisoimage \
+        libelf-dev \
+        bc \
+        libssl-dev \
+        rsync \
+        python3-dev \
+    && apt-get -q -y autoremove \
+    && rm -rf /var/lib/apt/lists/*
 
 # create sources directory as writable and sticky
 RUN mkdir -pv     $LFS/sources \
