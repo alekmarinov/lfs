@@ -23,15 +23,11 @@ ENV LFS_DOCS=0
 # degree of parallelism for compilation
 ENV JOB_COUNT=4
 
-# inital ram disk size in KB
-# must be in sync with CONFIG_BLK_DEV_RAM_SIZE
-ENV IMAGE_SIZE=4000000
+# size of the output image in MB
+ENV IMAGE_SIZE=10000
 
-# location of initrd tree
-ENV INITRD_TREE=/mnt/lfs
-
-# output image
-ENV IMAGE=isolinux/ramdisk.img
+# output image file name
+ENV IMAGE_FILE=lfs.img
 
 # set bash as default shell
 WORKDIR /bin
