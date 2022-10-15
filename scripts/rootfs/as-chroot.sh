@@ -104,6 +104,7 @@ $build /scripts/rootfs/lfs/11.1-the-end.sh
 
 # build blfs packages
 $build /scripts/rootfs/blfs/2-blfs-bootscripts.sh
+$build /scripts/rootfs/blfs/5-make-dosfstools.sh
 $build /scripts/rootfs/blfs/5-make-mkinitramfs.sh
 $build /scripts/rootfs/blfs/12-make-cpio.sh
 $build /scripts/rootfs/blfs/9-make-libaio.sh

@@ -27,7 +27,7 @@ ENV JOB_COUNT=4
 ENV IMAGE_SIZE=10000
 
 # output image file name
-ENV IMAGE_FILE=lfs.img
+ENV IMAGE_FILE=/tmp/lfs.img
 
 # set bash as default shell
 WORKDIR /bin
