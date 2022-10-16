@@ -16,11 +16,11 @@ docker: clear-overlay
 tools: docker
 	docker run --rm -v $(shell pwd)/overlay/base\:/mnt/base lfs\:11.2
 
-update-scripts:
-	cp -R scripts overlay/base/
-
-packages:
+packages: tools
 	sudo ./scripts/packages/build-packages.sh 
 
-image:
+image: packages
 	sudo LFS="overlay/base" ./scripts/image/build-image.sh
+
+update-scripts:
+	cp -R scripts overlay/base/

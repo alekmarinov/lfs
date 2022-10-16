@@ -12,21 +12,13 @@ Scripts are organized to follow closely as possible the book structure.
 
 ## Build
 
-### 1. Build tools environment
-
-    make tools
-
-### 2. Build packages
-
-    make packages
-
-### 3. Build distribution
-
     make image
 
 ## Usage
 
-Final result is a bootable image with LFS system.
+Final result is a bootable image (lfs.img) with LFS system which can be flashed on USB stick with the command:
+    
+    sudo dd if=lfs.img of=/dev/sdb status=progress
 
 ## License
 
