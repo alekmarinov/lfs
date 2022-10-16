@@ -8,13 +8,14 @@ echo "Required disk space: 32 MB"
 # The M4 package contains a macro processor.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/m4.html
 
-tar -xf m4-*.tar.xz -C /tmp/ \
+rm -rf /tmp/m4 \
+    && tar -xf m4-*.tar.xz -C /tmp/ \
     && mv /tmp/m4-* /tmp/m4 \
     && pushd /tmp/m4 \
     && ./configure --prefix=/usr   \
         --host=$LFS_TGT \
         --build=$(build-aux/config.guess) \
     && make \
-    && make DESTDIR=$LFS install \
+    && make DESTDIR=$LFS_BASE install \
     && popd \
     && rm -rf /tmp/m4

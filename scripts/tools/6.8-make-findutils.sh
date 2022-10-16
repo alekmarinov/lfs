@@ -11,7 +11,8 @@ echo "Required disk space: 35 MB"
 # but is unreliable if the database has not been recently updated).
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/findutils.html
 
-tar -xf findutils-*.tar.xz -C /tmp/ \
+rm -rf /tmp/findutils \
+    && tar -xf findutils-*.tar.xz -C /tmp/ \
     && mv /tmp/findutils-* /tmp/findutils \
     && pushd /tmp/findutils \
     && ./configure \
@@ -20,6 +21,6 @@ tar -xf findutils-*.tar.xz -C /tmp/ \
         --host=$LFS_TGT \
         --build=$(build-aux/config.guess) \
     && make \
-    && make DESTDIR=$LFS install \
+    && make DESTDIR=$LFS_BASE install \
     && popd \
     && rm -rf /tmp/findutils

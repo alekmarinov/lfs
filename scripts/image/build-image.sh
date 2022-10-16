@@ -7,6 +7,7 @@ if [[ "$LFS" == "" ]]; then
     echo "Missing expected 'LFS' environment variable"
     exit 1
 fi
+LFS=$(readlink -f "$LFS")
 echo "'LFS' is set to $LFS"
 
 # The name of the produced image file
@@ -19,7 +20,7 @@ IMAGE_SIZE=${IMAGE_SIZE:-10240}
 ROOT_DEV=${ROOT_DEV:-/dev/sdb2}
 
 # the directory to mount the rootfs partition
-ROOTFS_DIR="$(dirname $IMAGE_FILE)/rootfs"
+ROOTFS_DIR="$(dirname $(readlink -f $IMAGE_FILE))/rootfs"
 
 echo "Using IMAGE_FILE=$IMAGE_FILE, IMAGE_SIZE=$IMAGE_SIZE, ROOT_DEV=$ROOT_DEV"
 
@@ -55,6 +56,7 @@ echo "Found available loop device at '$LOOP'"
 handle_error() {
     echo "Script break at line $1"
     set +e
+    sync
     umount -v $ROOTFS_DIR/run
     umount -v $ROOTFS_DIR/sys
     umount -v $ROOTFS_DIR/proc
@@ -187,8 +189,7 @@ losetup -d "$LOOP"
 
 echo "
 Building $IMAGE_FILE from $LFS finsihed.
-Plug USB memory stick and try
-\$ dd if=$IMAGE_FILE of=/dev/sdb status=progress
-Then boot from a PC with UEFI support.
-Note: Make sure the USB stick have at least $(echo $IMAGE_SIZE / 1024 | bc)G available space
+Plug USB memory stick with at least $(echo $IMAGE_SIZE / 1024 | bc)G available space and try
+\$ sudo dd if=$IMAGE_FILE of=/dev/sdb status=progress
+Then boot from a PC and enjoy your LFS Linux!
 "

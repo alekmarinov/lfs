@@ -9,7 +9,8 @@ echo "Required disk space: 139 MB"
 # system characteristics.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/coreutils.html
 
-tar -xf coreutils-*.tar.xz -C /tmp/ \
+rm -rf /tmp/coreutils \
+    && tar -xf coreutils-*.tar.xz -C /tmp/ \
     && mv /tmp/coreutils-* /tmp/coreutils \
     && pushd /tmp/coreutils \
     && ./configure \
@@ -19,10 +20,10 @@ tar -xf coreutils-*.tar.xz -C /tmp/ \
         --enable-install-program=hostname \
         --enable-no-install-program=kill,uptime \
     && make \
-    && make DESTDIR=$LFS install \
-    && mv -v $LFS/usr/bin/chroot $LFS/usr/sbin \
-    && mkdir -pv $LFS/usr/share/man/man8 \
-    && mv -v $LFS/usr/share/man/man1/chroot.1 $LFS/usr/share/man/man8/chroot.8 \
-    && sed -i 's/"1"/"8"/' $LFS/usr/share/man/man8/chroot.8 \
+    && make DESTDIR=$LFS_BASE install \
+    && mv -v $LFS_BASE/usr/bin/chroot $LFS_BASE/usr/sbin \
+    && mkdir -pv $LFS_BASE/usr/share/man/man8 \
+    && mv -v $LFS_BASE/usr/share/man/man1/chroot.1 $LFS_BASE/usr/share/man/man8/chroot.8 \
+    && sed -i 's/"1"/"8"/' $LFS_BASE/usr/share/man/man8/chroot.8 \
     && popd \
     && rm -rf /tmp/coreutils

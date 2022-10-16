@@ -12,22 +12,13 @@ Scripts are organized to follow closely as possible the book structure.
 
 ## Build
 
-Use the following command:
-
-    docker rm lfs
-    docker build -t lfs:11.2 .
-    docker run --privileged --name lfs -v $(pwd)/sources:/mnt/lfs/sources lfs:11.2
-    docker cp lfs:/tmp/lfs.iso .
-
-Please note, that extended privileges are required by docker container in order to execute some commands (e.g. mount).
-
-Use this command to hack:
-
-    docker run -it --privileged --name lfs -v $(pwd)/sources:/mnt/lfs/sources -v $(pwd)/scripts:/mnt/lfs/scripts --entrypoint bash lfs:11.2
+    make image
 
 ## Usage
 
-Final result is bootable iso image with LFS system.
+Final result is a bootable image (lfs.img) with LFS system which can be flashed on USB stick with the command:
+    
+    sudo dd if=lfs.img of=/dev/sdb status=progress
 
 ## License
 

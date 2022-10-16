@@ -11,13 +11,14 @@ echo "Required disk space: 38 MB"
 # or to update or list files which were already stored.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/tar.html
 
-tar -xf tar-*.tar.xz -C /tmp/ \
+rm -rf /tmp/tar \
+    && tar -xf tar-*.tar.xz -C /tmp/ \
     && mv /tmp/tar-* /tmp/tar \
     && pushd /tmp/tar \
     && ./configure --prefix=/usr \
         --host=$LFS_TGT \
         --build=$(build-aux/config.guess) \
     && make \
-    && make DESTDIR=$LFS install \
+    && make DESTDIR=$LFS_BASE install \
     && popd \
     && rm -rf /tmp/tar

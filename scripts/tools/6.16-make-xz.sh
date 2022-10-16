@@ -11,8 +11,9 @@ echo "Required disk space: 16 MB"
 # with the traditional gzip or bzip2 commands.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/xz.html
 
-VER=$(ls $LFS/sources/xz-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
-tar -xf xz-*.tar.xz -C /tmp/ \
+VER=$(ls $LFS_BASE/sources/xz-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
+rm -rf /tmp/xz \
+    && tar -xf xz-*.tar.xz -C /tmp/ \
     && mv /tmp/xz-* /tmp/xz \
     && pushd /tmp/xz \
     && ./configure \
@@ -22,7 +23,7 @@ tar -xf xz-*.tar.xz -C /tmp/ \
         --disable-static \
         --docdir=/usr/share/doc/xz-$VER \
     && make \
-    && make DESTDIR=$LFS install \
-    && rm -v $LFS/usr/lib/liblzma.la \
+    && make DESTDIR=$LFS_BASE install \
+    && rm -v $LFS_BASE/usr/lib/liblzma.la \
     && popd \
     && rm -rf /tmp/xz

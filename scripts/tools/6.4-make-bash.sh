@@ -8,7 +8,8 @@ echo "Required disk space: 64 MB"
 # The Bash package contains the Bourne-Again SHell.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/bash.html
 
-tar -xf bash-*.tar.gz -C /tmp/ \
+rm -rf /tmp/bash \
+    && tar -xf bash-*.tar.gz -C /tmp/ \
     && mv /tmp/bash-* /tmp/bash \
     && pushd /tmp/bash \
     && ./configure --prefix=/usr \
@@ -16,7 +17,7 @@ tar -xf bash-*.tar.gz -C /tmp/ \
         --host=$LFS_TGT \
         --without-bash-malloc \
     && make \
-    && make DESTDIR=$LFS install \
-    && ln -sv bash $LFS/bin/sh \
+    && make DESTDIR=$LFS_BASE install \
+    && ln -sv bash $LFS_BASE/bin/sh \
     && popd \
     && rm -rf /tmp/bash

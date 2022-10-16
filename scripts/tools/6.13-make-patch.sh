@@ -9,7 +9,8 @@ echo "Required disk space: 12 MB"
 # applying a “patch” file typically created by the diff program.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/patch.html
 
-tar -xf patch-*.tar.xz -C /tmp/ \
+rm -rf /tmp/patch \
+    && tar -xf patch-*.tar.xz -C /tmp/ \
     && mv /tmp/patch-* /tmp/patch \
     && pushd /tmp/patch \
     && ./configure \
@@ -17,6 +18,6 @@ tar -xf patch-*.tar.xz -C /tmp/ \
         --host=$LFS_TGT \
         --build=$(build-aux/config.guess) \
     && make \
-    && make DESTDIR=$LFS install \
+    && make DESTDIR=$LFS_BASE install \
     && popd \
     && rm -rf /tmp/patch
