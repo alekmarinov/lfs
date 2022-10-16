@@ -20,7 +20,7 @@ update-scripts:
 	cp -R scripts overlay/base/
 
 packages:
-	./scripts/packages/build-packages.sh 
+	sudo ./scripts/packages/build-packages.sh 
 
 image:
-	$(shell echo "Coming soon")
+	sudo LFS="overlay/base" ./scripts/image/build-image.sh

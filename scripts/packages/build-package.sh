@@ -1,7 +1,7 @@
 #!/bin/bash
 build="$LFS/scripts/build.sh"
 
-sudo mount -t overlay overlay \
+mount -t overlay overlay \
     -olowerdir=overlay/base,upperdir=overlay/package,workdir=overlay/work \
     overlay/lfs
 
@@ -17,4 +17,4 @@ docker run \
     lfs:11.2 \
         /mnt/base/scripts/build.sh $*
 
-sudo umount overlay/lfs
+umount overlay/lfs
