@@ -8,7 +8,8 @@ echo "Required disk space: 45 MB"
 # The Gawk package contains programs for manipulating text files.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/gawk.html
 
-tar -xf gawk-*.tar.xz -C /tmp/ \
+rm -rf /tmp/gawk \
+    && tar -xf gawk-*.tar.xz -C /tmp/ \
     && mv /tmp/gawk-* /tmp/gawk \
     && pushd /tmp/gawk \
     && sed -i 's/extras//' Makefile.in \
@@ -17,6 +18,6 @@ tar -xf gawk-*.tar.xz -C /tmp/ \
         --host=$LFS_TGT \
         --build=$(build-aux/config.guess) \
     && make \
-    && make DESTDIR=$LFS install \
+    && make DESTDIR=$LFS_BASE install \
     && popd \
     && rm -rf /tmp/gawk

@@ -8,14 +8,15 @@ echo "Required disk space: 4.5 GB"
 # The GCC package contains the GNU compiler collection, which includes the C and C++ compilers.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/gcc-pass2.html
 
-tar -xf gcc-*.tar.xz -C /tmp/ \
+rm -rf /tmp/gcc \
+    && tar -xf gcc-*.tar.xz -C /tmp/ \
     && mv /tmp/gcc-* /tmp/gcc \
     && pushd /tmp/gcc \
-    && tar -xf $LFS/sources/mpfr-*.tar.xz \
+    && tar -xf $LFS_BASE/sources/mpfr-*.tar.xz \
     && mv -v mpfr-* mpfr \
-    && tar -xf $LFS/sources/gmp-*.tar.xz \
+    && tar -xf $LFS_BASE/sources/gmp-*.tar.xz \
     && mv -v gmp-* gmp \
-    && tar -xf $LFS/sources/mpc-*.tar.gz \
+    && tar -xf $LFS_BASE/sources/mpc-*.tar.gz \
     && mv -v mpc-* mpc \
     && case $(uname -m) in \
         x86_64) \
@@ -32,7 +33,7 @@ tar -xf gcc-*.tar.xz -C /tmp/ \
         --target=$LFS_TGT \
         LDFLAGS_FOR_TARGET=-L$PWD/$LFS_TGT/libgcc \
         --prefix=/usr \
-        --with-build-sysroot=$LFS \
+        --with-build-sysroot=$LFS_BASE \
         --enable-initfini-array \
         --disable-nls \
         --disable-multilib \
@@ -44,7 +45,7 @@ tar -xf gcc-*.tar.xz -C /tmp/ \
         --disable-libvtv \
         --enable-languages=c,c++ \
     && make \
-    && make DESTDIR=$LFS install \
-    && ln -sv gcc $LFS/usr/bin/cc \
+    && make DESTDIR=$LFS_BASE install \
+    && ln -sv gcc $LFS_BASE/usr/bin/cc \
     && popd \
     && rm -rf /tmp/gcc

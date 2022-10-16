@@ -8,14 +8,15 @@ echo "Required disk space: 3.8 GB"
 # The GCC package contains the GNU compiler collection, which includes the C and C++ compilers.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter05/gcc-pass1.html
 
-tar -xf gcc-*.tar.xz -C /tmp/ \
+rm -rf /tmp/gcc \
+    && tar -xf gcc-*.tar.xz -C /tmp/ \
     && mv /tmp/gcc-* /tmp/gcc \
     && pushd /tmp/gcc \
-    && tar -xf $LFS/sources/mpfr-*.tar.xz \
+    && tar -xf $LFS_BASE/sources/mpfr-*.tar.xz \
     && mv -v mpfr-* mpfr \
-    && tar -xf $LFS/sources/gmp-*.tar.xz \
+    && tar -xf $LFS_BASE/sources/gmp-*.tar.xz \
     && mv -v gmp-* gmp \
-    && tar -xf $LFS/sources/mpc-*.tar.gz \
+    && tar -xf $LFS_BASE/sources/mpc-*.tar.gz \
     && mv -v mpc-* mpc \
     && case $(uname -m) in \
         x86_64) \
@@ -24,11 +25,11 @@ tar -xf gcc-*.tar.xz -C /tmp/ \
     esac \
     && mkdir -v build \
     && cd build \
-    && ../configure                  \
+    && ../configure               \
         --target=$LFS_TGT         \
-        --prefix=$LFS/tools       \
+        --prefix=$LFS_BASE/tools       \
         --with-glibc-version=2.36 \
-        --with-sysroot=$LFS       \
+        --with-sysroot=$LFS_BASE       \
         --with-newlib             \
         --without-headers         \
         --disable-nls             \

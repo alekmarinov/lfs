@@ -8,7 +8,8 @@ echo "Required disk space: 16 MB"
 # The File package contains a utility for determining the type of a given file or files.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/file.html
 
-tar -xf file-*.tar.gz -C /tmp/ \
+rm -rf /tmp/file \
+    && tar -xf file-*.tar.gz -C /tmp/ \
     && mv /tmp/file-* /tmp/file \
     && pushd /tmp/file \
     && mkdir -v build \
@@ -22,7 +23,7 @@ tar -xf file-*.tar.gz -C /tmp/ \
     && popd \
     && ./configure --prefix=/usr --host=$LFS_TGT --build=$(./config.guess) \
     && make FILE_COMPILE=$(pwd)/build/src/file \
-    && make DESTDIR=$LFS install \
-    && rm -v $LFS/usr/lib/libmagic.la \
+    && make DESTDIR=$LFS_BASE install \
+    && rm -v $LFS_BASE/usr/lib/libmagic.la \
     && popd \
     && rm -rf /tmp/file

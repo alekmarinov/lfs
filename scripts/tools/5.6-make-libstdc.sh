@@ -11,8 +11,9 @@ echo "Required disk space: 1.1 GB"
 # depends on glibc, which was not yet available in the target directory.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter05/gcc-libstdc++.html
 
-GCC_VER=$(ls $LFS/sources/gcc-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
-tar -xf gcc-*.tar.xz -C /tmp/ \
+GCC_VER=$(ls $LFS_BASE/sources/gcc-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
+rm -rf /tmp/gcc \
+    && tar -xf gcc-*.tar.xz -C /tmp/ \
     && mv /tmp/gcc-* /tmp/gcc \
     && pushd /tmp/gcc \
     && mkdir -v build \
@@ -26,7 +27,7 @@ tar -xf gcc-*.tar.xz -C /tmp/ \
         --disable-libstdcxx-pch \
         --with-gxx-include-dir=/tools/$LFS_TGT/include/c++/$GCC_VER \
     && make \
-    && make DESTDIR=$LFS install \
-    && rm -v $LFS/usr/lib/lib{stdc++,stdc++fs,supc++}.la \
+    && make DESTDIR=$LFS_BASE install \
+    && rm -v $LFS_BASE/usr/lib/lib{stdc++,stdc++fs,supc++}.la \
     && popd \
     && rm -rf /tmp/gcc

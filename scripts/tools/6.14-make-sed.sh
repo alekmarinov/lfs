@@ -8,13 +8,14 @@ echo "Required disk space: 20 MB"
 # The Sed package contains a stream editor.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/sed.html
 
-tar -xf sed-*.tar.xz -C /tmp/ \
+rm -rf /tmp/sed \
+    && tar -xf sed-*.tar.xz -C /tmp/ \
     && mv /tmp/sed-* /tmp/sed \
     && pushd /tmp/sed \
     && ./configure \
         --prefix=/usr \
         --host=$LFS_TGT \
     && make \
-    && make DESTDIR=$LFS install \
+    && make DESTDIR=$LFS_BASE install \
     && popd \
     && rm -rf /tmp/sed

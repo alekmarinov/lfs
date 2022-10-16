@@ -13,7 +13,7 @@ ENV LFS_PACKAGE=/mnt/package
 # Setup environment
 ENV LC_ALL=POSIX
 ENV LFS_TGT=x86_64-lfs-linux-gnu
-ENV PATH=/tools/bin:/bin:/usr/bin:/sbin:/usr/sbin
+# ENV PATH=/tools/bin:/bin:/usr/bin:/sbin:/usr/sbin
 ENV MAKEFLAGS="-j4"
 
 # set 1 to run tests; running tests takes much more time
@@ -44,8 +44,6 @@ RUN apt-get update -y \
         gawk \
         texinfo \
         wget \
-        sudo \
-        genisoimage \
         libelf-dev \
         bc \
         libssl-dev \
@@ -54,11 +52,8 @@ RUN apt-get update -y \
     && apt-get -q -y autoremove \
     && rm -rf /var/lib/apt/lists/*
 
-# copy scripts
-# COPY [ "scripts", "$LFS_BASE/scripts/" ]
-
 # Prevent environment interference
 RUN [ ! -e /etc/bash.bashrc ] || cat /dev/null > /etc/bash.bashrc
 
-# The entrypoint
-ENTRYPOINT [ "$LFS_BASE/scripts/start.sh" ]
+WORKDIR $LFS_BASE/sources
+CMD "$LFS_BASE/scripts/tools/build-tools.sh"

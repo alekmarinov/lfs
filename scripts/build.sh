@@ -1,21 +1,31 @@
 #!/bin/bash
-set -E
+set -e
 
-force_build=0
+o_force=0
+o_package=0
+o_tool=0
 script_path=""
 while [[ $# -gt 0 ]]; do
     case $1 in
     -f|--force)
-        force_build=1
+        o_force=1
+        shift
+        ;;
+    -p|--package)
+        o_package=1
+        shift
+        ;;
+    -t|--tool)
+        o_tool=1
         shift
         ;;
     -*|--*)
-        echo "Unknown option $1"
+        echo "build.sh: Unknown option $1"
         exit 1
         ;;
     *)
         if [[ "$script_path" != "" ]]; then
-            echo "Only one positional argument expected: script_path"
+            echo "build.sh: only one positional argument expected - script_path"
             exit 1
         fi
         script_path="$1"
@@ -31,12 +41,53 @@ fi
 script_name=$(basename -- "$script_path")
 flag_file="/tmp/${script_name%.*}.ready"
 log_file="/tmp/${script_name%.*}.log"
-if [[ ! -f "$flag_file" || $force_build -eq 1 ]]; then
+package_name="/tmp/${script_name%.*}.tar.gz"
+if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
     echo -ne "...... $script_path -> $log_file"
-    sh "$script_path" > "$log_file" 2>&1
-    if [ $? -eq 0 ]; then
+    if [ $o_tool -eq 1 ]; then
+        if [ ! -f "$script_path" ]; then
+            echo "build.sh: Can't find script $script_path"
+            exit 1
+        fi
+        # If building tool need to add $LFS_BASE/tools/bin to PATH
+        export PATH+=:$LFS_BASE/tools/bin
+        "$script_path" > "$log_file" 2>&1
+        status=$?
+    else
+        if [ ! -f "$LFS/$script_path" ]; then
+            echo "build.sh: Can't find script $LFS/$script_path"
+            exit 1
+        fi
+        # Building lfs/blfs package requires chroot with mounted vkfs
+        $LFS/scripts/packages/7.3-mount-vkfs.sh > /dev/null 2>&1
+        /usr/sbin/chroot "$LFS" /usr/bin/env -i \
+            HOME=/root \
+            TERM="$TERM" \
+            PS1='(lfs chroot) \u:\w\$ ' \
+            PATH=/usr/bin:/usr/sbin \
+            LFS="$LFS" LC_ALL="$LC_ALL" \
+            LFS_TGT="$LFS_TGT" MAKEFLAGS="$MAKEFLAGS" \
+            LFS_TEST="$LFS_TEST" LFS_DOCS="$LFS_DOCS" \
+            JOB_COUNT="$JOB_COUNT" \
+            /bin/bash --login +h -c "sh -c '$script_path > $log_file 2>&1'"
+        status=$?
+    fi
+    if [ $o_tool -eq 0 ]; then
+        $LFS/scripts/packages/11-unmount-vkfs.sh > /dev/null 2>&1
+    fi
+    if [ $status -eq 0 ]; then
         echo -ne "\rpassed"; echo
         touch "$flag_file"
+
+        if [ $o_package -eq 1 ]; then
+            # Archive package
+            tar cvfz "$package_name" -C "$LFS_PACKAGE" .
+        fi
+        if [ $o_tool -ne 1 ]; then
+            # Move the new package files to base
+            (cd "$LFS_PACKAGE" && tar c .) | (cd "$LFS_BASE" && tar xf -)
+            rm -rf "$LFS_PACKAGE"/*
+        fi
     else
         echo -ne "\rfailed"; echo
         tail "$log_file"

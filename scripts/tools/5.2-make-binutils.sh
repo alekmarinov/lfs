@@ -8,14 +8,15 @@ echo "Required disk space: 629 MB"
 # The Binutils package contains a linker, an assembler, and other tools for handling object files.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter05/binutils-pass1.html
 
-tar -xf binutils-*.tar.xz -C /tmp/ \
+rm -rf /tmp/binutils \
+    && tar -xf binutils-*.tar.xz -C /tmp/ \
     && mv /tmp/binutils-* /tmp/binutils \
     && pushd /tmp/binutils \
     && mkdir -v build \
     && cd build \
     && ../configure \
-        --prefix=$LFS/tools \
-        --with-sysroot=$LFS \
+        --prefix=$LFS_BASE/tools \
+        --with-sysroot=$LFS_BASE \
         --target=$LFS_TGT   \
         --disable-nls       \
         --enable-gprofng=no \

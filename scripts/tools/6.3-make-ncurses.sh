@@ -8,7 +8,8 @@ echo "Required disk space: 50 MB"
 # The Ncurses package contains libraries for terminal-independent handling of character screens.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/ncurses.html
 
-tar -xf ncurses-*.tar.gz -C /tmp/ \
+rm -rf /tmp/ncurses \
+    && tar -xf ncurses-*.tar.gz -C /tmp/ \
     && mv /tmp/ncurses-* /tmp/ncurses \
     && pushd /tmp/ncurses \
     && sed -i s/mawk// configure \
@@ -32,7 +33,7 @@ tar -xf ncurses-*.tar.gz -C /tmp/ \
         --disable-stripping \
         --enable-widec \
     && make \
-    && make DESTDIR=$LFS TIC_PATH=$(pwd)/build/progs/tic install \
-    && echo "INPUT(-lncursesw)" > $LFS/usr/lib/libncurses.so \
+    && make DESTDIR=$LFS_BASE TIC_PATH=$(pwd)/build/progs/tic install \
+    && echo "INPUT(-lncursesw)" > $LFS_BASE/usr/lib/libncurses.so \
     && popd \
     && rm -rf /tmp/ncurses

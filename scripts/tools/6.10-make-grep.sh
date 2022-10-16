@@ -8,13 +8,14 @@ echo "Required disk space: 25 MB"
 # The Grep package contains programs for searching through the contents of files.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/grep.html
 
-tar -xf grep-*.tar.xz -C /tmp/ \
+rm -rf /tmp/grep \
+    && tar -xf grep-*.tar.xz -C /tmp/ \
     && mv /tmp/grep-* /tmp/grep \
     && pushd /tmp/grep \
     && ./configure \
         --prefix=/usr \
         --host=$LFS_TGT \
     && make \
-    && make DESTDIR=$LFS install \
+    && make DESTDIR=$LFS_BASE install \
     && popd \
     && rm -rf /tmp/grep

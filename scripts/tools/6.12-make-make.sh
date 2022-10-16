@@ -8,7 +8,8 @@ echo "Required disk space: 15 MB"
 # The Make package contains a program for controlling the generation of executables and other non-source files of a package from source files.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/make.html
 
-tar -xf make-*.tar.gz -C /tmp/ \
+rm -rf /tmp/make \
+    && tar -xf make-*.tar.gz -C /tmp/ \
     && mv /tmp/make-* /tmp/make \
     && pushd /tmp/make \
     && ./configure \
@@ -17,6 +18,6 @@ tar -xf make-*.tar.gz -C /tmp/ \
         --host=$LFS_TGT \
         --build=$(build-aux/config.guess) \
     && make \
-    && make DESTDIR=$LFS install \
+    && make DESTDIR=$LFS_BASE install \
     && popd \
     && rm -rf /tmp/make
