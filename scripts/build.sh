@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 o_force=0
 o_package=0
 o_tool=0
@@ -84,8 +86,10 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
             tar cvfz "$package_name" -C "$LFS_PACKAGE" .
         fi
         if [ $o_tool -ne 1 ]; then
+            # Deleted special files from $LFS_PACKAGE and $LFS_BASE
+            find "$LFS_PACKAGE" -size 0 | xargs "$SCRIPT_DIR/packages/delete_if_special.sh"
             # Move the new package files to base
-            (cd "$LFS_PACKAGE" && tar c .) | (cd "$LFS_BASE" && tar xf -)
+            cp -prf "$LFS_PACKAGE"/* "$LFS_BASE"/
             rm -rf "$LFS_PACKAGE"/*
         fi
     else
