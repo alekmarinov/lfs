@@ -1,4 +1,6 @@
 # Ignore file patterns coming from download sources
+lfs.img
+rootfs.img
 /tmp
 /overlay
 /packages
@@ -7,4 +9,4 @@
 /sources/*.gz
 /sources/*.zip
 /sources/*.patch
-lfs.img
+rootfs/

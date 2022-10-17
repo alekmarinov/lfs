@@ -116,12 +116,14 @@ mkdir -v "$ROOTFS_DIR"
 echo "Mounting rootfs directory at '${LOOP}p2' -> '$ROOTFS_DIR'..."
 mount "${LOOP}p2" "$ROOTFS_DIR"
 
-echo "Copying rootfs files '$LFS' -> '$ROOTFS_DIR'..."
-# Copy lfs files to the mounted rootfs directory
-pushd "$LFS"
-cp -dpR $(ls -A | grep -Ev "sources|tools|scripts") "$ROOTFS_DIR"
-popd
-sync
+if [ "$LFS != "$ROOTFS_DIR" ]; then
+    echo "Copying rootfs files '$LFS' -> '$ROOTFS_DIR'..."
+    # Copy lfs files to the mounted rootfs directory
+    pushd "$LFS"
+    cp -dpR $(ls -A | grep -Ev "sources|tools|scripts") "$ROOTFS_DIR"
+    popd
+    sync
+fi
 
 # grub-install expects the efi partition mounted to /boot/efi
 mkdir -v "$ROOTFS_DIR/boot/efi"
@@ -168,7 +170,7 @@ if loadfont /boot/grub/fonts/unicode.pf2; then
 fi
 
 menuentry "LFS Linux, $KERNEL_NAME" {
-    linux   /boot/vmlinuz-5.19.2-lfs-11.2 rootwait root=$ROOT_DEV ro
+    linux   /boot/$KERNEL_NAME rootwait root=$ROOT_DEV ro
 }
 EOF
 

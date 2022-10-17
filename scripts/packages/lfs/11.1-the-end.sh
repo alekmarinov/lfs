@@ -16,11 +16,6 @@ DISTRIB_CODENAME="fetus"
 DISTRIB_DESCRIPTION="Linux From Scratch"
 EOF
 
-# define empty password for root
-cat > /etc/shadow << "EOF"
-root::12699:0:::::
-EOF
-
 # add login logo
 cat > /etc/issue << "EOF"
 [40m[40m

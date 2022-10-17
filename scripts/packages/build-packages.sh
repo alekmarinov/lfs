@@ -4,8 +4,8 @@ set -e
 build="scripts/packages/build-package.sh"
 
 # build lfs packages
-$build /scripts/packages/lfs/7.5-create-directories.sh
-$build /scripts/packages/lfs/7.6-create-essentials.sh
+$build -p /scripts/packages/lfs/7.5-create-directories.sh
+$build -p /scripts/packages/lfs/7.6-create-essentials.sh
 $build -p /scripts/packages/lfs/7.7-make-gettext.sh
 $build -p /scripts/packages/lfs/7.8-make-bison.sh
 $build -p /scripts/packages/lfs/7.9-make-perl.sh
