@@ -64,6 +64,8 @@ handle_error() {
     umount -v $ROOTFS_DIR/dev
     umount -v "$ROOTFS_DIR/boot/efi"
     umount -v "$ROOTFS_DIR"
+    umount -v "${LOOP}p1"
+    umount -v "${LOOP}p2"
     losetup -d "$LOOP"
     exit 1
 }
