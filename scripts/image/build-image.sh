@@ -116,7 +116,7 @@ mkdir -v "$ROOTFS_DIR"
 echo "Mounting rootfs directory at '${LOOP}p2' -> '$ROOTFS_DIR'..."
 mount "${LOOP}p2" "$ROOTFS_DIR"
 
-if [ "$LFS != "$ROOTFS_DIR" ]; then
+if [ "$LFS" != "$ROOTFS_DIR" ]; then
     echo "Copying rootfs files '$LFS' -> '$ROOTFS_DIR'..."
     # Copy lfs files to the mounted rootfs directory
     pushd "$LFS"
