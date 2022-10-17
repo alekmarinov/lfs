@@ -12,7 +12,7 @@ Scripts are organized to follow closely as possible the book structure.
 
 ## Build
 
-    make image
+    sudo make image
 
 ## Usage
 

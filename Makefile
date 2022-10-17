@@ -1,7 +1,7 @@
 all: tools
 
 clear-overlay:
-	sudo rm -rf overlay
+	rm -rf overlay
 	mkdir -pv tmp overlay/base
 	mkdir -pv tmp overlay/package
 	mkdir -pv tmp overlay/work
@@ -17,10 +17,10 @@ tools: docker
 	docker run --rm -v $(shell pwd)/overlay/base\:/mnt/base lfs\:11.2
 
 packages: tools
-	sudo ./scripts/packages/build-packages.sh 
+	./scripts/packages/build-packages.sh 
 
 image: packages
-	sudo LFS="overlay/base" ./scripts/image/build-image.sh
+	LFS="overlay/base" ./scripts/image/build-image.sh
 
 update-scripts:
 	cp -R scripts overlay/base/
