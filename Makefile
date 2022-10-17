@@ -1,16 +1,13 @@
 all: tools
 
-clear-overlay:
-	rm -rf overlay
-	mkdir -pv tmp overlay/base
-	mkdir -pv tmp overlay/package
-	mkdir -pv tmp overlay/work
-	mkdir -pv tmp overlay/lfs
+cleanup:
+	rm -rf overlay tmp
+	mkdir -pv tmp overlay/base overlay/package overlay/work overlay/lfs
 	cp -R scripts overlay/base/
 	cp -R sources overlay/base/
 	chmod -R +x overlay/base/scripts
 
-docker: clear-overlay
+docker: cleanup
 	docker build -t lfs\:11.2 .
 
 tools: docker
@@ -18,6 +15,8 @@ tools: docker
 
 packages: tools
 	./scripts/packages/build-packages.sh 
+	mkdir -pv packages
+	mv -f tmp/*.tar.gz ./packages
 
 image: packages
 	LFS="overlay/base" ./scripts/image/build-image.sh
