@@ -23,8 +23,7 @@ cleanup:
 	cp -R sources overlay/base/
 	chmod -R +x overlay/base/scripts
 
-tools:
-	mkdir -p overlay/base
+tools: cleanup
 	docker build -t lfs\:11.2 .
 	docker run --rm -v $(shell pwd)/overlay/base\:/mnt/base lfs\:11.2
 
