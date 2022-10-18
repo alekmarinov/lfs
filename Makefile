@@ -4,9 +4,9 @@ SHELL := /bin/bash
 all:
 	@echo -e "\
 Welcome to LFS making tool!\n\n\
-To build a bootable image just run\n\n\
+To build a bootable image run\n\n\
 	sudo make image \n\n\
-To make something more advance, pick up one of the available targets:\n\
+or pick up one of the available targets:\n\
 tools      - Build tools needed to build packages. The result goes into 'overlay/base' directory.\n\
 cleanup    - Clears 'overlay' and 'tmp' directories for clean build of the packages.\n\
 packages   - Builds packages, depends on tools.\n\
@@ -17,7 +17,7 @@ update-scripts - Copy the scripts from git location under 'overlay/base'. Develo
 "
 
 cleanup:
-	rm -rf overlay tmp
+	rm -rf overlay tmp rootfs
 	mkdir -pv tmp overlay/base overlay/package overlay/work overlay/lfs
 	cp -R scripts overlay/base/
 	cp -R sources overlay/base/
