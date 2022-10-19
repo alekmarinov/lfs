@@ -40,3 +40,7 @@ min-distro:
 
 update-scripts:
 	cp -R scripts overlay/base/
+	chmod -R +x overlay/base/scripts
+
+install:
+	./scripts/packages/build-package.sh $(shell find scripts -name $(PACKAGE))

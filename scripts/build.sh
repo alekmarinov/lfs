@@ -86,10 +86,9 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
             tar cvfz "$package_name" -C "$LFS_PACKAGE" .
         fi
         if [ $o_tool -ne 1 ]; then
-            # Deleted special files from $LFS_PACKAGE and $LFS_BASE
-            find "$LFS_PACKAGE" -size 0 | xargs "$SCRIPT_DIR/packages/delete_if_special.sh"
-            # Move the new package files to base
-            cp -prf "$LFS_PACKAGE"/* "$LFS_BASE"/
+            # Deleting special files/dirs from destination, copy the others
+            "$SCRIPT_DIR/packages/copy-or-del.sh"
+            # Remove all from LFS_PACKAGE folder
             rm -rf "$LFS_PACKAGE"/*
         fi
     else
