@@ -1,5 +1,6 @@
 #!/bin/bash
 
+rm -rf overlay/package/*
 mount -t overlay overlay \
     -olowerdir=overlay/base,upperdir=overlay/package,workdir=overlay/work \
     overlay/lfs

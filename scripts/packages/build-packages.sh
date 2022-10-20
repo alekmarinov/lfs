@@ -98,7 +98,6 @@ $build -p /scripts/packages/lfs/9.8-configure-inputrc.sh
 $build -p /scripts/packages/lfs/9.9-configure-shells.sh
 $build -p /scripts/packages/lfs/10.2-create-fstab.sh
 $build -p /scripts/packages/lfs/10.3-make-linux-kernel.sh
-$build -p /scripts/packages/lfs/10.4-setup-grub.sh
 $build -p /scripts/packages/lfs/11.1-the-end.sh
 
 # # build blfs packages

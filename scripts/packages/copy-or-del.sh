@@ -17,12 +17,12 @@ find -P "$SRC_DIR" | while read -r src; do
         # if $src is a dir, create a dir $dst
         if [ -d "$src" ]; then
             mkdir -p "$dst"
-        elif [ -f "$src" ]; then
+        elif [ -f "$src" ] || [ -L "$src" ]; then
             # if $src is a file, copy it to $dst
-            cp -f "$src" "$dst"
+            cp -fP "$src" "$dst"
         else
-            echo "Unexpected file type $src"
-            file "$src"
+            echo "Unexpected file type $(file -ib $src) of $src"
+            exit 1
         fi
     fi
 done
