@@ -87,7 +87,7 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
         fi
         if [ $o_tool -ne 1 ]; then
             # Deleting special files/dirs from destination, copy the others
-            "$SCRIPT_DIR/packages/copy-or-del.sh"
+            "$SCRIPT_DIR/packages/copy-or-del.sh" "$LFS_PACKAGE" "$LFS_BASE"
             # Remove all from LFS_PACKAGE folder
             rm -rf "$LFS_PACKAGE"/*
         fi

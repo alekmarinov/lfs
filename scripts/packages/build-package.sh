@@ -1,5 +1,4 @@
 #!/bin/bash
-build="$LFS/scripts/build.sh"
 
 mount -t overlay overlay \
     -olowerdir=overlay/base,upperdir=overlay/package,workdir=overlay/work \
