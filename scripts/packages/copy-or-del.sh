@@ -5,7 +5,7 @@
 SRC_DIR="$1"
 DST_DIR="$2"
 
-for src in `find "$SRC_DIR"`; do
+find -P "$SRC_DIR" | while read -r src; do
     # remove $SRC_DIR from beginning of $srcfile
     dst=${src#"$SRC_DIR"}
     # prefix with $DST_DIR
@@ -21,7 +21,7 @@ for src in `find "$SRC_DIR"`; do
             # if $src is a file, copy it to $dst
             cp -f "$src" "$dst"
         else
-            echo "Unknown file type $src"
+            echo "Unexpected file type $src"
             file "$src"
         fi
     fi
