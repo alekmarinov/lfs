@@ -13,14 +13,14 @@ find -P "$SRC_DIR" | while read -r src; do
     dst=$(echo "$DST_DIR/$dst" | sed s#//*#/#g)
     if [[ "$(file -ib $src)" = "inode/chardevice;"* ]]; then
         # remove $dst file or directory if $src is special
-        rm -rfv "$dst"
+        rm -rf "$dst"
     else
         # if $src is a dir, create a dir $dst
         if [ -f "$src" ] || [ -L "$src" ]; then
             # if $src is a file, copy it to $dst
-            cp -fPv "$src" "$dst"
+            cp -fP "$src" "$dst"
         elif [ -d "$src" ]; then
-            mkdir -pv "$dst"
+            mkdir -p "$dst"
         else
             echo "Unexpected file type $(file -ib $src) of $src"
             exit 1

@@ -41,14 +41,16 @@ if [ "$script_path" == "" ]; then
 fi
 
 script_name=$(basename -- "$script_path")
-flag_file="/tmp/${script_name%.*}.ready"
+# flag file on the host
+flag_file="tmp/${script_name%.*}.ready"
+# log file on the chroot system
 log_file="/tmp/${script_name%.*}.log"
-package_name="/tmp/${script_name%.*}.tar.gz"
+package_name="tmp/${script_name%.*}.tar.gz"
 if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
     echo -ne "...... $script_path -> $log_file"
     if [ $o_tool -eq 1 ]; then
         if [ ! -f "$script_path" ]; then
-            echo "build.sh: Can't find script $script_path"
+            echo -ne "\r\nbuild.sh: Can't find script $script_path"
             exit 1
         fi
         # If building tool need to add $LFS_BASE/tools/bin to PATH
@@ -57,7 +59,7 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
         status=$?
     else
         if [ ! -f "$LFS/$script_path" ]; then
-            echo "build.sh: Can't find script $LFS/$script_path"
+            echo -ne "\r\nbuild.sh: Can't find script $LFS/$script_path"
             exit 1
         fi
         # Building lfs/blfs package requires chroot with mounted vkfs
@@ -73,8 +75,6 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
             JOB_COUNT="$JOB_COUNT" \
             /bin/bash --login +h -c "sh -c '$script_path > $log_file 2>&1'"
         status=$?
-    fi
-    if [ $o_tool -eq 0 ]; then
         $LFS/scripts/packages/11-unmount-vkfs.sh > /dev/null 2>&1
     fi
     if [ $status -eq 0 ]; then
@@ -83,6 +83,7 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
 
         if [ $o_package -eq 1 ]; then
             # Archive package
+            echo "Archiving $LFS_PACKAGE"
             tar cfz "$package_name" -C "$LFS_PACKAGE" .
         fi
         if [ $o_tool -ne 1 ]; then
