@@ -44,3 +44,9 @@ update-scripts:
 
 build-package:
 	./scripts/packages/build-package.sh $(shell find scripts/packages -name $(PACKAGE))
+
+find-package-file:
+	./scripts/packages/find-package-file.sh $(FILE)
+
+install-package:
+	./scripts/packages/install-package.sh $(PACKAGE)
