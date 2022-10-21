@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set +e
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
@@ -93,8 +93,11 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
         fi
     else
         echo -ne "\rfailed"; echo
-        tail "$log_file"
+        # The log_file should remain in $LFS_PACKAGE/tmp
+        tail "$LFS_PACKAGE$log_file"
         echo
+        # Exit with failure
+        exit 1
     fi
 else
     echo "skipped $script_path"

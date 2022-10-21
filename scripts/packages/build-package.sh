@@ -14,7 +14,6 @@ rm -rf overlay/package/*
 mount -t overlay overlay \
     -olowerdir=overlay/base,upperdir=overlay/package,workdir=overlay/work \
     overlay/lfs
-
 ./scripts/build.sh $*
-
+sync
 umount overlay/lfs

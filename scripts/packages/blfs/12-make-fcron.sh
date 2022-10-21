@@ -104,5 +104,5 @@ pushd /tmp/blfs-bootscripts \
     && make install-fcron \
     && popd
 
-/etc/rc.d/init.d/fcron start
+# /etc/rc.d/init.d/fcron start &&
 fcrontab -z -u systab
