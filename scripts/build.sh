@@ -83,7 +83,6 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
 
         if [ $o_package -eq 1 ]; then
             # Archive package
-            echo "Archiving $LFS_PACKAGE"
             tar cfz "$package_name" -C "$LFS_PACKAGE" .
         fi
         if [ $o_tool -ne 1 ]; then
