@@ -1,7 +1,7 @@
 #!/bin/bash
 set +e
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+__NAME__=$(basename "$0")
 
 script_path="$1"
 if [ "$script_path" == "" ]; then
@@ -12,7 +12,7 @@ script_name=$(basename -- "$script_path")
 
 log_file="/tmp/${script_name%.*}.log"
 if [ ! -f "$script_path" ]; then
-    echo -ne "\r\nbuild.sh: Can't find script $script_path"
+    echo -ne "\r\n$__NAME__: Can't find script $script_path"
     exit 1
 fi
 export PATH+=:$LFS_BASE/tools/bin

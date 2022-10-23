@@ -1,6 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+__NAME__=$(basename "$0")
 TMP="tmp"
 
 o_force=0
@@ -12,12 +13,12 @@ while [[ $# -gt 0 ]]; do
         shift
         ;;
     -*|--*)
-        echo "build.sh: Unknown option $1"
+        echo ": Unknown option $1"
         exit 1
         ;;
     *)
         if [[ "$script_path" != "" ]]; then
-            echo "build.sh: only one positional argument expected - script_path"
+            echo "$__NAME__: only one positional argument expected - script_path"
             exit 1
         fi
         script_path="$1"
@@ -35,15 +36,15 @@ mount -t overlay overlay \
     "-olowerdir=$LFS_BASE,upperdir=$LFS_PACKAGE,workdir=overlay/work" \
     "$LFS"
 
-script_name=$(basename -- "$script_path")
+__NAME__=$(basename -- "$script_path")
 # flag file on the host
-flag_file="$TMP/${script_name%.*}.ready"
+flag_file="$TMP/${__NAME__%.*}.ready"
 # log file on the chroot system
-log_file="/tmp/${script_name%.*}.log"
-package_name="$TMP/${script_name%.*}.tar.gz"
+log_file="/tmp/${__NAME__%.*}.log"
+package_name="$TMP/${__NAME__%.*}.tar.gz"
 if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
     if [ ! -f "$LFS/$script_path" ]; then
-        echo -ne "\r\nbuild.sh: Can't find script $LFS/$script_path"
+        echo -ne "\r\n$__NAME__: Can't find script $LFS/$script_path"
         exit 1
     fi
     # mount vkfs before chroot
@@ -61,7 +62,7 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
     status=$?
     $LFS/scripts/packages/11-unmount-vkfs.sh > /dev/null 2>&1
 else
-    echo "skipped $script_path"
+    echo "$__NAME__: skipped $script_path"
     exit 0
 fi
 if [ $status -eq 0 ]; then

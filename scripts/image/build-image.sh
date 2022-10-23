@@ -2,13 +2,13 @@
 # Builds bootable image with uefi
 set -e
 
-# The linux rootfs directory is expected in 'LFS' variable
-if [[ "$LFS" == "" ]]; then
-    echo "Missing expected 'LFS' environment variable"
+# The linux rootfs directory is expected in '$LFS_BASE' variable
+if [[ "$LFS_BASE" == "" ]]; then
+    echo "Missing expected 'LFS_BASE' environment variable"
     exit 1
 fi
-LFS=$(readlink -f "$LFS")
-echo "'LFS' is set to $LFS"
+LFS_BASE=$(readlink -f "$LFS_BASE")
+echo "'LFS_BASE' is set to $LFS_BASE"
 
 # The name of the produced image file
 IMAGE_FILE=${IMAGE_FILE:-lfs.img}
@@ -26,21 +26,21 @@ echo "Using IMAGE_FILE=$IMAGE_FILE, IMAGE_SIZE=$IMAGE_SIZE, ROOT_DEV=$ROOT_DEV"
 
 # Basic check of the rootfs directories
 for sub in boot dev etc lib proc run sbin sys usr var; do
-    [ -d "$LFS/$sub" ] || (echo "Missing '$LFS/$sub' directory!" && exit 1)
+    [ -d "$LFS_BASE/$sub" ] || (echo "Missing '$LFS_BASE/$sub' directory!" && exit 1)
 done
-echo "The expected directories in '$LFS' are present"
+echo "The expected directories in '$LFS_BASE' are present"
 
 for file in usr/sbin/grub-install usr/sbin/chroot; do
-    [ -f "$LFS/$file" ] || (echo "Missing '$LFS/$file' file!" && exit 1)
+    [ -f "$LFS_BASE/$file" ] || (echo "Missing '$LFS_BASE/$file' file!" && exit 1)
 done
-echo "The expected files in '$LFS' are present"
+echo "The expected files in '$LFS_BASE' are present"
 
-if [[ $(grep __ROOT_DEV__ "$LFS/etc/fstab") == "" ]]; then
-    echo "The script can't find the string __ROOT_DEV__ inside '$LFS/etc/fstab' file 
+if [[ $(grep __ROOT_DEV__ "$LFS_BASE/etc/fstab") == "" ]]; then
+    echo "The script can't find the string __ROOT_DEV__ inside '$LFS_BASE/etc/fstab' file 
 to substitute it with '$ROOT_DEV' where the root (/) will be mounted."
     exit 1
 fi
-echo "__ROOT_DEV__ in '$LFS/etc/fstab' is present"
+echo "__ROOT_DEV__ in '$LFS_BASE/etc/fstab' is present"
 
 # Attach the image file to available loop device
 LOOP=$(losetup -f)
@@ -118,10 +118,10 @@ mkdir -v "$ROOTFS_DIR"
 echo "Mounting rootfs directory at '${LOOP}p2' -> '$ROOTFS_DIR'..."
 mount "${LOOP}p2" "$ROOTFS_DIR"
 
-if [ "$LFS" != "$ROOTFS_DIR" ]; then
-    echo "Copying rootfs files '$LFS' -> '$ROOTFS_DIR'..."
+if [ "$LFS_BASE" != "$ROOTFS_DIR" ]; then
+    echo "Copying rootfs files '$LFS_BASE' -> '$ROOTFS_DIR'..."
     # Copy lfs files to the mounted rootfs directory
-    pushd "$LFS"
+    pushd "$LFS_BASE"
     cp -dpR $(ls -A | grep -Ev "sources|tools|scripts") "$ROOTFS_DIR"
     popd
     sync
@@ -192,7 +192,7 @@ echo "Detaching loop device '$LOOP'..."
 losetup -d "$LOOP"
 
 echo "
-Building $IMAGE_FILE from $LFS finsihed.
+Building $IMAGE_FILE from $LFS_BASE finsihed.
 Plug USB memory stick with at least $(echo $IMAGE_SIZE / 1024 | bc)G available space and try
 \$ sudo dd if=$IMAGE_FILE of=/dev/sdb status=progress
 Then boot from a PC and enjoy your LFS Linux!

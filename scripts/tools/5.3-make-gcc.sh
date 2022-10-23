@@ -9,7 +9,7 @@ echo "Required disk space: 3.8 GB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter05/gcc-pass1.html
 
 rm -rf /tmp/gcc \
-    && tar -xf gcc-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/gcc-*.tar.xz -C /tmp/ \
     && mv /tmp/gcc-* /tmp/gcc \
     && pushd /tmp/gcc \
     && tar -xf $LFS_BASE/sources/mpfr-*.tar.xz \

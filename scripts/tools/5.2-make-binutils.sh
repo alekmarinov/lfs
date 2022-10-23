@@ -9,7 +9,7 @@ echo "Required disk space: 629 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter05/binutils-pass1.html
 
 rm -rf /tmp/binutils \
-    && tar -xf binutils-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/binutils-*.tar.xz -C /tmp/ \
     && mv /tmp/binutils-* /tmp/binutils \
     && pushd /tmp/binutils \
     && mkdir -v build \

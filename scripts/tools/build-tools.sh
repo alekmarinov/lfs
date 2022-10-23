@@ -2,12 +2,16 @@
 set -e
 echo "Building tools..."
 
+# in .env the LFS_BASE is defined relatively but 
+# --prefix option in configure requires absolute path
+export LFS_BASE=$(realpath $LFS_BASE)
+
 $LFS_BASE/scripts/2-version-check.sh
 
 build="$LFS_BASE/scripts/tools/build-tool.sh"
 
 # download sources
-$build -t $LFS_BASE/scripts/tools/3.1-download.sh
+$build $LFS_BASE/scripts/tools/3.1-download.sh
 
 # build tools
 $build $LFS_BASE/scripts/tools/4.2-make-structure.sh

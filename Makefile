@@ -1,15 +1,8 @@
-export LFS := overlay/lfs
-export LFS_PACKAGE := overlay/package
-export LFS_BASE := overlay/base
-export LFS_TGT := x86_64-lfs-linux-gnu
-export LFS_TEST := 0
-export LFS_DOCS := 0
-export JOB_COUNT := 4
-export MAKEFLAGS := "-j4"
-export LC_ALL := POSIX
-
 .PHONY: cleanup docker tools image minimal-distro  update-scripts
 SHELL := /bin/bash
+
+include .env
+export
 
 all:
 	@echo -e "\
@@ -28,29 +21,33 @@ update-scripts - Copy the scripts from git location under 'overlay/base'. Develo
 
 cleanup:
 	rm -rf overlay tmp rootfs
-	mkdir -pv tmp overlay/base overlay/package overlay/work overlay/lfs
-	cp -R scripts overlay/base/
-	cp -R sources overlay/base/
-	chmod -R +x overlay/base/scripts
+	mkdir -pv tmp $(LFS_BASE) $(LFS_PACKAGE) overlay/work $(LFS)
+	cp -R scripts $(LFS_BASE)
+	cp -R sources $(LFS_BASE)
+	chmod -R +x $(LFS_BASE)/scripts
 
 tools: cleanup
 	docker build -t lfs\:11.2 .
-	docker run --rm -v $(shell pwd)/overlay/base\:/mnt/base lfs\:11.2
+	docker run \
+		--rm \
+		-v $(shell pwd)/$(LFS_BASE)\:/$(LFS_BASE) \
+		--env-file .env \
+		lfs\:11.2
 
 packages: tools
-	./scripts/packages/build-packages.sh 
+	./scripts/packages/build-packages.sh
 	mkdir -pv packages
 	mv -f tmp/*.tar.gz ./packages
 
 image: packages
-	LFS="overlay/base" ./scripts/image/build-image.sh
+	.scripts/image/build-image.sh
 
 min-distro:
 	./scripts/image/build-distro.sh minimal
 
 update-scripts:
-	cp -R scripts overlay/base/
-	chmod -R +x overlay/base/scripts
+	cp -R scripts $(LFS_BASE)
+	chmod -R +x $(LFS_BASE)/scripts
 
 build-package:
 	./scripts/packages/build-package.sh $(shell find scripts/packages -name $(PACKAGE))
