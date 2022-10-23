@@ -1,3 +1,13 @@
+export LFS := overlay/lfs
+export LFS_PACKAGE := overlay/package
+export LFS_BASE := overlay/base
+export LFS_TGT := x86_64-lfs-linux-gnu
+export LFS_TEST := 0
+export LFS_DOCS := 0
+export JOB_COUNT := 4
+export MAKEFLAGS := "-j4"
+export LC_ALL := POSIX
+
 .PHONY: cleanup docker tools image minimal-distro  update-scripts
 SHELL := /bin/bash
 
