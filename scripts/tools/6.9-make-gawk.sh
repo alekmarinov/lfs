@@ -9,7 +9,7 @@ echo "Required disk space: 45 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/gawk.html
 
 rm -rf /tmp/gawk \
-    && tar -xf gawk-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/gawk-*.tar.xz -C /tmp/ \
     && mv /tmp/gawk-* /tmp/gawk \
     && pushd /tmp/gawk \
     && sed -i 's/extras//' Makefile.in \

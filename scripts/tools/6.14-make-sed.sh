@@ -9,7 +9,7 @@ echo "Required disk space: 20 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/sed.html
 
 rm -rf /tmp/sed \
-    && tar -xf sed-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/sed-*.tar.xz -C /tmp/ \
     && mv /tmp/sed-* /tmp/sed \
     && pushd /tmp/sed \
     && ./configure \

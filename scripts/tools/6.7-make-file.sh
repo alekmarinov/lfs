@@ -9,7 +9,7 @@ echo "Required disk space: 16 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/file.html
 
 rm -rf /tmp/file \
-    && tar -xf file-*.tar.gz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/file-*.tar.gz -C /tmp/ \
     && mv /tmp/file-* /tmp/file \
     && pushd /tmp/file \
     && mkdir -v build \

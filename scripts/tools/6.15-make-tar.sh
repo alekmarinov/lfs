@@ -12,7 +12,7 @@ echo "Required disk space: 38 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/tar.html
 
 rm -rf /tmp/tar \
-    && tar -xf tar-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/tar-*.tar.xz -C /tmp/ \
     && mv /tmp/tar-* /tmp/tar \
     && pushd /tmp/tar \
     && ./configure --prefix=/usr \

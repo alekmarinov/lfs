@@ -21,7 +21,7 @@ esac
 
 GCC_VER=$(ls /$LFS_BASE/sources/gcc-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 rm -rf /tmp/glibc \
-    && tar -xf glibc-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/glibc-*.tar.xz -C /tmp/ \
     && mv /tmp/glibc-* /tmp/glibc \
     && pushd /tmp/glibc \
     && patch -Np1 -i $(ls $LFS_BASE/sources/glibc-*-fhs-1.patch) \

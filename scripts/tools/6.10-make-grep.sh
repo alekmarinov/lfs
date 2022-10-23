@@ -9,7 +9,7 @@ echo "Required disk space: 25 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/grep.html
 
 rm -rf /tmp/grep \
-    && tar -xf grep-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/grep-*.tar.xz -C /tmp/ \
     && mv /tmp/grep-* /tmp/grep \
     && pushd /tmp/grep \
     && ./configure \

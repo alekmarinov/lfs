@@ -12,7 +12,7 @@ echo "Required disk space: 35 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/findutils.html
 
 rm -rf /tmp/findutils \
-    && tar -xf findutils-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/findutils-*.tar.xz -C /tmp/ \
     && mv /tmp/findutils-* /tmp/findutils \
     && pushd /tmp/findutils \
     && ./configure \

@@ -9,7 +9,7 @@ echo "Required disk space: 11 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/gzip.html
 
 rm -rf /tmp/gzip \
-    && tar -xf gzip-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/gzip-*.tar.xz -C /tmp/ \
     && mv /tmp/gzip-* /tmp/gzip \
     && pushd /tmp/gzip \
     && ./configure \
