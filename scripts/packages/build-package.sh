@@ -31,11 +31,6 @@ if [ "$script_path" == "" ]; then
     exit 1
 fi
 
-rm -rf "$LFS_PACKAGE"/*
-mount -t overlay overlay \
-    "-olowerdir=$LFS_BASE,upperdir=$LFS_PACKAGE,workdir=overlay/work" \
-    "$LFS"
-
 __NAME__=$(basename -- "$script_path")
 # flag file on the host
 flag_file="$TMP/${__NAME__%.*}.ready"
@@ -47,8 +42,6 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
         echo -ne "\r\n$__NAME__: Can't find script $LFS/$script_path"
         exit 1
     fi
-    # mount vkfs before chroot
-    $SCRIPT_DIR/7.3-mount-vkfs.sh > /dev/null 2>&1
     /usr/sbin/chroot "$LFS" /usr/bin/env -i \
         HOME=/root \
         TERM="$TERM" \
@@ -60,7 +53,6 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
         JOB_COUNT="$JOB_COUNT" \
         /bin/bash --login +h -c "sh -c '$script_path > $log_file 2>&1'"
     status=$?
-    $SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
 else
     echo "$__NAME__: skipped $script_path"
     exit 0
@@ -83,6 +75,3 @@ else
     # Exit with failure
     exit 1
 fi
-
-sync
-umount overlay/lfs
