@@ -9,7 +9,7 @@ echo "Required disk space: 1.4 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter05/linux-headers.html
 
 rm -rf /tmp/linux \
-    && tar -xf linux-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/linux-*.tar.xz -C /tmp/ \
     && mv /tmp/linux-* /tmp/linux \
     && pushd /tmp/linux \
     && make mrproper \
