@@ -48,7 +48,7 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
         exit 1
     fi
     # mount vkfs before chroot
-    $LFS/scripts/packages/7.3-mount-vkfs.sh > /dev/null 2>&1
+    $SCRIPT_DIR/7.3-mount-vkfs.sh > /dev/null 2>&1
     /usr/sbin/chroot "$LFS" /usr/bin/env -i \
         HOME=/root \
         TERM="$TERM" \
@@ -60,7 +60,7 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
         JOB_COUNT="$JOB_COUNT" \
         /bin/bash --login +h -c "sh -c '$script_path > $log_file 2>&1'"
     status=$?
-    $LFS/scripts/packages/11-unmount-vkfs.sh > /dev/null 2>&1
+    $SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
 else
     echo "$__NAME__: skipped $script_path"
     exit 0
@@ -72,7 +72,7 @@ if [ $status -eq 0 ]; then
     # Mark this build has been passed
     touch "$flag_file"
     # Copy all but delete special files/dirs from destination
-    "$SCRIPT_DIR/packages/copy-or-del.sh" "$LFS_PACKAGE" "$LFS_BASE"
+    "$SCRIPT_DIR/copy-or-del.sh" "$LFS_PACKAGE" "$LFS_BASE"
     # Clean $LFS_PACKAGE folder
     rm -rf "$LFS_PACKAGE"/*
 else
