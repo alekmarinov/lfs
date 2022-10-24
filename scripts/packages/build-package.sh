@@ -42,6 +42,7 @@ script_name=$(basename -- "$script_path")
 flag_file="tmp/${script_name%.*}.ready"
 # log file on the chroot system
 log_file="${script_name%.*}.log"
+echo -ne "...... $script_path -> $log_file"
 if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
     if [ ! -f "$LFS/$script_path" ]; then
         echo -ne "\r\n$__NAME__: Can't find script $LFS/$script_path"
@@ -56,7 +57,7 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
         /bin/bash --login +h -c "sh -c '$script_path > /tmp/$log_file 2>&1'"
     status=$?
 else
-    echo "$__NAME__: skipped $script_path"
+    echo -ne "\rskip  $script_path"; echo
     exit 0
 fi
 if [ $status -eq 0 ]; then
@@ -64,10 +65,10 @@ if [ $status -eq 0 ]; then
     # Archive package
     package_name="$LFS_PACKAGES/${script_name%.*}.tar.gz"
     tar cfz "$package_name" -C "$LFS_PACKAGE" .
-    # Mark this build has been passed
-    touch "$flag_file"
     # Copy all but delete special files/dirs from destination
     "$SCRIPT_DIR/copy-or-del.sh" "$LFS_PACKAGE" "$LFS_BASE"
+    # Mark this build has been passed as the same package successful install is not guaranteed
+    touch "$flag_file"
     # Clean $LFS_PACKAGE folder
     rm -rf "$LFS_PACKAGE"/*
 else
