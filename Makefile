@@ -1,8 +1,11 @@
-.PHONY: clean docker tools image minimal-distro  update-scripts
+.PHONY: clean packages docker tools image minimal-distro  update-scripts
 SHELL := /bin/bash
 
 include .env
 export
+
+export MAKEFLAGS="--jobs=$(JOB_COUNT)"
+
 
 all:
 	@echo -e "\
@@ -23,7 +26,7 @@ clean:
 	@echo -n "Removing overlay tmp rootfs $(LFS_PACKAGES) [y/N] " \
 		&& read ans && [ $${ans:-N} = y ]
 	rm -rf overlay tmp rootfs $(LFS_PACKAGES)
-	mkdir -pv tmp $(LFS_BASE) $(LFS_PACKAGE) overlay/work $(LFS)
+	mkdir -pv tmp $(LFS_BASE) $(LFS_PACKAGE) $(LFS_PACKAGES) overlay/work $(LFS)
 	cp -R scripts $(LFS_BASE)
 	cp -R sources $(LFS_BASE)
 	chmod -R +x $(LFS_BASE)/scripts
