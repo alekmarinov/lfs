@@ -12,7 +12,7 @@ done
 
 error_trap() {
     set +e
-    echo "$__NAME__: Error occurred at line $1"
+    echo -e "\n$__NAME__: Error occurred at line $1"
     sync
     $SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
     umount $LFS
@@ -79,6 +79,7 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
     sync
     $SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
     umount $LFS
+    rm -rf "$LFS_PACKAGE"/*
 else
     echo -ne "\rskip   $script_path"; echo
     exit 0
