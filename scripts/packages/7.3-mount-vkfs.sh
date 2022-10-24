@@ -6,7 +6,7 @@ __NAME__=$(basename "$0")
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter07/kernfs.html
 
 if [ "$LFS" == "" ]; then
-    echo "$__NAME__: $LFS is not defined"
+    echo "$__NAME__: LFS is not defined"
     exit 1
 fi
 
