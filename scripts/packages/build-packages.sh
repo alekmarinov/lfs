@@ -1,7 +1,28 @@
 #!/bin/bash
 set -e
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+__NAME__=$(basename "$0")
+
+for var in LFS LFS_BASE LFS_PACKAGE; do
+    if [ "${!var}" == "" ]; then
+        echo "$__NAME__: $var is not defined"
+        exit 1
+    fi
+done
+
 build="scripts/packages/build-package.sh"
+
+error_trap() {
+    set +e
+    echo "$__NAME__: Error occurred at line $1"
+    sync
+    umount $LFS
+    $SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
+    exit 1
+}
+
+trap 'error_trap $LINENO' ERR
 
 # Clean the package folder before builds start
 rm -rf "$LFS_PACKAGE"/*

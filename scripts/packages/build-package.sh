@@ -2,7 +2,13 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 __NAME__=$(basename "$0")
-TMP="tmp"
+
+for var in LFS LFS_BASE LFS_PACKAGE LFS_PACKAGES; do
+    if [ "${!var}" == "" ]; then
+        echo "$__NAME__: $var is not defined"
+        exit 1
+    fi
+done
 
 o_force=0
 script_path=""
@@ -31,12 +37,11 @@ if [ "$script_path" == "" ]; then
     exit 1
 fi
 
-__NAME__=$(basename -- "$script_path")
+script_name=$(basename -- "$script_path")
 # flag file on the host
-flag_file="$TMP/${__NAME__%.*}.ready"
+flag_file="tmp/${script_name%.*}.ready"
 # log file on the chroot system
-log_file="/tmp/${__NAME__%.*}.log"
-package_name="$TMP/${__NAME__%.*}.tar.gz"
+log_file="${script_name%.*}.log"
 if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
     if [ ! -f "$LFS/$script_path" ]; then
         echo -ne "\r\n$__NAME__: Can't find script $LFS/$script_path"
@@ -47,11 +52,8 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
         TERM="$TERM" \
         PS1='(lfs chroot) \u:\w\$ ' \
         PATH=/usr/bin:/usr/sbin \
-        LFS="$LFS" LC_ALL="$LC_ALL" \
-        LFS_TGT="$LFS_TGT" MAKEFLAGS="$MAKEFLAGS" \
-        LFS_TEST="$LFS_TEST" LFS_DOCS="$LFS_DOCS" \
-        JOB_COUNT="$JOB_COUNT" \
-        /bin/bash --login +h -c "sh -c '$script_path > $log_file 2>&1'"
+        $(cat .env | xargs) \
+        /bin/bash --login +h -c "sh -c '$script_path > /tmp/$log_file 2>&1'"
     status=$?
 else
     echo "$__NAME__: skipped $script_path"
@@ -60,6 +62,7 @@ fi
 if [ $status -eq 0 ]; then
     echo -ne "\rpassed"; echo
     # Archive package
+    package_name="$LFS_PACKAGES/${script_name%.*}.tar.gz"
     tar cfz "$package_name" -C "$LFS_PACKAGE" .
     # Mark this build has been passed
     touch "$flag_file"
@@ -70,7 +73,7 @@ if [ $status -eq 0 ]; then
 else
     echo -ne "\rfailed"; echo
     # The log_file should remain in $LFS_PACKAGE/tmp
-    tail "$log_file"
+    tail "$LFS/tmp/$log_file"
     echo
     # Exit with failure
     exit 1
