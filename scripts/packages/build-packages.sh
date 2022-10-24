@@ -27,15 +27,16 @@ trap 'error_trap $LINENO' ERR
 # Clean the package folder before builds start
 rm -rf "$LFS_PACKAGE"/*
 
-# mount vkfs to the folder we will chroot
-$SCRIPT_DIR/7.3-mount-vkfs.sh > /dev/null 2>&1
-
 # mount overlay to isolate the installed files in $LFS_PACKAGE
 mount -t overlay overlay \
     "-olowerdir=$LFS_BASE,upperdir=$LFS_PACKAGE,workdir=overlay/work" \
     "$LFS"
 
+# mount vkfs to the folder we will chroot
+$SCRIPT_DIR/7.3-mount-vkfs.sh > /dev/null 2>&1
+
 # build lfs packages
+
 $build /scripts/packages/lfs/7.5-create-directories.sh
 $build /scripts/packages/lfs/7.6-create-essentials.sh
 $build /scripts/packages/lfs/7.7-make-gettext.sh
@@ -200,5 +201,5 @@ $build /scripts/packages/blfs/5-make-grub.sh
 $build /scripts/packages/lfs/8.79-clean.sh
 
 sync
-umount $LFS
 $SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
+umount $LFS
