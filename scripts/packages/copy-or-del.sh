@@ -1,6 +1,6 @@
 #!/bin/bash
-# Loop a source directory and delete entry from destination if source file 
-# is special, copy to destination otherwise
+# Copy files from source to destination directory
+# delete entry from destination if the source file is special
 set -e
 
 SRC_DIR="$1"
@@ -15,10 +15,10 @@ find -P "$SRC_DIR" | while read -r src; do
         # remove $dst file or directory if $src is special
         rm -rf "$dst"
     else
-        # if $src is a dir, create a dir $dst
+        # if $src is a file or link, copy it to $dst
         if [ -f "$src" ] || [ -L "$src" ]; then
-            # if $src is a file, copy it to $dst
             cp -fP "$src" "$dst"
+        # if $src is a dir, create a dir $dst
         elif [ -d "$src" ]; then
             mkdir -p "$dst"
         else
