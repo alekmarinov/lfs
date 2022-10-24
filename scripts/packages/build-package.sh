@@ -10,6 +10,17 @@ for var in LFS LFS_BASE LFS_PACKAGE LFS_PACKAGES; do
     fi
 done
 
+error_trap() {
+    set +e
+    echo "$__NAME__: Error occurred at line $1"
+    sync
+    $SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
+    umount $LFS
+    exit 1
+}
+
+trap 'error_trap $LINENO' ERR
+
 o_force=0
 script_path=""
 while [[ $# -gt 0 ]]; do
@@ -44,10 +55,19 @@ flag_file="tmp/${script_name%.*}.ready"
 log_file="${script_name%.*}.log"
 echo -ne "...... $script_path -> $log_file"
 if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
-    if [ ! -f "$LFS/$script_path" ]; then
-        echo -ne "\r\n$__NAME__: Can't find script $LFS/$script_path"
+    # mount overlay to isolate the installed files in $LFS_PACKAGE
+    mount -t overlay overlay \
+        "-olowerdir=$LFS_BASE,upperdir=$LFS_PACKAGE,workdir=overlay/work" \
+        "$LFS"
+
+    script_path_local=$(echo $LFS/$script_path | sed "s/\/\//\//g")
+    if [ ! -f "$script_path_local" ]; then
+        echo -ne "\r\n$__NAME__: Can't find script $script_path_local"
         exit 1
     fi
+
+    # mount vkfs to the chroot directory
+    $SCRIPT_DIR/7.3-mount-vkfs.sh > /dev/null 2>&1
     /usr/sbin/chroot "$LFS" /usr/bin/env -i \
         HOME=/root \
         TERM="$TERM" \
@@ -56,8 +76,11 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
         $(cat .env | xargs) \
         /bin/bash --login +h -c "sh -c '$script_path > /tmp/$log_file 2>&1'"
     status=$?
+    sync
+    $SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
+    umount $LFS
 else
-    echo -ne "\rskip  $script_path"; echo
+    echo -ne "\rskip   $script_path"; echo
     exit 0
 fi
 if [ $status -eq 0 ]; then
@@ -69,8 +92,6 @@ if [ $status -eq 0 ]; then
     "$SCRIPT_DIR/copy-or-del.sh" "$LFS_PACKAGE" "$LFS_BASE"
     # Mark this build has been passed as the same package successful install is not guaranteed
     touch "$flag_file"
-    # Clean $LFS_PACKAGE folder
-    rm -rf "$LFS_PACKAGE"/*
 else
     echo -ne "\rfailed"; echo
     # The log_file should remain in $LFS_PACKAGE/tmp

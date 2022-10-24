@@ -11,31 +11,11 @@ for var in LFS LFS_BASE LFS_PACKAGE; do
     fi
 done
 
-build="scripts/packages/build-package.sh"
-
-error_trap() {
-    set +e
-    echo "$__NAME__: Error occurred at line $1"
-    sync
-    umount $LFS
-    $SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
-    exit 1
-}
-
-trap 'error_trap $LINENO' ERR
-
 # Clean the package folder before builds start
 rm -rf "$LFS_PACKAGE"/*
 
-# mount overlay to isolate the installed files in $LFS_PACKAGE
-mount -t overlay overlay \
-    "-olowerdir=$LFS_BASE,upperdir=$LFS_PACKAGE,workdir=overlay/work" \
-    "$LFS"
-
-# mount vkfs to the folder we will chroot
-$SCRIPT_DIR/7.3-mount-vkfs.sh > /dev/null 2>&1
-
 # build lfs packages
+build="scripts/packages/build-package.sh"
 
 $build /scripts/packages/lfs/7.5-create-directories.sh
 $build /scripts/packages/lfs/7.6-create-essentials.sh
@@ -45,7 +25,6 @@ $build /scripts/packages/lfs/7.9-make-perl.sh
 $build /scripts/packages/lfs/7.10-make-python.sh
 $build /scripts/packages/lfs/7.11-make-texinfo.sh
 $build /scripts/packages/lfs/7.12-make-util-linux.sh
-# $build /scripts/packages/lfs/7.13-cleanup.sh
 $build /scripts/packages/lfs/8.3-make-man-pages.sh
 $build /scripts/packages/lfs/8.4-make-iana-etc.sh
 $build /scripts/packages/lfs/8.5-make-glibc.sh
@@ -199,7 +178,3 @@ $build /scripts/packages/blfs/5-make-grub.sh
 
 # clean up
 $build /scripts/packages/lfs/8.79-clean.sh
-
-sync
-$SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
-umount $LFS
