@@ -1,11 +1,9 @@
 #!/bin/bash
 set -e
-echo "Stripping again.."
+echo "Stripping ..."
 
 # 8.78. Stripping
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/stripping.html
-
-VER=$(ls /sources/procps-ng-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 
 save_usrlib="$(cd /usr/lib; ls ld-linux*[^g])
              libc.so.6

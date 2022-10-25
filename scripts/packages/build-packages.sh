@@ -99,8 +99,8 @@ $build /scripts/packages/lfs/8.73-make-util-linux.sh
 $build /scripts/packages/lfs/8.74-make-e2fsprogs.sh
 $build /scripts/packages/lfs/8.75-make-sysklogd.sh
 $build /scripts/packages/lfs/8.76-make-sysvinit.sh
-$build /scripts/packages/lfs/8.78-strip.sh 
-# # configure system
+
+# configure system
 $build /scripts/packages/lfs/9.2-make-lfs-bootscripts.sh
 $build /scripts/packages/lfs/9.4-managing-devices.sh
 $build /scripts/packages/lfs/9.5-configure-network.sh
@@ -112,7 +112,7 @@ $build /scripts/packages/lfs/10.2-create-fstab.sh
 $build /scripts/packages/lfs/10.3-make-linux-kernel.sh
 $build /scripts/packages/lfs/11.1-the-end.sh
 
-# # build blfs packages
+# build blfs packages
 $build /scripts/packages/blfs/2-blfs-bootscripts.sh
 $build /scripts/packages/blfs/5-make-dosfstools.sh
 $build /scripts/packages/blfs/5-make-mkinitramfs.sh
@@ -178,3 +178,7 @@ $build /scripts/packages/blfs/5-make-grub.sh
 
 # clean up
 $build /scripts/packages/lfs/8.79-clean.sh
+
+# FIXME: Stripping must be done without overlay
+# That can become separate make target
+# $build /scripts/packages/lfs/8.78-strip.sh 

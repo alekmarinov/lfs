@@ -46,7 +46,7 @@ packages: lfs-tools-11.2.tar.gz
 	./scripts/packages/build-packages.sh
 
 image: packages
-	.scripts/image/build-image.sh
+	./scripts/image/build-image.sh
 
 min-distro:
 	./scripts/image/build-distro.sh minimal
