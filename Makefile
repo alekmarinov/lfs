@@ -39,7 +39,9 @@ tools: clean
 		--env-file .env \
 		lfs\:11.2
 
-lfs-tools-11.2.tar.gz:
+$(LFS_BASE)/usr/bin/cc: tools
+
+lfs-tools-11.2.tar.gz: $(LFS_BASE)/usr/bin/cc
 	tar cvfz lfs-tools-11.2.tar.gz -C $(LFS_BASE) .
 
 packages: lfs-tools-11.2.tar.gz
