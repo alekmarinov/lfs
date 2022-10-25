@@ -27,6 +27,7 @@ clean:
 	rm -rf overlay tmp rootfs $(LFS_PACKAGES) $(TARGET_TOOLS) $(TARGET_ROOTFS)
 
 $(TARGET_TOOLS):
+	mkdir -p $(LFS_BASE)
 	cp -R scripts $(LFS_BASE)
 	cp -R sources $(LFS_BASE)
 	chmod -R +x $(LFS_BASE)/scripts
