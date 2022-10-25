@@ -142,7 +142,7 @@ mount -vt tmpfs tmpfs $ROOTFS_DIR/run
 
 echo "grub-install with chroot in '$ROOTFS_DIR'..."
 # grub-install in chrooted rootfs
-chroot "$ROOTFS_DIR" grub-install --target=x86_64-efi --removable
+chroot "$ROOTFS_DIR" env -i PATH=/usr/bin:/usr/sbin grub-install --target=x86_64-efi --removable
 sync
 
 # Unount virtual kernel file system
