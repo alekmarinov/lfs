@@ -1,5 +1,4 @@
 #!/bin/bash
-
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 __NAME__=$(basename "$0")
 
@@ -56,6 +55,7 @@ log_file="${script_name%.*}.log"
 echo -ne "...... $script_path -> $log_file"
 if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
     # mount overlay to isolate the installed files in $LFS_PACKAGE
+    sync
     mount -t overlay overlay \
         "-olowerdir=$LFS_BASE,upperdir=$LFS_PACKAGE,workdir=overlay/work" \
         "$LFS"
