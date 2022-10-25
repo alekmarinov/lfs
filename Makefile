@@ -31,23 +31,21 @@ clean:
 	cp -R sources $(LFS_BASE)
 	chmod -R +x $(LFS_BASE)/scripts
 
-tools: clean
+lfs-tools-11.2.tar.gz:
 	docker build -t lfs\:11.2 .
 	docker run \
 		--rm \
 		-v $(shell pwd)/$(LFS_BASE)\:/$(LFS_BASE) \
 		--env-file .env \
 		lfs\:11.2
-
-$(LFS_BASE)/usr/bin/cc: tools
-
-lfs-tools-11.2.tar.gz: $(LFS_BASE)/usr/bin/cc
 	tar cvfz lfs-tools-11.2.tar.gz -C $(LFS_BASE) .
 
 packages: lfs-tools-11.2.tar.gz
 	./scripts/packages/build-packages.sh
 
-image: packages
+$(LFS_PACKAGES)/5-make-grub.tar.gz: packages
+
+image: $(LFS_PACKAGES)/5-make-grub.tar.gz
 	./scripts/image/build-image.sh
 
 min-distro:
