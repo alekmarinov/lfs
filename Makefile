@@ -1,4 +1,6 @@
-.PHONY: clean docker tools image minimal-distro  update-scripts
+.PHONY: clean image minimal-distro update-scripts packages-continue \
+	    build-package find-package-file install-package
+
 SHELL=/bin/bash
 LFS_VER=11.2
 TARGET_TOOLS=lfs-tools-$(LFS_VER).tar.gz
@@ -46,6 +48,13 @@ $(TARGET_ROOTFS): $(TARGET_TOOLS)
 	@echo Packing $@...
 	tar cfz --exclude='./sources' --exclude='./scripts' --exclude='./tools' $@ -C $(LFS_BASE)
 	@echo "Here you are $@"
+
+packages-continue:
+	./scripts/packages/build-packages.sh
+	@echo Packing $@...
+	tar cfz --exclude='./sources' --exclude='./scripts' --exclude='./tools' $@ -C $(LFS_BASE)
+	@echo "Here you are $@"
+
 
 image: $(TARGET_ROOTFS)
 	./scripts/image/build-image.sh $<
