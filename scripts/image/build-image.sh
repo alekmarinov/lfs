@@ -2,13 +2,17 @@
 # Builds bootable image with uefi
 set -e
 
-# The linux rootfs directory is expected in '$LFS_BASE' variable
-if [[ "$LFS_BASE" == "" ]]; then
-    echo "Missing expected 'LFS_BASE' environment variable"
+TARGET_ROOTFS="$1"
+
+if [[ "$TARGET_ROOTFS" == "" ]]; then
+    echo "Missing argument TARGET_ROOTFS"
     exit 1
 fi
-LFS_BASE=$(readlink -f "$LFS_BASE")
-echo "'LFS_BASE' is set to $LFS_BASE"
+
+if [[ "${${TARGET_ROOTFS: -6}/.*}" != "tar" ]]; then
+    echo "$TARGET_ROOTFS doesn't looks like a tar archive"
+    exit 1
+fi
 
 # The name of the produced image file
 IMAGE_FILE=${IMAGE_FILE:-lfs.img}
@@ -23,24 +27,6 @@ ROOT_DEV=${ROOT_DEV:-/dev/sdb2}
 ROOTFS_DIR="$(dirname $(readlink -f $IMAGE_FILE))/rootfs"
 
 echo "Using IMAGE_FILE=$IMAGE_FILE, IMAGE_SIZE=$IMAGE_SIZE, ROOT_DEV=$ROOT_DEV"
-
-# Basic check of the rootfs directories
-for sub in boot dev etc lib proc run sbin sys usr var; do
-    [ -d "$LFS_BASE/$sub" ] || (echo "Missing '$LFS_BASE/$sub' directory!" && exit 1)
-done
-echo "The expected directories in '$LFS_BASE' are present"
-
-for file in usr/sbin/grub-install usr/sbin/chroot; do
-    [ -f "$LFS_BASE/$file" ] || (echo "Missing '$LFS_BASE/$file' file!" && exit 1)
-done
-echo "The expected files in '$LFS_BASE' are present"
-
-if [[ $(grep __ROOT_DEV__ "$LFS_BASE/etc/fstab") == "" ]]; then
-    echo "The script can't find the string __ROOT_DEV__ inside '$LFS_BASE/etc/fstab' file 
-to substitute it with '$ROOT_DEV' where the root (/) will be mounted."
-    exit 1
-fi
-echo "__ROOT_DEV__ in '$LFS_BASE/etc/fstab' is present"
 
 # Attach the image file to available loop device
 LOOP=$(losetup -f)
@@ -114,18 +100,32 @@ echo "Formatting rootfs ext4 partition at '${LOOP}p2'..."
 mkfs.ext4 "${LOOP}p2"
 
 # Mount rootfs partition to empty rootfs directory
+rm -rf "$ROOTFS_DIR"
 mkdir -v "$ROOTFS_DIR"
 echo "Mounting rootfs directory at '${LOOP}p2' -> '$ROOTFS_DIR'..."
 mount "${LOOP}p2" "$ROOTFS_DIR"
 
-if [ "$LFS_BASE" != "$ROOTFS_DIR" ]; then
-    echo "Copying rootfs files '$LFS_BASE' -> '$ROOTFS_DIR'..."
-    # Copy lfs files to the mounted rootfs directory
-    pushd "$LFS_BASE"
-    cp -dpR $(ls -A | grep -Ev "sources|tools|scripts") "$ROOTFS_DIR"
-    popd
-    sync
+echo "Extracting '$TARGET_ROOTFS' -> '$ROOTFS_DIR'..."
+tar x "$TARGET_ROOTFS" -C "$ROOTFS_DIR" .
+sync
+
+# Basic check of the rootfs directories
+for sub in boot dev etc lib proc run sbin sys usr var; do
+    [ -d "$ROOTFS_DIR/$sub" ] || (echo "Missing '$ROOTFS_DIR/$sub' directory!" && exit 1)
+done
+echo "The expected directories in '$ROOTFS_DIR' are present"
+
+for file in usr/sbin/grub-install usr/sbin/chroot; do
+    [ -f "$ROOTFS_DIR/$file" ] || (echo "Missing '$ROOTFS_DIR/$file' file!" && exit 1)
+done
+echo "The expected files in '$ROOTFS_DIR' are present"
+
+if [[ $(grep __ROOT_DEV__ "$ROOTFS_DIR/etc/fstab") == "" ]]; then
+    echo "The script can't find the string __ROOT_DEV__ inside '$ROOTFS_DIR/etc/fstab' file 
+to substitute it with '$ROOT_DEV' where the root (/) will be mounted."
+    exit 1
 fi
+echo "__ROOT_DEV__ in '$ROOTFS_DIR/etc/fstab' is present"
 
 # grub-install expects the efi partition mounted to /boot/efi
 mkdir -v "$ROOTFS_DIR/boot/efi"
@@ -192,7 +192,7 @@ echo "Detaching loop device '$LOOP'..."
 losetup -d "$LOOP"
 
 echo "
-Building $IMAGE_FILE from $LFS_BASE finsihed.
+Building $IMAGE_FILE from $TARGET_ROOTFS finsihed.
 Plug USB memory stick with at least $(echo $IMAGE_SIZE / 1024 | bc)G available space and try
 \$ sudo dd if=$IMAGE_FILE of=/dev/sdb status=progress
 Then boot from a PC and enjoy your LFS Linux!

@@ -1,52 +1,54 @@
-.PHONY: clean packages docker tools image minimal-distro  update-scripts
-SHELL := /bin/bash
+.PHONY: clean docker tools image minimal-distro  update-scripts
+SHELL=/bin/bash
+LFS_VER=11.2
+TARGET_TOOLS=lfs-tools-$(LFS_VER).tar.gz
+TARGET_ROOTFS=lfs-rootfs-$(LFS_VER).tar.gz
 
 include .env
 export
-
 export MAKEFLAGS="--jobs=$(JOB_COUNT)"
-
 
 all:
 	@echo -e "\
-Welcome to LFS making tool!\n\n\
+Welcome to LFS linux building tool!\n\n\
 To build a bootable image run\n\n\
 	sudo make image \n\n\
 or pick up one of the available targets:\n\
-tools      - Build tools needed to build packages. The result goes into 'overlay/base' directory.\n\
-clean      - Sets initial state\n\
-packages   - Builds packages, depends on tools.\n\
-image      - Builds uefi bootable image, by running grub-install in chroot-ed overlay/base.\n\
-             grub and all dependent packages must be already built, depends on packages.\n\
-min-distro - Prepares a linux partition image with minimum set of packages.\n\
-update-scripts - Copy the scripts from git location under 'overlay/base'. Development only.\
+clean      - Sets an initial state\n\
+image      - Builds uefi bootable image\n\
+min-distro - Creates rootfs partition with minimum set of packages.\n\
 "
 
 clean:
 	@echo -n "Removing overlay tmp rootfs $(LFS_PACKAGES) [y/N] " \
 		&& read ans && [ $${ans:-N} = y ]
-	rm -rf overlay tmp rootfs $(LFS_PACKAGES)
-	mkdir -pv tmp $(LFS_BASE) $(LFS_PACKAGE) $(LFS_PACKAGES) overlay/work $(LFS)
+	rm -rf overlay tmp rootfs $(LFS_PACKAGES) $(TARGET_TOOLS) $(TARGET_ROOTFS)
+
+$(TARGET_TOOLS):
 	cp -R scripts $(LFS_BASE)
 	cp -R sources $(LFS_BASE)
 	chmod -R +x $(LFS_BASE)/scripts
-
-lfs-tools-11.2.tar.gz:
-	docker build -t lfs\:11.2 .
+	docker build -t lfs\:$(LFS_VER) .
 	docker run \
 		--rm \
 		-v $(shell pwd)/$(LFS_BASE)\:/$(LFS_BASE) \
 		--env-file .env \
-		lfs\:11.2
-	tar cvfz lfs-tools-11.2.tar.gz -C $(LFS_BASE) .
+		lfs\:$(LFS_VER)
+	@echo Packing $@...
+	tar cfz $@ -C $(LFS_BASE) .
 
-packages: lfs-tools-11.2.tar.gz
+$(TARGET_ROOTFS): $(TARGET_TOOLS)
+	rm -rf $(LFS_BASE)
+	mkdir -pv tmp $(LFS_BASE) $(LFS_PACKAGE) $(LFS_PACKAGES) overlay/work $(LFS)
+	@echo "Unpacking base..."
+	tar xf $< -C $(LFS_BASE) .
 	./scripts/packages/build-packages.sh
+	@echo Packing $@...
+	tar cfz --exclude='./sources' --exclude='./scripts' --exclude='./tools' $@ -C $(LFS_BASE) .
+	@echo "Here you are $@"
 
-$(LFS_PACKAGES)/5-make-grub.tar.gz: packages
-
-image: $(LFS_PACKAGES)/5-make-grub.tar.gz
-	./scripts/image/build-image.sh
+image: $(TARGET_ROOTFS)
+	./scripts/image/build-image.sh $<
 
 min-distro:
 	./scripts/image/build-distro.sh minimal
