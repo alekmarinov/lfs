@@ -106,7 +106,7 @@ echo "Mounting rootfs directory at '${LOOP}p2' -> '$ROOTFS_DIR'..."
 mount "${LOOP}p2" "$ROOTFS_DIR"
 
 echo "Extracting '$TARGET_ROOTFS' -> '$ROOTFS_DIR'..."
-tar x "$TARGET_ROOTFS" -C "$ROOTFS_DIR" .
+tar x "$TARGET_ROOTFS" -C "$ROOTFS_DIR"
 sync
 
 # Basic check of the rootfs directories

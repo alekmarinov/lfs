@@ -35,16 +35,16 @@ $(TARGET_TOOLS):
 		--env-file .env \
 		lfs\:$(LFS_VER)
 	@echo Packing $@...
-	tar cfz $@ -C $(LFS_BASE) .
+	tar cfz $@ -C $(LFS_BASE)
 
 $(TARGET_ROOTFS): $(TARGET_TOOLS)
-	rm -rf $(LFS_BASE)
-	mkdir -pv tmp $(LFS_BASE) $(LFS_PACKAGE) $(LFS_PACKAGES) overlay/work $(LFS)
+	rm -rf    tmp overlay/work $(LFS) $(LFS_BASE) $(LFS_PACKAGE) $(LFS_PACKAGES) 
+	mkdir -pv tmp overlay/work $(LFS) $(LFS_BASE) $(LFS_PACKAGE) $(LFS_PACKAGES) 
 	@echo "Unpacking base..."
-	tar xf $< -C $(LFS_BASE) .
+	tar xf $< -C $(LFS_BASE)
 	./scripts/packages/build-packages.sh
 	@echo Packing $@...
-	tar cfz --exclude='./sources' --exclude='./scripts' --exclude='./tools' $@ -C $(LFS_BASE) .
+	tar cfz --exclude='./sources' --exclude='./scripts' --exclude='./tools' $@ -C $(LFS_BASE)
 	@echo "Here you are $@"
 
 image: $(TARGET_ROOTFS)
