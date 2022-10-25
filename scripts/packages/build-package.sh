@@ -79,7 +79,6 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
     sync
     $SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
     umount $LFS
-    rm -rf "$LFS_PACKAGE"/*
 else
     echo -ne "\rskip   $script_path"; echo
     exit 0
@@ -91,6 +90,8 @@ if [ $status -eq 0 ]; then
     tar cfz "$package_name" -C "$LFS_PACKAGE" .
     # Copy all but delete special files/dirs from destination
     "$SCRIPT_DIR/copy-or-del.sh" "$LFS_PACKAGE" "$LFS_BASE"
+    # Clean package directory
+    rm -rf "$LFS_PACKAGE"/*
     # Mark this build has been passed as the same package successful install is not guaranteed
     touch "$flag_file"
 else
