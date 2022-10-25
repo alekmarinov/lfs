@@ -78,6 +78,7 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
     status=$?
     sync
     $SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
+    sync
     umount $LFS
 else
     echo -ne "\rskip   $script_path"; echo
