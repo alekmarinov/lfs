@@ -47,7 +47,7 @@ $(TARGET_ROOTFS): $(TARGET_TOOLS)
 	tar xf $< -C $(LFS_BASE) .
 	./scripts/packages/build-packages.sh
 	@echo Packing $@...
-	tar cfz $@ -C $(LFS_BASE) . --exclude='./sources' --exclude='./scripts' --exclude='./tools'
+	tar --exclude='./sources' --exclude='./scripts' --exclude='./tools' cfz $@ -C $(LFS_BASE) .
 	@echo "Here you are $@"
 
 packages-continue:
