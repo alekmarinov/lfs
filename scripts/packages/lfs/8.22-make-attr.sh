@@ -8,7 +8,7 @@ echo "Required disk space: 4.1 MB"
 # The attr package contains utilities to administer the extended attributes on filesystem objects.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/attr.html
 
-VER=$(ls /sources/attr-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
+VER=$(ls /sources/attr-*.tar.gz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/attr-*.tar.gz -C /tmp/ \
     && mv /tmp/attr-* /tmp/attr \
     && pushd /tmp/attr \

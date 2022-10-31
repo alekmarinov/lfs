@@ -1,4 +1,5 @@
 #!/bin/bash
+set +e
 echo "Unmounting Virtual Kernel File Systems.."
 __NAME__=$(basename "$0")
 

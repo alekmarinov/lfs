@@ -56,6 +56,8 @@ echo -ne "...... $script_path -> $log_file"
 if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
     # mount overlay to isolate the installed files in $LFS_PACKAGE
     sync
+    # Clean package directory
+    rm -rf "$LFS_PACKAGE"/*
     mount -t overlay overlay \
         "-olowerdir=$LFS_BASE,upperdir=$LFS_PACKAGE,workdir=overlay/work" \
         "$LFS"
@@ -67,7 +69,7 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
     fi
 
     # mount vkfs to the chroot directory
-    $SCRIPT_DIR/7.3-mount-vkfs.sh > /dev/null 2>&1
+    $SCRIPT_DIR/7.3-mount-vkfs.sh > /dev/null
     /usr/sbin/chroot "$LFS" /usr/bin/env -i \
         HOME=/root \
         TERM="$TERM" \

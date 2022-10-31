@@ -1,5 +1,5 @@
 #!/bin/bash
-set +e
+set -e
 
 pushd $LFS_BASE/sources
 
