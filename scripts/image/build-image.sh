@@ -9,7 +9,8 @@ if [[ "$TARGET_ROOTFS" == "" ]]; then
     exit 1
 fi
 
-if [[ "${${TARGET_ROOTFS: -6}/.*}" != "tar" ]]; then
+omit_ext="${TARGET_ROOTFS: -6}"
+if [[ "${omit_ext/.*}" != "tar" ]]; then
     echo "$TARGET_ROOTFS doesn't looks like a tar archive"
     exit 1
 fi

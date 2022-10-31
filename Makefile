@@ -47,13 +47,13 @@ $(TARGET_ROOTFS): $(TARGET_TOOLS)
 	tar xf $< -C $(LFS_BASE) .
 	./scripts/packages/build-packages.sh
 	@echo Packing $@...
-	tar --exclude='./sources' --exclude='./scripts' --exclude='./tools' cfz $@ -C $(LFS_BASE) .
+	tar cfz $@ --exclude='./sources' --exclude='./scripts' --exclude='./tools' -C $(LFS_BASE) .
 	@echo "Here you are $@"
 
 packages-continue:
 	./scripts/packages/build-packages.sh
 	@echo Packing $(TARGET_ROOTFS)...
-	tar cfz $(TARGET_ROOTFS) -C $(LFS_BASE) . --exclude='./sources' --exclude='./scripts' --exclude='./tools'
+	tar cfz $(TARGET_ROOTFS) --exclude='./sources' --exclude='./scripts' --exclude='./tools' -C $(LFS_BASE) .
 	@echo "Here you are $(TARGET_ROOTFS)"
 
 
