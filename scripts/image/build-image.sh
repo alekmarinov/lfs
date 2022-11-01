@@ -194,7 +194,7 @@ losetup -d "$LOOP"
 
 echo "
 Building $IMAGE_FILE from $TARGET_ROOTFS finsihed.
-Plug USB memory stick with at least $(echo $IMAGE_SIZE / 1024 | bc)G available space and try
+Plug USB memory stick with at least $(echo \($IMAGE_SIZE + 1023\) / 1024 | bc)G available space and try
 \$ sudo dd if=$IMAGE_FILE of=/dev/sdb status=progress
 Then boot from a PC and enjoy your LFS Linux!
 "
