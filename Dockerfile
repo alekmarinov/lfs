@@ -22,11 +22,5 @@ RUN apt-get update -y \
     && apt-get -q -y autoremove \
     && rm -rf /var/lib/apt/lists/*
 
-# set bash as default shell
-RUN rm bin/sh && ln -s bash bin/sh
-
-# Prevent environment interference
-RUN [ ! -e /etc/bash.bashrc ] || cat /dev/null > /etc/bash.bashrc
-
 WORKDIR /
 CMD "$LFS_BASE/scripts/tools/build-tools.sh"
