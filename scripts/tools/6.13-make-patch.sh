@@ -10,7 +10,7 @@ echo "Required disk space: 12 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/patch.html
 
 rm -rf /tmp/patch \
-    && tar -xf patch-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/patch-*.tar.xz -C /tmp/ \
     && mv /tmp/patch-* /tmp/patch \
     && pushd /tmp/patch \
     && ./configure \

@@ -10,7 +10,7 @@ echo "Required disk space: 163 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/coreutils.html
 
 rm -rf /tmp/diffutils \
-    && tar -xf diffutils-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/diffutils-*.tar.xz -C /tmp/ \
     && mv /tmp/diffutils-* /tmp/diffutils \
     && pushd /tmp/diffutils \
     && ./configure --prefix=/usr --host=$LFS_TGT \

@@ -9,7 +9,7 @@ echo "Required disk space: 15 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/make.html
 
 rm -rf /tmp/make \
-    && tar -xf make-*.tar.gz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/make-*.tar.gz -C /tmp/ \
     && mv /tmp/make-* /tmp/make \
     && pushd /tmp/make \
     && ./configure \

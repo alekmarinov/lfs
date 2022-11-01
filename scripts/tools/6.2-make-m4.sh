@@ -9,7 +9,7 @@ echo "Required disk space: 32 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/m4.html
 
 rm -rf /tmp/m4 \
-    && tar -xf m4-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/m4-*.tar.xz -C /tmp/ \
     && mv /tmp/m4-* /tmp/m4 \
     && pushd /tmp/m4 \
     && ./configure --prefix=/usr   \

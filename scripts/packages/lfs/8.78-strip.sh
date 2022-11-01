@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-echo "Stripping again.."
+echo "Stripping ..."
 
 # 8.78. Stripping
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/stripping.html
@@ -24,13 +24,18 @@ for LIB in $save_usrlib; do
     rm /tmp/$LIB
 done
 
+NCURSES_VER=$(ls /sources/ncurses-*.tar.gz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
+READLINE_VER=$(ls /sources/readline-*.tar.gz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
+READLINE_VER=${READLINE_VER%.*}
+ZLIB_VER=$(ls /sources/zlib-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
+
 online_usrbin="bash find strip"
 online_usrlib="libbfd-2.39.so
                libhistory.so.8.1
-               libncursesw.so.6.3
+               libncursesw.so.$NCURSES_VER
                libm.so.6
-               libreadline.so.8.1
-               libz.so.1.2.12
+               libreadline.so.$READLINE_VER
+               libz.so.$ZLIB_VER
                $(cd /usr/lib; find libnss*.so* -type f)"
 
 for BIN in $online_usrbin; do

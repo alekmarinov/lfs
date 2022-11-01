@@ -13,7 +13,7 @@ echo "Required disk space: 16 MB"
 
 VER=$(ls $LFS_BASE/sources/xz-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 rm -rf /tmp/xz \
-    && tar -xf xz-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/xz-*.tar.xz -C /tmp/ \
     && mv /tmp/xz-* /tmp/xz \
     && pushd /tmp/xz \
     && ./configure \

@@ -13,7 +13,7 @@ echo "Required disk space: 1.1 GB"
 
 GCC_VER=$(ls $LFS_BASE/sources/gcc-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 rm -rf /tmp/gcc \
-    && tar -xf gcc-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/gcc-*.tar.xz -C /tmp/ \
     && mv /tmp/gcc-* /tmp/gcc \
     && pushd /tmp/gcc \
     && mkdir -v build \

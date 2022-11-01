@@ -10,7 +10,7 @@ echo "Required disk space: 139 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/coreutils.html
 
 rm -rf /tmp/coreutils \
-    && tar -xf coreutils-*.tar.xz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/coreutils-*.tar.xz -C /tmp/ \
     && mv /tmp/coreutils-* /tmp/coreutils \
     && pushd /tmp/coreutils \
     && ./configure \

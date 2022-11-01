@@ -1,8 +1,15 @@
 #!/bin/bash
+set +e
 echo "Mounting Virtual Kernel File Systems.."
+__NAME__=$(basename "$0")
 
 # 7.3. Preparing Virtual Kernel File Systems
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter07/kernfs.html
+
+if [ "$LFS" == "" ]; then
+    echo "$__NAME__: LFS is not defined"
+    exit 1
+fi
 
 echo "Mounting vkfs $LFS/{dev,proc,sys,run}"
 mkdir -pv $LFS/{dev,proc,sys,run}

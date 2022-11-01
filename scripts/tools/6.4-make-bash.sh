@@ -9,7 +9,7 @@ echo "Required disk space: 64 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/bash.html
 
 rm -rf /tmp/bash \
-    && tar -xf bash-*.tar.gz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/bash-*.tar.gz -C /tmp/ \
     && mv /tmp/bash-* /tmp/bash \
     && pushd /tmp/bash \
     && ./configure --prefix=/usr \

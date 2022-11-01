@@ -9,7 +9,7 @@ echo "Required disk space: 50 MB"
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/ncurses.html
 
 rm -rf /tmp/ncurses \
-    && tar -xf ncurses-*.tar.gz -C /tmp/ \
+    && tar -xf $LFS_BASE/sources/ncurses-*.tar.gz -C /tmp/ \
     && mv /tmp/ncurses-* /tmp/ncurses \
     && pushd /tmp/ncurses \
     && sed -i s/mawk// configure \
