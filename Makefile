@@ -68,7 +68,7 @@ update-scripts:
 	chmod -R +x $(LFS_BASE)/scripts
 
 build-package:
-	./scripts/packages/build-package.sh $(shell find scripts/packages -name $(PACKAGE))
+	./scripts/packages/build-package.sh -f $(shell find scripts/packages -name $(PACKAGE))
 
 find-package-file:
 	./scripts/packages/find-package-file.sh $(FILE)
