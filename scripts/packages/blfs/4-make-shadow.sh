@@ -202,3 +202,6 @@ done
 # Linux-PAM uses the pam_limits.so module along with the /etc/security/limits.conf file.
 # Rename the /etc/limits file using the following command:
 [ -f /etc/limits ] && mv -v /etc/limits{,.NOUSE}
+
+# Set default root password
+echo -e "$LFS_ROOT_PASSWORD\n$LFS_ROOT_PASSWORD" | passwd root
