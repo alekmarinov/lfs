@@ -22,9 +22,9 @@ min-distro - Creates rootfs partition with minimum set of packages.\n\
 "
 
 clean:
-	@echo -n "Removing overlay tmp rootfs $(LFS_PACKAGES) $(TARGET_TOOLS) $(TARGET_ROOTFS) [y/N] " \
+	@echo -n "Removing overlay tmp rootfs lfs.img $(LFS_PACKAGES) $(TARGET_TOOLS) $(TARGET_ROOTFS) [y/N] " \
 		&& read ans && [ $${ans:-N} = y ]
-	rm -rf overlay tmp rootfs $(LFS_PACKAGES) $(TARGET_TOOLS) $(TARGET_ROOTFS)
+	rm -rf overlay tmp rootfs lfs.img $(LFS_PACKAGES) $(TARGET_TOOLS) $(TARGET_ROOTFS)
 
 $(TARGET_TOOLS):
 	mkdir -p $(LFS_BASE)
