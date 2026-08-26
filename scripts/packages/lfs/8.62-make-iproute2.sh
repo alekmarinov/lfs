@@ -15,6 +15,7 @@ tar -xf /sources/iproute2-*.tar.xz -C /tmp/ \
     && sed -i /ARPD/d Makefile \
     && rm -fv man/man8/arpd.8 \
     && make NETNS_RUN_DIR=/run/netns \
+    && make SBINDIR=/usr/sbin install \
     && if [ $LFS_DOCS -eq 1 ]; then \
         mkdir -pv /usr/share/doc/iproute2-$VER; \
         cp -v COPYING README* /usr/share/doc/iproute2-$VER; \

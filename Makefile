@@ -34,6 +34,7 @@ $(TARGET_TOOLS):
 	docker build -t lfs\:$(LFS_VER) .
 	docker run \
 		--rm \
+		--network host \
 		-v $(shell pwd)/$(LFS_BASE)\:/$(LFS_BASE) \
 		--env-file .env \
 		lfs\:$(LFS_VER)

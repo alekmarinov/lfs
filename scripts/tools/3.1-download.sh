@@ -3,20 +3,79 @@ set -e
 
 pushd $LFS_BASE/sources
 
-echo "Checking MD5 sum of the LFS packages.."
-if ! md5sum -c lfs-11.2.md5sums; then
-    echo "Downloading LFS packages.."
-    wget --no-check-certificate --timestamping -c --report-speed=bits --input-file=lfs-11.2.wget-list
-    echo "Checking MD5 sum of the LFS packages.."
-    md5sum -c lfs-11.2.md5sums
-fi
+WGET_OPTS="--no-check-certificate --timestamping -c --timeout=30 --tries=5 --report-speed=bits"
 
-echo "Checking MD5 sum of the BLFS packages.."
-if ! md5sum -c blfs-11.2.md5sums; then
-    echo "Downloading BLFS packages.."
-    wget --no-check-certificate --timestamping -c --report-speed=bits --input-file=blfs-11.2.wget-list
-    echo "Checking MD5 sum of the BLFS packages.."
-    md5sum -c blfs-11.2.md5sums
-fi
+# Mirrors holding the complete LFS package set. They are tried for the packages
+# which can't be fetched from their upstream location.
+FALLBACK_MIRRORS="\
+https://ftp.osuosl.org/pub/lfs/lfs-packages/11.2 \
+https://anduin.linuxfromscratch.org/LFS \
+https://anduin.linuxfromscratch.org/BLFS"
+
+# ftp.gnu.org starts refusing connections after a while when the whole package
+# set is pulled from it, so the same path is retried on the GNU mirrors.
+GNU_MIRRORS="\
+https://mirrors.kernel.org/gnu \
+https://ftp.wayne.edu/gnu \
+https://mirror.us-midwest-1.nexcess.net/gnu"
+
+# List the packages of the given md5sums file which are missing or corrupted
+list_broken() {
+    md5sum -c "$1" 2>/dev/null | grep -v ': OK$' | cut -d: -f1
+}
+
+# Print the alternative urls to try for a package
+# alternative_urls <package file name> <wget list>
+alternative_urls() {
+    local file="$1" wget_list="$2" url mirror
+
+    # the upstream url of this package, if it is a GNU one retry it on the
+    # GNU mirrors keeping the path
+    url=$(grep -m1 -E "/${file//./\\.}\$" "$wget_list" || true)
+    case "$url" in
+    */ftp.gnu.org/gnu/*)
+        for mirror in $GNU_MIRRORS; do
+            echo "$mirror/${url#*/ftp.gnu.org/gnu/}"
+        done
+        ;;
+    esac
+
+    for mirror in $FALLBACK_MIRRORS; do
+        echo "$mirror/$file"
+    done
+}
+
+# download <md5sums file> <wget list> <name>
+download() {
+    local md5sums="$1" wget_list="$2" name="$3" broken file url
+
+    echo "Checking MD5 sum of the $name packages.."
+    if md5sum -c "$md5sums"; then
+        return 0
+    fi
+
+    echo "Downloading $name packages.."
+    wget $WGET_OPTS --input-file="$wget_list" \
+        || echo "Some $name packages failed to download from their upstream location"
+
+    # Retry the packages which are still missing or corrupted from the mirrors
+    broken=$(list_broken "$md5sums")
+    for file in $broken; do
+        for url in $(alternative_urls "$file" "$wget_list"); do
+            echo "Retrying $file from $url .."
+            # a partially downloaded file must not be continued from a mirror
+            rm -f "$file"
+            if wget $WGET_OPTS "$url"; then
+                break
+            fi
+        done
+    done
+
+    echo "Checking MD5 sum of the $name packages.."
+    md5sum -c "$md5sums"
+}
+
+download lfs-11.2.md5sums  lfs-11.2.wget-list  LFS
+download blfs-11.2.md5sums blfs-11.2.wget-list BLFS
 
 popd

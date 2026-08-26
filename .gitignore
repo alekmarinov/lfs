@@ -1,6 +1,5 @@
 # Ignore file patterns coming from download sources
-lfs.img
-rootfs.img
+*.img
 *.tar.gz
 /tmp
 /overlay
