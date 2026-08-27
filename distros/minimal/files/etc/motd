@@ -1,0 +1,6 @@
+
+Welcome to Minimal LFS - a small system assembled from the LFS package set.
+
+  /etc/os-release   what this distro is
+  /etc/lfs-distro   how and when it was assembled
+

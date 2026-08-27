@@ -1,0 +1,16 @@
+# Minimal distro - the packages added on top of the core.
+#
+# The core already provides a system booting to a login prompt, so this list
+# only adds what makes it usable interactively.
+#
+# Lines starting with # and empty lines are ignored, the order is the order the
+# packages were built in.
+
+8.7-make-bzip2.tar.gz
+8.10-make-file.tar.gz
+8.19-make-gmp.tar.gz
+8.18-make-binutils.tar.gz
+8.40-make-less.tar.gz
+8.69-make-vim.tar.gz
+12-make-which.tar.gz
+5-make-grub.tar.gz

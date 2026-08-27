@@ -10,28 +10,68 @@ General idea is to learn Linux by building your own system based on the LFS.
 
 Scripts are organized to follow closely as possible the book structure.
 
+Every package is built in isolation and archived in packages/, so a distro is
+assembled by unpacking a selection of them over a stable core.
+The core (distros/core/packages.list) is what an LFS system needs to boot to a
+login prompt and is always installed.
+A distro is described by its own directory under distros/:
+
+    distros/minimal/distro.conf     identity - name, version, hostname, STRIP
+    distros/minimal/packages.list   the packages added on top of the core
+    distros/minimal/files/          files copied over the assembled rootfs
+
 ## Build
 
-To build an image for an arbitrary PC, bootable from USB stick, run
+A distro is built in four steps, each one consuming what the previous produced:
 
-    sudo make image
+    sudo make packages              builds every package from source, once
+    make distro DISTRO=minimal      assembles distros/minimal into rootfs/
+    make image                      turns rootfs/ into a bootable image.img
+    make qemu                       boots image.img
 
-To build an image bootable with QEMU, run
+Only one distro is worked on at a time, in the rootfs/ directory.
+To start another one, archive the current rootfs first with make docker,
+or discard it by passing FORCE=1 to make distro.
 
-    sudo make image IMAGE_FILE=lfs-qemu.img ROOT_DEV=/dev/sda2
+## Distro
 
-ROOT_DEV is the device the root partition appears as on the machine the image is booted on.
-It is written in /etc/fstab and in the grub menu entry.
-The default (/dev/sdb2) is an USB stick plugged in a PC with one internal disk,
-while under QEMU the image is the first disk, hence /dev/sda2.
+To see what the assembled rootfs is, read its identity files:
+
+    cat rootfs/etc/os-release       name, version and build id of the distro
+    cat rootfs/etc/lfs-distro       which distro was assembled and when
+
+The debug symbols are removed when STRIP=1 in distro.conf, which is what makes
+the produced image and docker image small - for the minimal distro it is the
+difference between 872 MB and 566 MB. Keep them with
+
+    make distro DISTRO=minimal STRIP=0
+
+To resolve every program of the assembled rootfs against its own libraries, run
+
+    make check
+
+It reports the programs which can not run, which is how a distro missing a
+package is found without booting it.
+
+To archive the assembled rootfs as a docker image named after the distro, run
+
+    make docker TAG=20260826
+
+The image is named after the ID of the distro, so the above produces
+minimal:20260826 which can be run with
+
+    sudo docker run --rm -it minimal:20260826
 
 ## Usage
 
-Final result is a bootable image (lfs.img) with LFS system which can be flashed on USB stick with the command:
-    
-    sudo dd if=lfs.img of=/dev/sdb status=progress
+The produced image.img is flashed on USB stick with the command:
 
-Boot the PC from the USB stick and log in as root with the password set by LFS_ROOT_PASSWORD in .env.
+    sudo dd if=image.img of=/dev/sdb status=progress
+
+Boot the PC from the USB stick and log in as root with the password set by
+LFS_ROOT_PASSWORD in .env.
+The root partition is found by its PARTUUID, so the same image boots from a USB
+stick on a PC which already has disks and as the first disk under QEMU.
 
 ## QEMU
 
@@ -39,17 +79,10 @@ The image boots with UEFI only, therefore QEMU needs the OVMF firmware:
 
     sudo apt install qemu-system-x86 ovmf
 
-Boot lfs-qemu.img with a writable copy of the OVMF variables:
+Then make qemu boots image.img, forwarding QEMU_ARGS to QEMU:
 
-    cp /usr/share/OVMF/OVMF_VARS_4M.fd /tmp/OVMF_VARS.fd
-    sudo qemu-system-x86_64 -enable-kvm -m 2048 -smp 4 -machine q35 \
-        -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd \
-        -drive if=pflash,format=raw,file=/tmp/OVMF_VARS.fd \
-        -hda lfs-qemu.img \
-        -netdev user,id=n0 -device e1000e,netdev=n0
-
-The OVMF files are named OVMF_CODE.fd and OVMF_VARS.fd on distributions other than Ubuntu 24.04.
-The eth0 interface is configured with the address QEMU gives to its user mode network.
+    make qemu
+    make qemu QEMU_ARGS="-snapshot"
 
 ## License
 

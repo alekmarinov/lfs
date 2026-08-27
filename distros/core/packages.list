@@ -1,0 +1,62 @@
+# The stable core every distro is built around.
+#
+# It is always installed by build-distro.sh, before the packages of the
+# selected distro package list. It contains what an LFS system needs to boot
+# to a login prompt and nothing else - the runtime libraries the bootscripts
+# link against, the programs they call, the system configuration and the
+# kernel.
+#
+# Lines starting with # and empty lines are ignored.
+
+# directory layout, /etc/passwd, /etc/group
+7.5-create-directories.tar.gz
+7.6-create-essentials.tar.gz
+
+# C library and the libraries the core programs link against
+8.5-make-glibc.tar.gz
+8.6-make-zlib.tar.gz
+8.8-make-xz.tar.gz
+8.9-make-zstd.tar.gz
+8.11-make-readline.tar.gz
+8.22-make-attr.tar.gz
+8.23-make-acl.tar.gz
+8.24-make-libcap.tar.gz
+8.28-make-ncurses.tar.gz
+8.46-make-openssl.tar.gz
+8.47-make-kmod.tar.gz
+8.48-make-libelf.tar.gz
+17-make-libtirpc.tar.gz
+
+# shell and the utilities the bootscripts call
+8.4-make-iana-etc.tar.gz
+8.25-make-shadow.tar.gz
+8.29-make-sed.tar.gz
+8.33-make-grep.tar.gz
+8.34-make-bash.tar.gz
+8.39-make-inetutils.tar.gz
+8.54-make-coreutils.tar.gz
+8.58-make-findutils.tar.gz
+8.61-make-gzip.tar.gz
+8.62-make-iproute2.tar.gz
+8.63-make-kbd.tar.gz
+8.67-make-tar.tar.gz
+8.70-make-eudev.tar.gz
+8.72-make-procps-ng.tar.gz
+8.73-make-util-linux.tar.gz
+8.74-make-e2fsprogs.tar.gz
+8.75-make-sysklogd.tar.gz
+8.76-make-sysvinit.tar.gz
+
+# system configuration
+9.2-make-lfs-bootscripts.tar.gz
+9.4-managing-devices.tar.gz
+9.5-configure-network.tar.gz
+9.6-configure-systemv.tar.gz
+9.7-configure-bash.tar.gz
+9.8-configure-inputrc.tar.gz
+9.9-configure-shells.tar.gz
+10.2-create-fstab.tar.gz
+11.1-the-end.tar.gz
+
+# kernel
+10.3-make-linux-kernel.tar.gz
