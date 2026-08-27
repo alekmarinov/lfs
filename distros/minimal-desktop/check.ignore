@@ -1,0 +1,7 @@
+# Files of the desktop distro which do not resolve, and why that is accepted.
+#
+# Anything unresolved which is not listed here fails 'make check'.
+
+# the ICU integration of harfbuzz, which nothing in this distro links against.
+# Resolving it means installing icu, 35 MB for a library no program here loads.
+/usr/lib/libharfbuzz-icu.so.0.50200.0

@@ -22,7 +22,8 @@ tar -xf /sources/make-ca-*.tar.xz -C /tmp/ \
     && make install \
     && install -vdm755 /etc/ssl/local \
     && popd \
-    && rm -rf /tmp/make-ca
+    && rm -rf /tmp/make-ca \
+    || exit 1
 
 cat > /etc/cron.weekly/update-pki.sh << "EOF"
 #!/bin/bash

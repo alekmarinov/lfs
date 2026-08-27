@@ -51,8 +51,24 @@ fi
 
 # The firmware writes to its variable store, so it gets a copy of its own kept
 # next to the image, which preserves the uefi boot entries between boots.
+#
+# The store has to be discarded when the image is rebuilt: 'make image' writes a
+# new partition table with a new MBR disk signature, so the boot entry recorded
+# by the previous boot no longer resolves. The firmware then runs out of boot
+# options and drops into its shell instead of falling back to the removable
+# \EFI\BOOT\BOOTX64.EFI path.
 OVMF_VARS_COPY="$IMAGE_FILE.nvram"
-[ -f "$OVMF_VARS_COPY" ] || cp -f "$OVMF_VARS" "$OVMF_VARS_COPY"
+if [ ! -f "$OVMF_VARS_COPY" ] || [ "$IMAGE_FILE" -nt "$OVMF_VARS_COPY" ]; then
+    echo "Resetting the uefi variable store for the current $IMAGE_FILE"
+    cp -f "$OVMF_VARS" "$OVMF_VARS_COPY"
+fi
+
+# The display is a single virtio-gpu head rather than the default VGA: the
+# kernel drives it with KMS, and one head keeps the console where it is looked
+# for. The pointer is a USB tablet, which is absolute - the guest cursor tracks
+# the host cursor. With only the PS/2 mouse QEMU emulates by default the pointer
+# is relative, so the two cursors drift apart until the window is clicked to
+# grab input, which looks like a window manager that will not move its windows.
 
 PRETTY_NAME=$(sed -n 's/^PRETTY_NAME="\(.*\)"/\1/p' rootfs/etc/os-release 2>/dev/null)
 echo "Booting $IMAGE_FILE ${PRETTY_NAME:+($PRETTY_NAME) }with $OVMF_CODE"
@@ -69,4 +85,8 @@ exec sudo qemu-system-x86_64 \
     -device ide-hd,drive=disk0,bus=ahci.0 \
     -netdev user,id=net0 \
     -device e1000e,netdev=net0 \
+    -vga none \
+    -device virtio-gpu-pci \
+    -device qemu-xhci \
+    -device usb-tablet \
     "$@"

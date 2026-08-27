@@ -70,6 +70,10 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
 
     # mount vkfs to the chroot directory
     $SCRIPT_DIR/7.3-mount-vkfs.sh > /dev/null
+    # The build failing inside the chroot is reported below, with the tail of
+    # its log. Without disarming the trap the chroot returning non zero fires
+    # it first, which unmounts and leaves only a line number behind.
+    trap - ERR
     /usr/sbin/chroot "$LFS" /usr/bin/env -i \
         HOME=/root \
         TERM="$TERM" \
@@ -78,6 +82,7 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
         $(cat .env | xargs) \
         /bin/bash --login +h -c "sh -c '$script_path > /tmp/$log_file 2>&1'"
     status=$?
+    trap 'error_trap $LINENO' ERR
     sync
     $SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
     sync
@@ -100,7 +105,8 @@ if [ $status -eq 0 ]; then
 else
     echo -ne "\rfailed"; echo
     # The log_file should remain in $LFS_PACKAGE/tmp
-    tail "$LFS/tmp/$log_file"
+    # $LFS is unmounted by now, the log survives in the package layer
+    tail -n 25 "$LFS_PACKAGE/tmp/$log_file"
     echo
     # Exit with failure
     exit 1

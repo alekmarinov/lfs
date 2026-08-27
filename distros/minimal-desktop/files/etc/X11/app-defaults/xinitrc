@@ -1,0 +1,23 @@
+#!/bin/sh
+# The session startx runs, replacing the twm and two xterms xinit installs by
+# default. The distro declares its own session here rather than leaving it to
+# whichever package happened to write the file last.
+
+# the X resources and the keyboard map, if this system has any
+[ -f /etc/X11/app-defaults/Xresources ] && xrdb -merge /etc/X11/app-defaults/Xresources
+[ -f "$HOME/.Xresources" ] && xrdb -merge "$HOME/.Xresources"
+
+# a readable scalable font instead of the fixed bitmap default
+xterm -fa 'DejaVu Sans Mono' -fs 11 -geometry 100x30+40+40 &
+
+# The window manager runs in the background so that the desktop background can
+# be painted once it is up. Setting the root window before fluxbox starts, or
+# through its rootCommand, does not survive: fluxbox applies the background of
+# its style over it. The session ends when fluxbox exits.
+fluxbox &
+fluxbox_pid=$!
+
+sleep 2
+fbsetroot -solid rgb:40/50/70
+
+wait $fluxbox_pid

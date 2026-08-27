@@ -73,8 +73,11 @@ check() {
 }
 # the programs, and the shared objects they load at runtime - a plugin of a
 # program, like the sudoers policy of sudo, fails just as hard as the program
-for f in /usr/bin/* /usr/sbin/*; do
+for f in /usr/bin/* /usr/sbin/* /usr/libexec/*; do
     [ -f "$f" ] && check "$f"
+done
+find /usr/libexec -type f 2>/dev/null | while read -r f; do
+    check "$f"
 done
 find /usr/lib -type f -name "*.so*" 2>/dev/null | while read -r f; do
     check "$f"

@@ -1,0 +1,21 @@
+! The fluxbox defaults this distro ships. Fluxbox copies this file to
+! ~/.fluxbox/init the first time a user starts it.
+
+session.menuFile:	~/.fluxbox/menu
+session.keyFile: ~/.fluxbox/keys
+session.styleFile: /usr/share/fluxbox/styles/bloe
+session.configVersion:	13
+
+! Move the window itself rather than dragging an outline of it.
+!
+! The outline is drawn by XORing it onto the screen and XORing it again to
+! erase it. This server has no acceleration - it was built without glamor, so
+! it renders into a shadow frame buffer on the CPU - and the erase leaves the
+! outline behind, so dragging a window paints a trail of rectangles over the
+! desktop. Moving the window opaquely never draws an outline at all.
+session.screen0.opaqueMove:	true
+
+session.screen0.fullMaximization:	false
+session.screen0.rowPlacementDirection:	LeftToRight
+session.screen0.colPlacementDirection:	TopToBottom
+session.screen0.windowPlacement:	RowSmartPlacement

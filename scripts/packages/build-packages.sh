@@ -131,6 +131,9 @@ $build /scripts/packages/blfs/13-make-six.sh
 $build /scripts/packages/blfs/13-make-gdb.sh
 $build /scripts/packages/blfs/9-make-libuv.sh
 $build /scripts/packages/blfs/9-make-libusb.sh
+$build /scripts/packages/blfs/9-make-libevdev.sh
+$build /scripts/packages/blfs/9-make-mtdev.sh
+$build /scripts/packages/blfs/9-make-libinput.sh
 $build /scripts/packages/blfs/9-make-libtasn1.sh
 $build /scripts/packages/blfs/4-make-p11-kit.sh
 $build /scripts/packages/blfs/9-make-nspr.sh
@@ -184,6 +187,31 @@ $build /scripts/packages/blfs/10-make-graphite2.sh
 $build /scripts/packages/blfs/10-make-harfbuzz.sh
 $build -f /scripts/packages/blfs/10-make-freetype.sh # reinstall with harfbuzz
 $build /scripts/packages/blfs/10-make-fontconfig.sh
+$build /scripts/packages/blfs/10-make-pixman.sh
+
+# Xorg build environment and libraries
+$build /scripts/packages/blfs/24-make-util-macros.sh
+$build /scripts/packages/blfs/24-make-xorgproto.sh
+$build /scripts/packages/blfs/24-make-libXau.sh
+$build /scripts/packages/blfs/24-make-libXdmcp.sh
+$build /scripts/packages/blfs/24-make-xcb-proto.sh
+$build /scripts/packages/blfs/24-make-libxcb.sh
+$build /scripts/packages/blfs/24-make-xorg-libraries.sh
+$build /scripts/packages/blfs/24-make-libdrm.sh
+$build /scripts/packages/blfs/24-make-libxcvt.sh
+$build /scripts/packages/blfs/24-make-xbitmaps.sh
+$build /scripts/packages/blfs/24-make-xorg-apps.sh
+$build /scripts/packages/blfs/24-make-xcursor-themes.sh
+$build /scripts/packages/blfs/24-make-xorg-fonts.sh
+$build /scripts/packages/blfs/24-make-xkeyboard-config.sh
+$build /scripts/packages/blfs/24-make-xorg-server.sh
+$build /scripts/packages/blfs/24-make-xf86-input-libinput.sh
+$build /scripts/packages/blfs/24-make-xinit.sh
+$build /scripts/packages/blfs/24-make-twm.sh
+$build /scripts/packages/blfs/24-make-xclock.sh
+$build /scripts/packages/blfs/24-make-xterm.sh
+$build /scripts/packages/blfs/24-make-dejavu-fonts.sh
+$build /scripts/packages/blfs/27-make-fluxbox.sh
 $build /scripts/packages/blfs/5-make-grub.sh
 
 # clean up

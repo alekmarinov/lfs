@@ -15,6 +15,27 @@ MNT_DIR="$(dirname $(readlink -f $IMAGE_FILE))/mnt"
 
 [ -d "$ROOTFS_DIR" ] || { echo "Directory '$ROOTFS_DIR' is missing, run 'make distro DISTRO=...' first"; exit 1; }
 
+# Rewriting the image while a machine is booted from it corrupts both: the
+# running system reads a file system which changed underneath it, and writes
+# its stale buffers back into the new one. QEMU takes only an advisory lock,
+# which dd does not honour, so the check has to happen here.
+holders=$(pgrep -af qemu-system-x86_64 2>/dev/null \
+    | grep -E "^[0-9]+ (sudo +)?([^ ]*/)?qemu-system-x86_64 " \
+    | grep -F -- "$(basename "$IMAGE_FILE")" \
+    | cut -d' ' -f1 | tr '\n' ',' | sed 's/,$//')
+if [ -n "$holders" ]; then
+    echo "'$IMAGE_FILE' is booted right now by:"
+    ps -o pid,etime,command -p "$holders" --no-headers 2>/dev/null | cut -c1-100 | sed 's/^/    /'
+    echo "
+Rebuilding it now would corrupt both the running system and the new image.
+Shut the machine down first - press its power button, or run 'poweroff' in it,
+or stop it with
+
+    sudo kill ${holders//,/ }
+"
+    exit 1
+fi
+
 for file in usr/sbin/grub-install usr/sbin/chroot; do
     [ -f "$ROOTFS_DIR/$file" ] || { echo "Missing '$ROOTFS_DIR/$file', the distro can't be made bootable"; exit 1; }
 done

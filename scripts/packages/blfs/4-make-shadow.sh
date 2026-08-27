@@ -32,7 +32,8 @@ tar -xf /sources/shadow-*.tar.xz -C /tmp/ \
     && make \
     && make exec_prefix=/usr install \
     && popd \
-    && rm -rf /tmp/shadow
+    && rm -rf /tmp/shadow \
+    || exit 1
 
 # Configuring /etc/login.defs
 # The login program currently performs many functions which Linux-PAM modules should now handle.
@@ -58,7 +59,7 @@ install -v -m644 /etc/login.defs /etc/login.defs.orig \
             ENVIRON_FILE
 do
     sed -i "s/^${FUNCTION}/# &/" /etc/login.defs
-done
+done || exit 1
 
 # Configuring the /etc/pam.d/ Files
 # Linux-PAM has two supported methods for configuration.

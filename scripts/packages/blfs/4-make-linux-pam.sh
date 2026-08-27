@@ -27,7 +27,8 @@ tar -xf /sources/Linux-PAM-$VER.tar.xz -C /tmp/ \
         --enable-securedir=/usr/lib/security \
         --docdir=/usr/share/doc/Linux-PAM-$VER \
     && make \
-    && install -v -m755 -d /etc/pam.d
+    && install -v -m755 -d /etc/pam.d \
+    || exit 1
 
 if [ $LFS_TEST -eq 1 ]; then
     cat > /etc/pam.d/other << "EOF"
@@ -43,7 +44,8 @@ fi
 make install \
     && chmod -v 4755 /usr/sbin/unix_chkpwd \
     && popd \
-    && rm -rf /tmp/linuxpam
+    && rm -rf /tmp/linuxpam \
+    || exit 1
 
 # Configure pam
 

@@ -11,7 +11,8 @@ echo "Required disk space: 5.1 MB"
 
 tar -xf /sources/fcron-*.tar.gz -C /tmp/ \
     && mv /tmp/fcron-* /tmp/fcron \
-    && pushd /tmp/fcron
+    && pushd /tmp/fcron \
+    || exit 1
 
 cat >> /etc/syslog.conf << "EOF"
 # Begin fcron addition to /etc/syslog.conf
@@ -23,7 +24,8 @@ EOF
 
 /etc/rc.d/init.d/sysklogd reload
 groupadd -g 22 fcron \
-    && useradd -d /dev/null -c "Fcron User" -g fcron -s /bin/false -u 22 fcron
+    && useradd -d /dev/null -c "Fcron User" -g fcron -s /bin/false -u 22 fcron \
+    || exit 1
 
 find doc -type f -exec sed -i 's:/usr/local::g' {} \;
 
@@ -37,7 +39,8 @@ find doc -type f -exec sed -i 's:/usr/local::g' {} \;
     && make \
     && make install \
     && popd \
-    && rm -rf /tmp/fcron
+    && rm -rf /tmp/fcron \
+    || exit 1
 
 cat > /usr/bin/run-parts << "EOF"
 #!/bin/sh
@@ -102,7 +105,8 @@ EOF
 
 pushd /tmp/blfs-bootscripts \
     && make install-fcron \
-    && popd
+    && popd \
+    || exit 1
 
 # /etc/rc.d/init.d/fcron start &&
 fcrontab -z -u systab

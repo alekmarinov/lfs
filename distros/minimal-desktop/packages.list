@@ -1,0 +1,80 @@
+# Minimal desktop distro - the minimal system plus a small X desktop.
+#
+# Deliberately curated: an X server without GL, one window manager and a
+# scalable font family. The full distro is the one which grows with every
+# package the build produces.
+#
+# The order of this list does not matter: build-distro.sh installs the core and
+# the distro packages together, in the order build-packages.sh built them.
+
+# --- everything the minimal distro has ---
+8.7-make-bzip2.tar.gz
+8.10-make-file.tar.gz
+8.19-make-gmp.tar.gz
+8.40-make-less.tar.gz
+8.69-make-vim.tar.gz
+12-make-which.tar.gz
+5-make-grub.tar.gz
+17-make-libnsl.tar.gz
+4-make-linux-pam.tar.gz
+4-make-shadow.tar.gz
+4-make-openssh.tar.gz
+4-make-sudo.tar.gz
+12-make-pciutils.tar.gz
+
+# --- the C++ runtime, which the X stack links against ---
+8.26-make-gcc.tar.gz
+8.20-make-mpfr.tar.gz
+8.21-make-mpc.tar.gz
+
+# --- font rendering ---
+# expat parses the fontconfig configuration and the X resources
+8.38-make-expat.tar.gz
+10-make-libpng.tar.gz
+10-make-graphite2.tar.gz
+10-make-harfbuzz.tar.gz
+10-make-freetype.tar.gz
+10-make-fontconfig.tar.gz
+10-make-pixman.tar.gz
+
+# --- input stack ---
+9-make-libevdev.tar.gz
+9-make-mtdev.tar.gz
+9-make-libinput.tar.gz
+
+# --- Xorg build environment and libraries ---
+24-make-util-macros.tar.gz
+24-make-xorgproto.tar.gz
+24-make-libXau.tar.gz
+24-make-libXdmcp.tar.gz
+24-make-xcb-proto.tar.gz
+24-make-libxcb.tar.gz
+24-make-xorg-libraries.tar.gz
+24-make-libdrm.tar.gz
+24-make-libxcvt.tar.gz
+24-make-xbitmaps.tar.gz
+
+# --- applications, cursors and fonts ---
+24-make-xorg-apps.tar.gz
+24-make-xcursor-themes.tar.gz
+24-make-xorg-fonts.tar.gz
+24-make-xkeyboard-config.tar.gz
+
+# the Xorg server links against dbus for its configuration interface
+12-make-dbus.tar.gz
+
+# nettle is linked by the Xnest and Xvfb servers xorg-server installs
+4-make-nettle.tar.gz
+
+# --- the server, its input driver and the session ---
+24-make-xorg-server.tar.gz
+24-make-xf86-input-libinput.tar.gz
+24-make-xinit.tar.gz
+24-make-twm.tar.gz
+24-make-xclock.tar.gz
+24-make-xterm.tar.gz
+
+# a scalable font family for Xft, and a window manager with decorations,
+# a menu, a toolbar and workspaces
+24-make-dejavu-fonts.tar.gz
+27-make-fluxbox.tar.gz
