@@ -153,6 +153,16 @@ umount -v $MNT_DIR/dev/pts
 umount -v $MNT_DIR/dev
 
 echo "Configuring grub..."
+# The cpu microcode is handed to the kernel as an early initrd, when the distro
+# packed one. The processor applies it before the root file system is mounted.
+if [ -f "$MNT_DIR/boot/microcode.img" ]; then
+    MICROCODE_LINE="    initrd  /boot/microcode.img
+"
+    echo "Loading the cpu microcode from /boot/microcode.img"
+else
+    MICROCODE_LINE=""
+fi
+
 # Configure grub
 cat > $MNT_DIR/boot/grub/grub.cfg << EOF
 # Begin /boot/grub/grub.cfg
@@ -171,7 +181,7 @@ fi
 
 menuentry "$PRETTY_NAME" {
     linux   /boot/$KERNEL_NAME rootwait root=$ROOT_DEV ro
-}
+$MICROCODE_LINE}
 EOF
 
 echo "Configuring $MNT_DIR/etc/fstab with root device '$ROOT_DEV'..."

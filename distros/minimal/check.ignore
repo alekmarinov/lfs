@@ -1,0 +1,17 @@
+# Files of the minimal distro which do not resolve, and why that is accepted.
+#
+# All of them are auxiliary parts of packages the distro needs for something
+# else. Resolving them means installing the C++ runtime, which is part of the
+# gcc package - 207 MB for tools this distro never runs, and gcc then brings
+# its own unresolved tools with it.
+#
+# Anything unresolved which is not listed here fails 'make check'.
+
+# grub-mkfont builds the boot menu font, which is already built and installed
+# by the grub package, so the image never runs it
+/usr/bin/grub-mkfont
+
+# the C++ wrapper libraries of gmp, ncurses and db, which nothing links against
+/usr/lib/libgmpxx.so.4.6.1
+/usr/lib/libncurses++w.so.6.3
+/usr/lib/libdb_cxx-5.3.so

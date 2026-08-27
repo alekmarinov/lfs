@@ -6,6 +6,31 @@ IMAGE_FILE=${IMAGE_FILE:-image.img}
 
 [ -f "$IMAGE_FILE" ] || { echo "'$IMAGE_FILE' is missing, run 'make image' first"; exit 1; }
 
+# QEMU takes a write lock on the image, so a second machine booting the same
+# image fails with a message which does not name the process holding it.
+#
+# NOTE the process name is matched on the whole command line: 'pkill -x
+# qemu-system-x86_64' silently matches nothing, process names are cut at 15
+# characters and that one is longer.
+# The command line has to start with qemu itself, optionally through sudo: any
+# other process which merely mentions the image - a shell running this very
+# check among them - is not holding the image.
+holders=$(pgrep -af qemu-system-x86_64 2>/dev/null \
+    | grep -E "^[0-9]+ (sudo +)?([^ ]*/)?qemu-system-x86_64 " \
+    | grep -F -- "$(basename "$IMAGE_FILE")" \
+    | cut -d' ' -f1 | tr '\n' ',' | sed 's/,$//')
+if [ -n "$holders" ]; then
+    echo "'$IMAGE_FILE' is already booted by:"
+    ps -o pid,etime,command -p "$holders" --no-headers 2>/dev/null | cut -c1-100 | sed 's/^/    /'
+    echo "
+Only one machine at a time can boot an image, QEMU keeps it write locked.
+Stop the running one with
+
+    sudo kill ${holders//,/ }
+"
+    exit 1
+fi
+
 # The image carries a uefi boot loader only, so QEMU needs the OVMF firmware.
 # Debian and Ubuntu up to 22.04 name it OVMF_CODE.fd, Ubuntu 24.04 OVMF_CODE_4M.fd
 for dir in /usr/share/OVMF /usr/share/ovmf /usr/share/edk2/ovmf; do

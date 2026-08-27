@@ -117,6 +117,7 @@ $build /scripts/packages/blfs/2-blfs-bootscripts.sh
 $build /scripts/packages/blfs/5-make-dosfstools.sh
 $build /scripts/packages/blfs/5-make-mkinitramfs.sh
 $build /scripts/packages/blfs/12-make-cpio.sh
+$build /scripts/packages/blfs/3-make-microcode.sh # needs cpio
 $build /scripts/packages/blfs/9-make-libaio.sh
 $build /scripts/packages/blfs/5-make-mdadm.sh
 $build /scripts/packages/blfs/5-make-reiserfsprogs.sh
@@ -129,6 +130,7 @@ $build /scripts/packages/blfs/5-make-xfsprogs.sh
 $build /scripts/packages/blfs/13-make-six.sh
 $build /scripts/packages/blfs/13-make-gdb.sh
 $build /scripts/packages/blfs/9-make-libuv.sh
+$build /scripts/packages/blfs/9-make-libusb.sh
 $build /scripts/packages/blfs/9-make-libtasn1.sh
 $build /scripts/packages/blfs/4-make-p11-kit.sh
 $build /scripts/packages/blfs/9-make-nspr.sh
@@ -150,6 +152,13 @@ $build /scripts/packages/blfs/17-make-libnsl.sh
 $build /scripts/packages/blfs/22-make-db.sh
 $build /scripts/packages/blfs/4-make-linux-pam.sh
 $build /scripts/packages/blfs/4-make-shadow.sh # must rebuild after linux-pam
+$build /scripts/packages/blfs/4-make-openssh.sh
+$build /scripts/packages/blfs/4-make-sudo.sh
+$build /scripts/packages/blfs/12-make-pciutils.sh
+$build /scripts/packages/blfs/12-make-usbutils.sh
+$build /scripts/packages/blfs/12-make-dbus.sh
+$build /scripts/packages/blfs/12-make-acpid.sh
+$build /scripts/packages/blfs/14-make-dhcpcd.sh
 $build /scripts/packages/blfs/48-make-sgml-common.sh
 $build /scripts/packages/blfs/12-make-unzip.sh
 $build /scripts/packages/blfs/49-make-docbook-xml.sh
@@ -174,6 +183,7 @@ $build /scripts/packages/blfs/10-make-freetype.sh # install without harfbuzz
 $build /scripts/packages/blfs/10-make-graphite2.sh
 $build /scripts/packages/blfs/10-make-harfbuzz.sh
 $build -f /scripts/packages/blfs/10-make-freetype.sh # reinstall with harfbuzz
+$build /scripts/packages/blfs/10-make-fontconfig.sh
 $build /scripts/packages/blfs/5-make-grub.sh
 
 # clean up

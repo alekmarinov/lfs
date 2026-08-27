@@ -26,6 +26,7 @@
 8.47-make-kmod.tar.gz
 8.48-make-libelf.tar.gz
 17-make-libtirpc.tar.gz
+22-make-db.tar.gz
 
 # shell and the utilities the bootscripts call
 8.4-make-iana-etc.tar.gz
@@ -47,6 +48,12 @@
 8.75-make-sysklogd.tar.gz
 8.76-make-sysvinit.tar.gz
 
+# the power button shuts the machine down
+12-make-acpid.tar.gz
+
+# the network address is obtained by DHCP
+14-make-dhcpcd.tar.gz
+
 # system configuration
 9.2-make-lfs-bootscripts.tar.gz
 9.4-managing-devices.tar.gz
@@ -58,5 +65,7 @@
 10.2-create-fstab.tar.gz
 11.1-the-end.tar.gz
 
-# kernel
+# kernel and the cpu microcode loaded next to it
 10.3-make-linux-kernel.tar.gz
+12-make-cpio.tar.gz
+3-make-microcode.tar.gz

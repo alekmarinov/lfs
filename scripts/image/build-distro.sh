@@ -39,24 +39,54 @@ strip_override=$STRIP
 . "$DISTRO_DIR/distro.conf"
 STRIP=${strip_override:-${STRIP:-0}}
 
-# install the packages of a package list, ignoring comments and empty lines
-install_pkglist() {
-    local list="$1" package
+# the packages a list names, without the comments and the empty lines
+read_pkglist() {
+    sed 's/#.*//' "$1" | tr -d '[:blank:]' | grep -v '^$'
+}
+
+# The order the packages were built in, which is the order build-packages.sh
+# names them. A package rebuilt later, like freetype, keeps its last position.
+build_order() {
+    grep -vE '^[[:space:]]*#' "$BASE_DIR/scripts/packages/build-packages.sh" \
+        | grep -oE '/scripts/packages/(lfs|blfs)/[^ ]+\.sh' \
+        | sed 's|.*/||; s|\.sh$|.tar.gz|' \
+        | nl -ba | tac | awk '!seen[$2]++' | tac | awk '{print $2}'
+}
+
+# install the given packages, one per line
+install_packages() {
+    local package
     while read -r package; do
-        case "$package" in ''|\#*) continue ;; esac
+        case "$package" in '') continue ;; esac
         [ -f "packages/$package" ] || { echo "Missing package packages/$package"; exit 1; }
         sudo tar xpf "packages/$package" -C "$ROOTFS_DIR" < /dev/null
-    done < "$list"
+    done
 }
 
 sudo rm -rf "$ROOTFS_DIR"
 mkdir -v "$ROOTFS_DIR"
 
-echo "Installing the core packages..."
-install_pkglist "$CORE_DIR/packages.list"
+# The core and the distro packages are installed together, in the order they
+# were built, rather than the core first and the distro second.
+#
+# Several packages write the same file - /etc/passwd is the one that matters,
+# every package adding a service user carries the whole file as it looked when
+# that package was built. The package built last holds the most complete copy,
+# so it has to be the one unpacked last, whichever list happens to name it.
+wanted=$( { read_pkglist "$CORE_DIR/packages.list"
+            read_pkglist "$DISTRO_DIR/packages.list"; } | sort -u )
 
-echo "Installing the $distro packages..."
-install_pkglist "$DISTRO_DIR/packages.list"
+# a package which build-packages.sh does not build has no place in the order,
+# it is installed first so that a built package can still override it
+unknown=$(printf '%s\n' "$wanted" | grep -vxF -f <(build_order) || true)
+if [ -n "$unknown" ]; then
+    echo "Installing the packages which are not built by build-packages.sh..."
+    printf '%s\n' "$unknown" | sed 's/^/  /'
+    printf '%s\n' "$unknown" | install_packages
+fi
+
+echo "Installing the core and the $distro packages in build order..."
+build_order | grep -xF -f <(printf '%s\n' "$wanted") | install_packages
 
 # A package removing a file carries it as a 0:0 character device, the whiteout
 # overlayfs left behind. Once every package is unpacked, a whiteout which was

@@ -7,14 +7,15 @@ echo "Setup general network configuration.."
 
 # 9.5.1. Creating Network Interface Configuration Files
 cd /etc/sysconfig/
+# The address is obtained from a DHCP server rather than configured statically,
+# so that the image comes up on any network it is booted on. QEMU answers with
+# 10.0.2.15 from its user mode network, a router answers with a lease.
 cat > ifconfig.eth0 <<"EOF"
 ONBOOT=yes
 IFACE=eth0
-SERVICE=ipv4-static
-IP=10.0.2.15
-GATEWAY=10.0.2.2
-PREFIX=24
-BROADCAST=10.0.2.255
+SERVICE=dhcpcd
+DHCP_START="-b -q"
+DHCP_STOP="-k"
 EOF
 
 # 9.5.2. Creating the /etc/resolv.conf File
