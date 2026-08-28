@@ -99,8 +99,13 @@ docker:
 		./scripts/image/build-docker.sh $(TAG)
 
 # Turns rootfs/ into the bootable $(IMAGE_FILE)
+#
+# DISTRO is not what gets imaged - rootfs/ is - but if it is given on the
+# command line it is passed down so the image refuses to be built from a
+# different distro than the one named.
 image:
-	./scripts/image/build-image.sh
+	EXPECT_DISTRO=$(if $(filter command line,$(origin DISTRO)),$(DISTRO)) \
+		./scripts/image/build-image.sh
 
 # Derives the dependency graph from the built packages
 deps:

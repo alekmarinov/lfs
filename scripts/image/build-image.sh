@@ -15,6 +15,23 @@ MNT_DIR="$(dirname $(readlink -f $IMAGE_FILE))/mnt"
 
 [ -d "$ROOTFS_DIR" ] || { echo "Directory '$ROOTFS_DIR' is missing, run 'make distro DISTRO=...' first"; exit 1; }
 
+# 'make image' images whatever rootfs/ holds - it has no DISTRO of its own. So
+# 'make image DISTRO=full' with a minimal-desktop in rootfs/ would quietly
+# produce a minimal-desktop image under a name which says otherwise. If DISTRO
+# was given on the command line, it has to agree with what is actually there.
+DISTRO_IN_ROOTFS=$(sed -n 's/^DISTRO=//p' "$ROOTFS_DIR/etc/lfs-distro" 2>/dev/null)
+if [[ "$EXPECT_DISTRO" != "" && "$DISTRO_IN_ROOTFS" != "" \
+      && "$EXPECT_DISTRO" != "$DISTRO_IN_ROOTFS" ]]; then
+    echo "'$ROOTFS_DIR' holds the distro '$DISTRO_IN_ROOTFS', not '$EXPECT_DISTRO'.
+Assemble the one you want first:
+
+    make distro DISTRO=$EXPECT_DISTRO FORCE=1
+    sudo make image
+
+or drop DISTRO= to image the '$DISTRO_IN_ROOTFS' which is already assembled."
+    exit 1
+fi
+
 # Rewriting the image while a machine is booted from it corrupts both: the
 # running system reads a file system which changed underneath it, and writes
 # its stale buffers back into the new one. QEMU takes only an advisory lock,
