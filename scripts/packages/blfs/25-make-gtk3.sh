@@ -11,7 +11,7 @@ echo "Building BLFS-gtk3.."
 # compositor - and introspection is off so gobject-introspection is not needed.
 # https://www.linuxfromscratch.org/blfs/view/11.2/x/gtk3.html
 #
-# BUILD_REQUIRES: 10-make-gdk-pixbuf 10-make-pango 9-make-at-spi2-atk 24-make-libepoxy 10-make-cairo 9-make-glib 24-make-xorg-libraries 8.53-make-meson 8.52-make-ninja
+# BUILD_REQUIRES: 25-make-gdk-pixbuf 25-make-pango 25-make-at-spi2-atk 25-make-libepoxy 25-make-cairo 9-make-glib 24-make-xorg-libraries 8.53-make-meson 8.52-make-ninja
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a

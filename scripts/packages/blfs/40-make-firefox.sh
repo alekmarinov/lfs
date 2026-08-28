@@ -10,7 +10,7 @@ echo "Required disk space: 8 GB"
 #
 # https://www.linuxfromscratch.org/blfs/view/11.2/xsoft/firefox.html
 #
-# BUILD_REQUIRES: 27-make-gtk3 12-make-dbus-glib 13-make-rust 13-make-cbindgen 13-make-nodejs 12-make-nasm 12-make-zip 12-make-unzip 9-make-alsa-lib 13-make-llvm 9-make-icu 4-make-nss 9-make-nspr 22-make-sqlite
+# BUILD_REQUIRES: 25-make-gtk3 9-make-dbus-glib 13-make-rust 13-make-cbindgen 9-make-nodejs 13-make-nasm 12-make-zip 12-make-unzip 42-make-alsa-lib 13-make-llvm 9-make-icu 4-make-nss 9-make-nspr 22-make-sqlite
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a

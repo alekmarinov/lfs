@@ -11,7 +11,7 @@ echo "Required disk space: 4 MB"
 # wpa_supplicant.
 # https://www.linuxfromscratch.org/blfs/view/11.2/basicnet/iw.html
 #
-# BUILD_REQUIRES: 9-make-libnl
+# BUILD_REQUIRES: 17-make-libnl
 # RUNTIME_REQUIRES:
 
 tar -xf /sources/iw-*.tar.xz -C /tmp/ \

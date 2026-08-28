@@ -9,7 +9,7 @@ echo "Required disk space: 4 MB"
 # at build time, and will not configure without it.
 # https://www.linuxfromscratch.org/blfs/view/11.2/general/mako.html
 #
-# BUILD_REQUIRES: 7.10-make-python 9-make-markupsafe
+# BUILD_REQUIRES: 7.10-make-python x-make-markupsafe
 # RUNTIME_REQUIRES:
 # BUILD_ONLY: generates part of mesa's source at build time
 #

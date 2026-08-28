@@ -19,7 +19,7 @@ echo "Required disk space: 340 MB"
 # recommended, and now present: mesa, libepoxy
 # https://www.linuxfromscratch.org/blfs/view/11.2/x/xorg-server.html
 #
-# BUILD_REQUIRES: 24-make-mesa 24-make-libepoxy 24-make-libxcvt 10-make-pixman 24-make-xkeyboard-config 24-make-xorg-libraries 8.53-make-meson 8.52-make-ninja
+# BUILD_REQUIRES: 24-make-mesa 25-make-libepoxy 24-make-libxcvt 10-make-pixman 24-make-xkeyboard-config 24-make-xorg-libraries 8.53-make-meson 8.52-make-ninja
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a

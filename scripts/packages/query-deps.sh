@@ -115,7 +115,7 @@ declared)
     # interesting one: a build dependency which never shows up in the binaries
     # is either build-only, which is fine and common, or it is wrong.
     printf "%-34s %s\n" "package" "declared build deps not seen in the binaries"
-    for f in scripts/packages/*/[0-9]*-make-*.sh; do
+    for f in scripts/packages/*/*-make-*.sh; do
         name=$(basename "$f" .sh)
         decl=$(sed -n 's/^# BUILD_REQUIRES:[[:space:]]*//p' "$f" | head -1)
         [ -n "$decl" ] || continue
@@ -129,7 +129,7 @@ declared)
     echo "
 Packages with no BUILD_REQUIRES line at all: $(
         total=0; declared=0
-        for f in scripts/packages/*/[0-9]*-make-*.sh; do
+        for f in scripts/packages/*/*-make-*.sh; do
             total=$((total+1))
             grep -q '^# BUILD_REQUIRES:' "$f" && declared=$((declared+1))
         done

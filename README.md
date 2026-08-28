@@ -61,7 +61,7 @@ anything, derive the dependency graph from the packages once
 and ask what a distro would be missing
 
     make deps-check          every distro, or one with DISTROS=minimal
-    make why PACKAGE=9-make-libnl
+    make why PACKAGE=17-make-libnl
     make closure PACKAGES=27-make-fluxbox
 
 The graph is derived from the binaries, so it holds the shared library

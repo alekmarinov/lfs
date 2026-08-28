@@ -7,7 +7,7 @@ echo "Building BLFS-libjpeg-turbo.."
 # constantly. Built with nasm so the SIMD paths are compiled in.
 # https://www.linuxfromscratch.org/blfs/view/11.2/general/libjpeg.html
 #
-# BUILD_REQUIRES: 12-make-nasm 13-make-cmake
+# BUILD_REQUIRES: 13-make-nasm 13-make-cmake
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a

@@ -10,10 +10,10 @@ echo "Building BLFS-cbindgen.."
 # sources. cargo resolves and downloads the crates cbindgen depends on from
 # crates.io while it builds - they are not vendored in the tarball the way the
 # rust source is. It needs the network and the trust store from
-# 4-make-ca-certificates, and what it fetches is whatever crates.io serves at
+# x-make-ca-certificates, and what it fetches is whatever crates.io serves at
 # the time, within the bounds of Cargo.lock.
 #
-# BUILD_REQUIRES: 13-make-rust 4-make-ca-certificates
+# BUILD_REQUIRES: 13-make-rust x-make-ca-certificates
 # RUNTIME_REQUIRES:
 # BUILD_ONLY: generates headers during firefox's build and is never run again
 #

@@ -1,0 +1,11 @@
+# Files of the full distro which do not resolve, and why that is accepted.
+#
+# Anything unresolved which is not listed here fails 'make check'.
+
+# firefox keeps its own libraries in /usr/lib/firefox and loads them itself, in
+# the order listed in /usr/lib/firefox/dependentlibs.list. They are not on the
+# loader's search path and are not meant to be: ldd cannot resolve them from
+# outside, but firefox never asks the loader to find them by name. The files
+# are present, next to the binary which loads them.
+/usr/lib/firefox/libxul.so
+/usr/lib/firefox/libmozavcodec.so

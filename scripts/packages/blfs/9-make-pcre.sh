@@ -5,10 +5,11 @@ echo "Building BLFS-pcre.."
 # pcre
 # Perl compatible regular expressions, the original library.
 #
-# NOTE this is pcre, not pcre2, and both are here on purpose. glib 2.72 links
-# against pcre 8: it only moved to pcre2 in 2.74. Building pcre2 and expecting
-# glib to use it makes meson fall back to downloading its own copy of pcre 8.37
-# mid build, which fails because the build has no network.
+# NOTE this is pcre, not pcre2. glib 2.72 links against pcre 8: it only moved
+# to pcre2 in 2.74. Building pcre2 and expecting glib to use it makes meson
+# fall back to downloading its own copy of pcre 8.37 mid build, which fails
+# because the build has no network. pcre2 was built here once for that reason
+# and removed again, since nothing else wanted it.
 #
 # https://www.linuxfromscratch.org/blfs/view/11.2/general/pcre.html
 #

@@ -11,7 +11,7 @@ echo "Required disk space: 9 GB"
 #
 # https://www.linuxfromscratch.org/blfs/view/11.2/general/rust.html
 #
-# BUILD_REQUIRES: 13-make-llvm 7.10-make-python 17-make-curl 8.46-make-openssl 4-make-ca-certificates
+# BUILD_REQUIRES: 13-make-llvm 7.10-make-python 17-make-curl 8.46-make-openssl x-make-ca-certificates
 # RUNTIME_REQUIRES:
 # BUILD_ONLY: the rust code in firefox is compiled into libxul, there is no rust runtime to ship
 #
@@ -20,7 +20,7 @@ echo "Required disk space: 9 GB"
 # and a nine hour one.
 #
 # NOTE x.py downloads a stage0 compiler to bootstrap with, so this build needs
-# the network and a working trust store - which is what 4-make-ca-certificates
+# the network and a working trust store - which is what x-make-ca-certificates
 # is for. Everything else is vendored in the source tarball.
 #
 # NOTE only cargo is built alongside rustc. clippy and rustfmt are developer

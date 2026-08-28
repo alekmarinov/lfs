@@ -79,6 +79,27 @@ flag_file="tmp/${script_name%.*}.ready"
 log_file="${script_name%.*}.log"
 echo -ne "...... $script_path -> $log_file"
 if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
+    # An overlay already on $LFS means a previous build did not unmount it -
+    # it was interrupted, or its unmount failed. Mounting again stacks a second
+    # overlay on top of the first, and nothing says so: the mounts pile up, a
+    # build then reads through one layer and writes into another, and the
+    # package made from $LFS_PACKAGE is whatever that mixture produced. Six of
+    # them had accumulated before this check existed.
+    #
+    # Refusing is the only safe answer. Clearing it automatically would throw
+    # away the upper layer of a build which may still be running.
+    if mount | grep -q " on $(readlink -f "$LFS") type overlay"; then
+        echo -ne "\r\n$__NAME__: $LFS already has an overlay mounted."
+        echo "
+Another build is either running or was interrupted without unmounting. Check
+with 'mount | grep $LFS'. If nothing is running, unmount every stacked layer:
+
+    for m in run sys proc dev/pts dev; do sudo umount $LFS/\$m; done
+    while mount | grep -q \" on \$(readlink -f $LFS) type overlay\"; do sudo umount $LFS; done
+"
+        exit 1
+    fi
+
     # mount overlay to isolate the installed files in $LFS_PACKAGE
     sync
     # Clean package directory

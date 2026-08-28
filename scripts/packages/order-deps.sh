@@ -28,7 +28,10 @@ cd "$BASE_DIR"
 WORK=$(mktemp -d); trap 'rm -rf "$WORK"' EXIT
 
 # package <TAB> hard deps <TAB> rebuild-after deps
-for f in scripts/packages/*/[0-9]*-make-*.sh scripts/packages/*/[0-9]*-*.sh; do
+# NOTE the glob has to allow the x- prefix as well as a digit: packages
+# which are not in the book are named x-make-<name>, and a glob anchored
+# on [0-9] would leave them out of the graph without saying so.
+for f in scripts/packages/*/*-make-*.sh scripts/packages/*/[0-9]*-*.sh; do
     [ -e "$f" ] || continue
     n=$(basename "$f" .sh)
     # every matching line is taken, not just the first: a package may list its
@@ -64,12 +67,23 @@ order)
             print "declare one direction as REBUILD_AFTER to say which one is built twice." > "/dev/stderr"
             exit 1
         }
-        # place each rebuild directly after the package it waited for
+        # A rebuild goes after the package itself and after everything it named,
+        # whichever comes last - one rebuild, not one per name. Emitting it per
+        # name gives a rebuild for each, and emitting it at the position of a
+        # named package can place it before the package itself is built.
+        for (i = 1; i <= m; i++) posn[out[i]] = i
+        for (j = 1; j <= n; j++) {
+            p = pkg[j]; if (soft[p] == "" || !(p in posn)) continue
+            c = split(soft[p], d, " "); at = posn[p]; waited = ""
+            for (k = 1; k <= c; k++) if (d[k] in posn) {
+                if (posn[d[k]] > at) at = posn[d[k]]
+                waited = waited " " d[k]
+            }
+            rebuild[at] = rebuild[at] "\n" p "  # rebuild, waited for" waited
+        }
         for (i = 1; i <= m; i++) {
             print out[i]
-            for (j = 1; j <= n; j++) { p = pkg[j]; if (soft[p] == "") continue
-                c = split(soft[p], d, " ")
-                for (k = 1; k <= c; k++) if (d[k] == out[i]) print p "  # rebuild, was waiting for " out[i] }
+            if (i in rebuild) { r = rebuild[i]; sub(/^\n/, "", r); print r }
         }
     }' "$WORK/decl"
     ;;
