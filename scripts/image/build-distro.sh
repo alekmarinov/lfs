@@ -103,6 +103,15 @@ sudo find "$ROOTFS_DIR" -type c 2>/dev/null | while read -r path; do
     fi
 done
 
+# Every package carries what its build left in /tmp: always its own build log,
+# and for the few whose clean up did not run, the whole unpacked source tree.
+# None of it belongs in an image - /tmp is scratch space the boot scripts clear
+# on the way up - so it is emptied here once, rather than chased through the
+# build scripts one at a time.
+echo "Emptying /tmp..."
+sudo rm -rf "${ROOTFS_DIR:?}/tmp"
+sudo install -d -m1777 "$ROOTFS_DIR/tmp"
+
 # The following is created by the tools build (chapters 4 and 6) directly in
 # $LFS_BASE, so it is part of no package and has to be recreated here.
 echo "Creating the top level directory layout..."

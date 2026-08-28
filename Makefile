@@ -1,11 +1,30 @@
 .PHONY: all clean packages packages-continue distro check docker image qemu \
+	    deps why closure deps-check deps-declared deps-order deps-verify \
 	    update-scripts build-package find-package-file install-package
 
 SHELL=/bin/bash
 LFS_VER=11.2
 TARGET_TOOLS=lfs-tools-$(LFS_VER).tar.gz
 
+# .env is read as a makefile, so everything in it has file origin, which beats
+# the environment. That makes 'IMAGE_SIZE=2000 make image' look like it works
+# while the .env value is used instead - the setting is ignored and nothing is
+# said about it. The names .env defines are saved here when they came from the
+# environment and put back after the include, so the environment wins. A
+# variable given on the command line still beats both, make keeps those.
+#
+# NOTE .env has to stay plain KEY=VALUE lines: docker reads it with --env-file
+# and build-package.sh with 'cat .env | xargs', neither of which parses make
+# syntax, so '?=' cannot be used there instead of this.
+ENV_NAMES := $(shell sed -n 's/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p' .env)
+$(foreach v,$(ENV_NAMES),\
+    $(if $(filter environment,$(origin $(v))),$(eval __ENV_$(v) := $($(v)))))
+
 include .env
+
+$(foreach v,$(ENV_NAMES),\
+    $(if $(filter-out undefined,$(origin __ENV_$(v))),$(eval $(v) := $(__ENV_$(v)))))
+
 export
 export MAKEFLAGS="--jobs=$(JOB_COUNT)"
 
@@ -82,6 +101,34 @@ docker:
 # Turns rootfs/ into the bootable $(IMAGE_FILE)
 image:
 	./scripts/image/build-image.sh
+
+# Derives the dependency graph from the built packages
+deps:
+	./scripts/packages/build-deps.sh
+
+# What a package needs, and what needs it
+why:
+	@./scripts/packages/query-deps.sh why $(PACKAGE)
+
+# Everything the named packages pull in
+closure:
+	@./scripts/packages/query-deps.sh closure $(PACKAGES)
+
+# Whether each distro's package list holds everything its libraries need
+deps-check:
+	@./scripts/packages/query-deps.sh check $(DISTROS)
+
+# Declared build dependencies against the derived graph
+deps-declared:
+	@./scripts/packages/query-deps.sh declared
+
+# An order satisfying the declared build dependencies, rebuilds included
+deps-order:
+	@./scripts/packages/order-deps.sh order
+
+# Whether build-packages.sh already satisfies the declarations
+deps-verify:
+	@./scripts/packages/order-deps.sh verify
 
 # Boots $(IMAGE_FILE)
 qemu:

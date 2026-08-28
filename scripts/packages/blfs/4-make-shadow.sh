@@ -12,6 +12,12 @@ echo "Required disk space: 36 MB"
 # will allow programs such as login and su to utilize PAM.
 # required: linux-pam|cracklib
 # https://www.linuxfromscratch.org/blfs/view/stable/postlfs/shadow.html
+#
+# BUILD_REQUIRES: 4-make-linux-pam
+#
+# Not a cycle: this is a second, separate package from 8.25-make-shadow,
+# which is built in chapter 8 without pam so that pam has a shadow to build
+# against. Two nodes, one edge, no rebuild needed.
 
 VER=$(ls /sources/shadow-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/shadow-*.tar.xz -C /tmp/ \

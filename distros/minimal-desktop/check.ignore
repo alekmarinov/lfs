@@ -4,4 +4,15 @@
 
 # the ICU integration of harfbuzz, which nothing in this distro links against.
 # Resolving it means installing icu, 35 MB for a library no program here loads.
-/usr/lib/libharfbuzz-icu.so.0.50200.0
+
+# firefox keeps its own libraries in /usr/lib/firefox and loads them itself,
+# in the order listed in /usr/lib/firefox/dependentlibs.list. They are not on
+# the loader's search path and are not meant to be: ldd cannot resolve them
+# from outside, but firefox never asks the loader to find them by name.
+#
+# This is not the same kind of entry as the libharfbuzz-icu one that used to be
+# here. That one hid a package the distro genuinely lacked, and was removed as
+# soon as firefox needed icu for real. These four are present, next to the
+# binary that loads them.
+/usr/lib/firefox/libxul.so
+/usr/lib/firefox/libmozavcodec.so

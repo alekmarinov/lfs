@@ -5,3 +5,8 @@
 # so an unpinned url returns 404, and the tag lives in a query string which
 # wget --input-file cannot turn into the right file name.
 iwlwifi-7265D-29.ucode https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/iwlwifi-7265D-29.ucode?h=20220913
+
+# Mozilla's list of trusted certificate authorities, in the NSS source format
+# make-ca reads. The url does not end in the file name, so it is fetched here
+# rather than through the wget list.
+certdata.txt https://hg.mozilla.org/releases/mozilla-release/raw-file/default/security/nss/lib/ckfw/builtins/certdata.txt

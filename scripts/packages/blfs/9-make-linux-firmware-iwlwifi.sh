@@ -15,5 +15,8 @@ echo "Required disk space: 2 MB"
 # A machine with a different wireless chip will find no firmware here and its
 # driver will log 'no suitable firmware found'. Add the file it asks for to
 # sources/blfs-11.2.extra-list and to the md5sums, then extend the list below.
+#
+# BUILD_REQUIRES:
+# RUNTIME_REQUIRES:
 install -v -d -m755 /lib/firmware
 install -v -m644 /sources/iwlwifi-7265D-29.ucode /lib/firmware/

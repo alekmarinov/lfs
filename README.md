@@ -53,6 +53,43 @@ To resolve every program of the assembled rootfs against its own libraries, run
 It reports the programs which can not run, which is how a distro missing a
 package is found without booting it.
 
+`make check` needs the rootfs assembled. To find the same gaps before building
+anything, derive the dependency graph from the packages once
+
+    make deps
+
+and ask what a distro would be missing
+
+    make deps-check          every distro, or one with DISTROS=minimal
+    make why PACKAGE=9-make-libnl
+    make closure PACKAGES=27-make-fluxbox
+
+The graph is derived from the binaries, so it holds the shared library
+dependencies exactly and nothing else. A library opened with dlopen, a program
+run by another program and a data file leave no trace in an ELF header, so
+those are declared by hand in the build script instead
+
+    # BUILD_REQUIRES:    what the package needs in order to compile
+    # RUNTIME_REQUIRES:  what it needs at run time and the binaries do not say
+
+`make deps-declared` reads those back and reports the build dependencies which
+never appear in the binaries. `make deps-verify` checks the order in
+`build-packages.sh` against them, and `make deps-order` computes an order which
+satisfies them.
+
+Two packages which need each other are declared as a cycle and resolved by
+building one of them twice
+
+    # BUILD_REQUIRES: 10-make-freetype    in harfbuzz, a hard edge
+    # REBUILD_AFTER:  10-make-harfbuzz    in freetype, the edge to defer
+
+which produces `freetype`, `harfbuzz`, `freetype` again. Only `REBUILD_AFTER`
+may be deferred; a cycle in the hard edges is reported as an error naming the
+packages it runs through, because which of the two to build twice is a
+decision the resolver has no way to make. A distro which leaves a package out on purpose
+records it in `distros/<distro>/deps.ignore` with the reason, the way
+`check.ignore` records an unresolved file.
+
 To archive the assembled rootfs as a docker image named after the distro, run
 
     make docker TAG=20260826

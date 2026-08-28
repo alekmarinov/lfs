@@ -9,6 +9,8 @@ echo "Required disk space: 39 MB"
 # the local system administrator to choose how applications authenticate users.
 # optional: db,libnsl,libtirpc
 # https://www.linuxfromscratch.org/blfs/view/stable/postlfs/linux-pam.html
+#
+# BUILD_REQUIRES: 8.25-make-shadow
 
 VER=$(ls /sources/Linux-PAM-*.tar.xz | head -1 | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/Linux-PAM-$VER.tar.xz -C /tmp/ \

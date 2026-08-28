@@ -138,9 +138,11 @@ $build /scripts/packages/blfs/9-make-libtasn1.sh
 $build /scripts/packages/blfs/4-make-p11-kit.sh
 $build /scripts/packages/blfs/9-make-nspr.sh
 $build /scripts/packages/blfs/22-make-sqlite.sh
+$build -f /scripts/packages/lfs/8.50-make-python.sh # rebuild, now with sqlite
 $build /scripts/packages/blfs/4-make-nss.sh
 $build /scripts/packages/blfs/12-make-fcron.sh
 $build /scripts/packages/blfs/4-make-make-ca.sh
+$build /scripts/packages/blfs/4-make-ca-certificates.sh
 $build /scripts/packages/blfs/17-make-curl.sh
 $build /scripts/packages/blfs/9-make-libxml2.sh
 $build /scripts/packages/blfs/9-make-lzo.sh
@@ -211,6 +213,40 @@ $build /scripts/packages/blfs/24-make-xorg-apps.sh
 $build /scripts/packages/blfs/24-make-xcursor-themes.sh
 $build /scripts/packages/blfs/24-make-xorg-fonts.sh
 $build /scripts/packages/blfs/24-make-xkeyboard-config.sh
+# OpenGL. Mako generates part of Mesa's source, Mesa is what xorg-server needs
+# before glamor, dri and glx can be turned on.
+$build /scripts/packages/blfs/9-make-markupsafe.sh
+$build /scripts/packages/blfs/9-make-mako.sh
+# The gtk3 chain, which is what a browser needs. nasm is only an assembler for
+# libjpeg-turbo's SIMD code and for Firefox later.
+$build /scripts/packages/blfs/12-make-nasm.sh
+$build /scripts/packages/blfs/9-make-pcre2.sh
+$build /scripts/packages/blfs/9-make-pcre.sh
+$build /scripts/packages/blfs/9-make-glib.sh
+$build /scripts/packages/blfs/9-make-fribidi.sh
+$build /scripts/packages/blfs/9-make-shared-mime-info.sh
+$build /scripts/packages/blfs/10-make-libjpeg-turbo.sh
+$build /scripts/packages/blfs/10-make-libtiff.sh
+$build /scripts/packages/blfs/10-make-gdk-pixbuf.sh
+$build /scripts/packages/blfs/9-make-atk.sh
+$build /scripts/packages/blfs/9-make-at-spi2-core.sh
+$build /scripts/packages/blfs/9-make-at-spi2-atk.sh
+$build /scripts/packages/blfs/24-make-mesa.sh
+$build /scripts/packages/blfs/24-make-libepoxy.sh
+$build /scripts/packages/blfs/24-make-glu.sh
+$build /scripts/packages/blfs/24-make-mesa-demos.sh
+$build /scripts/packages/blfs/10-make-cairo.sh
+$build /scripts/packages/blfs/10-make-pango.sh
+$build /scripts/packages/blfs/27-make-gtk3.sh
+
+# the firefox tier. rust is a build tool and is in no distro.
+$build /scripts/packages/blfs/12-make-zip.sh
+$build /scripts/packages/blfs/9-make-alsa-lib.sh
+$build /scripts/packages/blfs/13-make-rust.sh
+$build /scripts/packages/blfs/13-make-nodejs.sh
+$build /scripts/packages/blfs/13-make-cbindgen.sh
+$build /scripts/packages/blfs/12-make-dbus-glib.sh
+$build /scripts/packages/blfs/27-make-firefox.sh
 $build /scripts/packages/blfs/24-make-xorg-server.sh
 $build /scripts/packages/blfs/24-make-xf86-input-libinput.sh
 $build /scripts/packages/blfs/24-make-xinit.sh

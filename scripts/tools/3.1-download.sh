@@ -88,6 +88,8 @@ download_extra() {
         case "$file" in ''|'#'*) continue ;; esac
         if [ -f "$file" ]; then continue; fi
         echo "Downloading $file .."
+        # firmware names carry the directory they are installed under
+        mkdir -p "$(dirname "$file")"
         wget $WGET_OPTS -O "$file" "$url" || rm -f "$file"
     done < "$list"
 }

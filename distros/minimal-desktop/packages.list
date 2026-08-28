@@ -67,6 +67,48 @@
 4-make-nettle.tar.gz
 
 # --- the server, its input driver and the session ---
+# OpenGL. Without these the X server has no glx or glamor and runs on a
+# shadow frame buffer. mako and markupsafe are not here: they are only
+# needed to compile Mesa, and this distro has no python.
+24-make-mesa.tar.gz
+24-make-libepoxy.tar.gz
+24-make-glu.tar.gz
+# glxinfo says whether GL is running on the gpu or on the cpu, which
+# nothing else in the image can tell you
+24-make-mesa-demos.tar.gz
+
+# the gtk3 stack. nasm and pcre2 are not here: nasm only assembles
+# libjpeg-turbo's SIMD code at build time, and pcre2 is not used by anything -
+# glib 2.72 links the original pcre.
+# libffi is what glib needs for its closures, libxml2 what shared-mime-info
+# parses its database with
+8.49-make-libffi.tar.gz
+9-make-libxml2.tar.gz
+9-make-pcre.tar.gz
+9-make-glib.tar.gz
+9-make-fribidi.tar.gz
+9-make-shared-mime-info.tar.gz
+10-make-libjpeg-turbo.tar.gz
+10-make-libtiff.tar.gz
+10-make-gdk-pixbuf.tar.gz
+9-make-atk.tar.gz
+9-make-at-spi2-core.tar.gz
+9-make-at-spi2-atk.tar.gz
+10-make-cairo.tar.gz
+10-make-pango.tar.gz
+27-make-gtk3.tar.gz
+
+# firefox needs these at run time. icu was previously left out and its
+# absence accepted in check.ignore - firefox linking libicuuc makes that
+# no longer a choice.
+9-make-icu.tar.gz
+9-make-nspr.tar.gz
+4-make-nss.tar.gz
+22-make-sqlite.tar.gz
+9-make-alsa-lib.tar.gz
+# the browser
+12-make-dbus-glib.tar.gz
+27-make-firefox.tar.gz
 24-make-xorg-server.tar.gz
 24-make-xf86-input-libinput.tar.gz
 24-make-xinit.tar.gz

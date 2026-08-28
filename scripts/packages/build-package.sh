@@ -9,16 +9,41 @@ for var in LFS LFS_BASE LFS_PACKAGE LFS_PACKAGES; do
     fi
 done
 
+# The build is finished by the time $LFS is unmounted, and the package is made
+# from the upper layer afterwards. A busy mount point therefore has to be
+# retried rather than allowed to fail: it is enough for a shell to sit with its
+# working directory inside the overlay - watching the build log lives there -
+# and a completed build is thrown away for no reason. The last resort is a lazy
+# unmount, which detaches the tree now and releases it when the last user goes.
+unmount_lfs() {
+    local i out
+    for i in 1 2 3 4 5; do
+        if out=$(umount "$LFS" 2>&1); then
+            return 0
+        fi
+        echo "$__NAME__: $LFS is busy, retrying ($i/5).."
+        sleep 2
+    done
+    echo "$__NAME__: could not unmount $LFS: $out"
+    echo "$__NAME__: held by:"
+    fuser -vm "$LFS" 2>&1 | sed 's/^/    /' || true
+    echo "$__NAME__: detaching it lazily so the finished build is not lost"
+    umount -l "$LFS"
+}
+
 error_trap() {
     set +e
-    echo -e "\n$__NAME__: Error occurred at line $1"
+    # $2 is the command bash was running when the trap fired. A line number on
+    # its own says where to look but not what went wrong, and the real error is
+    # usually already scrolled past by the time this prints.
+    echo -e "\n$__NAME__: failed at line $1${2:+: $2}"
     sync
     $SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
     umount $LFS
     exit 1
 }
 
-trap 'error_trap $LINENO' ERR
+trap 'error_trap $LINENO "$BASH_COMMAND"' ERR
 
 o_force=0
 script_path=""
@@ -82,11 +107,11 @@ if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
         $(cat .env | xargs) \
         /bin/bash --login +h -c "sh -c '$script_path > /tmp/$log_file 2>&1'"
     status=$?
-    trap 'error_trap $LINENO' ERR
+    trap 'error_trap $LINENO "$BASH_COMMAND"' ERR
     sync
     $SCRIPT_DIR/11-unmount-vkfs.sh > /dev/null 2>&1
     sync
-    umount $LFS
+    unmount_lfs
 else
     echo -ne "\rskip   $script_path"; echo
     exit 0

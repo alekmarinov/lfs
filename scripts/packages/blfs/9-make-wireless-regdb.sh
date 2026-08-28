@@ -14,6 +14,9 @@ echo "Required disk space: 1 MB"
 # signature file regulatory.db.p7s has to be installed next to the database and
 # both have to be the ones shipped upstream. A regenerated database is rejected.
 # https://www.linuxfromscratch.org/blfs/view/11.2/basicnet/wireless_tools.html
+#
+# BUILD_REQUIRES:
+# RUNTIME_REQUIRES:
 
 tar -xf /sources/wireless-regdb-*.tar.xz -C /tmp/ \
     && mv /tmp/wireless-regdb-* /tmp/wireless-regdb \

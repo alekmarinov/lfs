@@ -10,6 +10,9 @@ echo "Required disk space: 45 MB"
 # with an open one, but anything with WPA needs this daemon running for the
 # link to come up at all.
 # https://www.linuxfromscratch.org/blfs/view/11.2/basicnet/wpa_supplicant.html
+#
+# BUILD_REQUIRES: 9-make-libnl 8.46-make-openssl 8.11-make-readline
+# RUNTIME_REQUIRES: 14-make-dhcpcd
 
 tar -xf /sources/wpa_supplicant-*.tar.gz -C /tmp/ \
     && mv /tmp/wpa_supplicant-* /tmp/wpa_supplicant \

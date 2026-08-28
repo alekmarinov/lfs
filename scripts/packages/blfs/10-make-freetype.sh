@@ -10,6 +10,16 @@ echo "Required disk space: 31 MB"
 # recommended: harfbuzz,libpng,which
 # optional: brotli,docwriter(for doc)
 # https://www.linuxfromscratch.org/blfs/view/svn/general/freetype2.html
+#
+# BUILD_REQUIRES: 8.6-make-zlib 10-make-libpng
+# REBUILD_AFTER: 10-make-harfbuzz
+#
+# freetype and harfbuzz need each other: harfbuzz shapes text with freetype,
+# and freetype hints it with harfbuzz. The cycle is broken by building this
+# package twice - once with harfbuzz support off so harfbuzz has something to
+# build against, and again afterwards with it on. REBUILD_AFTER is what says
+# so, and it is the only edge a resolver is allowed to defer: every other
+# BUILD_REQUIRES is a hard ordering.
 
 VER=$(ls /sources/freetype-*.tar.xz | head -1 | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/freetype-$VER.tar.xz -C /tmp/ \

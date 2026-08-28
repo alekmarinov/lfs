@@ -10,6 +10,9 @@ echo "Required disk space: 4 MB"
 # It does not do the authentication of a protected network, that is
 # wpa_supplicant.
 # https://www.linuxfromscratch.org/blfs/view/11.2/basicnet/iw.html
+#
+# BUILD_REQUIRES: 9-make-libnl
+# RUNTIME_REQUIRES:
 
 tar -xf /sources/iw-*.tar.xz -C /tmp/ \
     && mv /tmp/iw-* /tmp/iw \

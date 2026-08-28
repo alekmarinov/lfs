@@ -1,0 +1,19 @@
+# Packages the dependency graph says this distro needs, which it leaves out on
+# purpose. Each one is here because the binary that pulls it in is never run.
+#
+# The graph works on whole packages: it reports 'grub needs freetype' because
+# one program in grub links it. 'make check' works on files and is the finer
+# instrument - see check.ignore, which lists the individual binaries this
+# accepts as unresolved.
+
+# grub-mkfont builds the boot menu font, which the grub package already ships
+# built. Resolving it pulls freetype, then harfbuzz, then icu, graphite2 and
+# the C++ runtime out of gcc - 207 MB for a program the image never runs.
+10-make-freetype
+10-make-harfbuzz
+10-make-graphite2
+10-make-libpng
+9-make-icu
+8.26-make-gcc
+8.20-make-mpfr
+8.21-make-mpc
