@@ -155,18 +155,23 @@ else
 Boot with 'init=/bin/bash' appended to the kernel command line to get a shell."
 fi
 
+# NOTE --no-preserve=ownership is what keeps these files owned by root. Plain
+# 'cp -a' carries the ownership of the working copy across, and because files/.
+# maps onto /, that reaches the directories too: /, /etc and /usr all end up
+# owned by whichever uid happens to own the checkout. Nothing breaks, so it is
+# not noticed, but any account later created with that uid owns /etc.
 # The core files come first: they hold what every distro needs regardless of
 # which packages it picks, such as the module blacklists for hardware quirks.
 # The distro files are applied after, so a distro can override any of them.
 if [ -d "$CORE_DIR/files" ]; then
     echo "Applying the core files..."
-    sudo cp -a "$CORE_DIR/files/." "$ROOTFS_DIR/"
+    sudo cp -a --no-preserve=ownership "$CORE_DIR/files/." "$ROOTFS_DIR/"
 fi
 
 # the files of the distro override the packages and the generated files
 if [ -d "$DISTRO_DIR/files" ]; then
     echo "Applying the $distro files..."
-    sudo cp -a "$DISTRO_DIR/files/." "$ROOTFS_DIR/"
+    sudo cp -a --no-preserve=ownership "$DISTRO_DIR/files/." "$ROOTFS_DIR/"
 fi
 
 # how this rootfs was assembled
