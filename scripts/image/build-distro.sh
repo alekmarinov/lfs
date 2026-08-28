@@ -5,6 +5,9 @@
 #   distro.conf     identity, used to generate the /etc identification files
 #   packages.list   the packages to install on top of the core, in build order
 #   files/          copied over the assembled tree, overriding everything else
+#
+# distros/core/files/ is applied before the distro files, for what every
+# distro needs whatever packages it picks.
 set -e
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -150,6 +153,14 @@ if [[ "$password" != "" ]]; then
 else
     echo "Neither ROOT_PASSWORD nor LFS_ROOT_PASSWORD is set, the root account stays locked.
 Boot with 'init=/bin/bash' appended to the kernel command line to get a shell."
+fi
+
+# The core files come first: they hold what every distro needs regardless of
+# which packages it picks, such as the module blacklists for hardware quirks.
+# The distro files are applied after, so a distro can override any of them.
+if [ -d "$CORE_DIR/files" ]; then
+    echo "Applying the core files..."
+    sudo cp -a "$CORE_DIR/files/." "$ROOTFS_DIR/"
 fi
 
 # the files of the distro override the packages and the generated files

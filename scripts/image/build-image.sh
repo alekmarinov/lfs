@@ -93,14 +93,16 @@ echo "Associating '$LOOP' with '$IMAGE_FILE'..."
 # Associates the loop device with the image file
 losetup "$LOOP" "$IMAGE_FILE"
 
+# The EFI partition is 100M rather than 10M: a kernel alone is over 10M, and
+# an ESP that can also hold one is what makes an EFI stub boot possible.
 echo "Creating EFI and rootfs partitions..."
 # Create partitions for EFI and root file system
 sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' << EOF | fdisk $LOOP || true
-n # create 10M vfat partition for EFI
+n # create 100M vfat partition for EFI
 p
 1
 
-+10M
++100M
 t
 ef
 n # create ext4 partition with the reamining space
@@ -188,7 +190,7 @@ fi
 cat > $MNT_DIR/boot/grub/grub.cfg << EOF
 # Begin /boot/grub/grub.cfg
 set default=0
-set timeout=$GRUB_TIMEOUT
+set timeout=15
 
 insmod part_msdos
 insmod ext2
@@ -201,8 +203,25 @@ if loadfont /boot/grub/fonts/unicode.pf2; then
 fi
 
 menuentry "$PRETTY_NAME" {
+    # Hand the frame buffer grub is using straight to the kernel. Without this
+    # grub restores the text mode before booting, and a machine which booted
+    # over UEFI has no VGA text mode to go back to - the screen goes black at
+    # exactly the moment the kernel starts.
+    set gfxpayload=keep
     linux   /boot/$KERNEL_NAME rootwait root=$ROOT_DEV ro
 $MICROCODE_LINE}
+
+# A machine which comes up with a lit but empty screen is almost always a
+# console problem rather than a hang: the kernel is running and has nowhere to
+# print. This entry writes straight to the framebuffer the firmware handed
+# over, from the first line of the boot, and keeps doing so after the kernel
+# switches to its own console. It is slow - every scrolled line is a copy over
+# uncached memory - but it turns a black screen into a readable log.
+menuentry "$PRETTY_NAME (verbose console)" {
+    set gfxpayload=keep
+    linux   /boot/$KERNEL_NAME rootwait root=$ROOT_DEV ro earlycon=efifb keep_bootcon
+$MICROCODE_LINE}
+
 EOF
 
 echo "Configuring $MNT_DIR/etc/fstab with root device '$ROOT_DEV'..."

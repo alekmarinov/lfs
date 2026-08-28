@@ -31,13 +31,17 @@ make
 # installation
 make modules_install
 
+# NOTE plain 'cp -vf', not 'cp -ivf': the -i prompts when the file is already
+# there, which -f does not override, and with no terminal the prompt is read as
+# a no. The first build works because /boot is empty, a rebuild then silently
+# keeps the old kernel.
 # copy kernel image
 VER=$(ls /sources/linux-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
-cp -ivf arch/x86/boot/bzImage /boot/vmlinuz-$VER-lfs-11.2
+cp -vf arch/x86/boot/bzImage /boot/vmlinuz-$VER-lfs-11.2
 # copy symbols
-cp -ivf System.map /boot/System.map-$VER
+cp -vf System.map /boot/System.map-$VER
 # copy original configuration
-cp -ivf .config /boot/config-$VER
+cp -vf .config /boot/config-$VER
 # install documentation
 if [ $LFS_DOCS -eq 1 ]; then
     install -d /usr/share/doc/linux-$VER
