@@ -139,6 +139,42 @@ else
 fi
 if [ $status -eq 0 ]; then
     echo -ne "\rpassed"; echo
+    # Record which files this package created and which it changed.
+    #
+    # A package is the upper layer of an overlay: the final content of every
+    # file its build wrote. That cannot tell you whether it created /etc/passwd
+    # or added one line to someone else's - both look the same afterwards. The
+    # answer is here though, because the layer underneath is still $LFS_BASE,
+    # so the two are compared while both exist and the result is stored in the
+    # package. build-distro.sh uses it to tell a package replacing a file it
+    # owns from several packages each adding to a shared one.
+    meta="$LFS_PACKAGE/.meta"
+    rm -rf "$meta"; mkdir -p "$meta"
+
+    # A file already in the base is not necessarily someone else's: on a
+    # rebuild this package's own files are there from its previous build. The
+    # previous package says which those are, so a rebuild is not mistaken for
+    # one package changing another's file.
+    mine="$meta/.mine"
+    : > "$mine"
+    if [ -f "$LFS_PACKAGES/${script_name%.*}.tar.gz" ]; then
+        tar tzf "$LFS_PACKAGES/${script_name%.*}.tar.gz" 2>/dev/null \
+            | sed 's|^\./||' | grep -v '/$' > "$mine" || true
+    fi
+
+    ( cd "$LFS_PACKAGE" && find . -type f -not -path './.meta/*' -print ) \
+        | sed 's|^\./||' \
+        | while read -r rel; do
+            case "$rel" in tmp/*) continue ;; esac
+            if [ -e "$LFS_BASE/$rel" ] && ! grep -qxF "$rel" "$mine"; then
+                echo "$rel" >> "$meta/modified"
+            else
+                echo "$rel" >> "$meta/created"
+            fi
+        done
+    touch "$meta/created" "$meta/modified"
+    rm -f "$mine"
+
     # Archive package
     package_name="$LFS_PACKAGES/${script_name%.*}.tar.gz"
     tar cfz "$package_name" -C "$LFS_PACKAGE" .

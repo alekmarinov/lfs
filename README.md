@@ -51,44 +51,35 @@ To resolve every program of the assembled rootfs against its own libraries, run
     make check
 
 It reports the programs which can not run, which is how a distro missing a
-package is found without booting it.
+package is found without booting it. `make deps-check` finds the same gaps
+before anything is assembled, from a graph derived once with `make deps`:
 
-`make check` needs the rootfs assembled. To find the same gaps before building
-anything, derive the dependency graph from the packages once
-
-    make deps
-
-and ask what a distro would be missing
-
-    make deps-check          every distro, or one with DISTROS=minimal
+    make deps                deriving the graph from the built packages
+    make deps-check          what a distro is missing, before assembling it
+    make deps-verify         whether build-packages.sh satisfies the declarations
+    make deps-order          an order which does, rebuilds included
+    make deps-declared       declared build deps not seen in any binary
     make why PACKAGE=17-make-libnl
     make closure PACKAGES=27-make-fluxbox
+    make file-index          the files several packages ship
 
-The graph is derived from the binaries, so it holds the shared library
-dependencies exactly and nothing else. A library opened with dlopen, a program
-run by another program and a data file leave no trace in an ELF header, so
-those are declared by hand in the build script instead
+The graph holds shared library dependencies exactly, because it is read out of
+the binaries. Anything else - a dlopened module, a program run by another, a
+data file - is declared in the build script, as is the order and the occasional
+pair of packages which need each other:
 
-    # BUILD_REQUIRES:    what the package needs in order to compile
-    # RUNTIME_REQUIRES:  what it needs at run time and the binaries do not say
+    # BUILD_REQUIRES:    needed to compile this package
+    # RUNTIME_REQUIRES:  needed to run it, and not visible in the binaries
+    # REBUILD_AFTER:     build this package again once these exist
+    # BUILD_ONLY:        a build tool; no distro installs it
 
-`make deps-declared` reads those back and reports the build dependencies which
-never appear in the binaries. `make deps-verify` checks the order in
-`build-packages.sh` against them, and `make deps-order` computes an order which
-satisfies them.
+`scripts/packages/file-policy.conf` decides what happens when several packages
+ship the same file - merged, regenerated, dropped, or the last one kept. A file
+under /etc or /var which is shared and has no entry stops the assembly.
 
-Two packages which need each other are declared as a cycle and resolved by
-building one of them twice
-
-    # BUILD_REQUIRES: 10-make-freetype    in harfbuzz, a hard edge
-    # REBUILD_AFTER:  10-make-harfbuzz    in freetype, the edge to defer
-
-which produces `freetype`, `harfbuzz`, `freetype` again. Only `REBUILD_AFTER`
-may be deferred; a cycle in the hard edges is reported as an error naming the
-packages it runs through, because which of the two to build twice is a
-decision the resolver has no way to make. A distro which leaves a package out on purpose
-records it in `distros/<distro>/deps.ignore` with the reason, the way
-`check.ignore` records an unresolved file.
+A distro may accept a gap on purpose: `distros/<distro>/check.ignore` for an
+unresolved file, `deps.ignore` for a package deliberately left out. Both take a
+reason next to the entry.
 
 To archive the assembled rootfs as a docker image named after the distro, run
 

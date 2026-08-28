@@ -1,5 +1,5 @@
 .PHONY: all clean packages packages-continue distro check docker image qemu \
-	    deps why closure deps-check deps-declared deps-order deps-verify \
+	    deps why closure deps-check deps-declared deps-order deps-verify file-index \
 	    update-scripts build-package find-package-file install-package
 
 SHELL=/bin/bash
@@ -110,6 +110,10 @@ image:
 # Derives the dependency graph from the built packages
 deps:
 	./scripts/packages/build-deps.sh
+
+# Lists the files under /etc and /var which several packages ship
+file-index:
+	./scripts/packages/build-file-index.sh
 
 # What a package needs, and what needs it
 why:

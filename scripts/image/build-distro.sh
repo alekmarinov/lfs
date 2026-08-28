@@ -57,17 +57,122 @@ build_order() {
 }
 
 # install the given packages, one per line
+# /etc/passwd and the files which go with it are not owned by any one package:
+# every package which adds a service account writes the whole file, holding the
+# accounts which existed when it was built plus its own. Unpacking them in
+# order therefore keeps only the last one written, and every account added
+# before it is lost - which is how a distro ends up booting with "no such user
+# dhcpcd" and "privilege separation user sshd does not exist" while both
+# packages are installed.
+#
+# They are merged instead: the copy just unpacked is kept as it stands, and any
+# account the previous state had which it does not mention is appended. The key
+# is the first field, so passwd, group, shadow and gshadow stay in step.
+#
+# NOTE this cannot express a deletion. A package which removes an account -
+# 8.79-clean removes the tester account the test suites use - writes a file
+# which simply lacks it, and that is indistinguishable from a file written
+# before the account existed. Such a removal has to be repeated below.
 install_packages() {
-    local package
+    local package f b
     while read -r package; do
         case "$package" in '') continue ;; esac
         [ -f "packages/$package" ] || { echo "Missing package packages/$package"; exit 1; }
-        sudo tar xpf "packages/$package" -C "$ROOTFS_DIR" < /dev/null
+        snapshot_merge_paths
+        # .meta is the record of which files this package created and which
+        # it changed. It describes the package, it is not part of the distro,
+        # and without excluding it every package drops its lists into the
+        # root of the image.
+        sudo tar xpf "packages/$package" -C "$ROOTFS_DIR" \
+            --exclude="./.meta" --exclude="./.meta/*" < /dev/null
+        apply_merges
+        sudo rm -f "$MERGE_WORK"/*
     done
 }
 
 sudo rm -rf "$ROOTFS_DIR"
 mkdir -v "$ROOTFS_DIR"
+
+MERGE_WORK=$(mktemp -d)
+trap 'sudo rm -rf "$MERGE_WORK"' EXIT
+
+# ---------------------------------------------------------------- file policy
+# scripts/packages/file-policy.conf says what to do when several packages ship
+# the same file. See the comment at the top of that file.
+POLICY_FILE="$BASE_DIR/scripts/packages/file-policy.conf"
+
+# strategy_for <absolute path> -> prints the strategy, or nothing
+strategy_for() {
+    local path="$1" pat strat
+    while read -r pat strat _; do
+        case "$pat" in ''|'#'*) continue ;; esac
+        # shellcheck disable=SC2254
+        case "$path" in $pat) echo "$strat"; return 0 ;; esac
+    done < "$POLICY_FILE"
+    return 1
+}
+
+# the literal paths to merge, as "path field" - globs cannot be snapshotted
+MERGE_PATHS=$(awk '$1 !~ /^#/ && $2 ~ /^merge-lines:/ && $1 !~ /[*?]/ {
+                       split($2, a, ":"); print substr($1, 2) " " a[2] }' "$POLICY_FILE")
+DROP_GLOBS=$(awk '$1 !~ /^#/ && ($2 == "drop" || $2 == "regenerate") { print $1 }' "$POLICY_FILE")
+
+# Keep every entry the previous state had which the copy just unpacked does not
+# mention. Keyed on <field>, so passwd, group, shadow and gshadow stay in step.
+apply_merges() {
+    local path field prev recovered
+    while read -r path field; do
+        [ -n "$path" ] || continue
+        prev="$MERGE_WORK/$(echo "$path" | tr / _)"
+        [ -f "$prev" ] || continue
+        [ -f "$ROOTFS_DIR/$path" ] || { sudo cp -a "$prev" "$ROOTFS_DIR/$path"; continue; }
+        recovered=$(sudo awk -F: -v f="$field" '
+            NR == FNR { if ($f != "") have[$f] = 1; next }
+            $f != "" && !($f in have) { print $f }
+        ' "$ROOTFS_DIR/$path" "$prev" | tr '\n' ' ')
+        [ -n "$recovered" ] || continue
+        # NOTE written through a temporary file. Piping awk straight into
+        # 'tee $ROOTFS_DIR/$path' truncates that file while awk is reading it,
+        # and the merge then silently keeps only part of what it recovered.
+        sudo awk -F: -v f="$field" '
+            NR == FNR { if ($f != "") have[$f] = 1; print; next }
+            $f != "" && !($f in have) { print }
+        ' "$ROOTFS_DIR/$path" "$prev" > "$MERGE_WORK/merged"
+        sudo cp "$MERGE_WORK/merged" "$ROOTFS_DIR/$path"
+        sudo rm -f "$MERGE_WORK/merged"
+        echo "  kept in $path: $recovered"
+    done <<< "$MERGE_PATHS"
+    return 0
+}
+
+snapshot_merge_paths() {
+    local path field
+    while read -r path field; do
+        [ -n "$path" ] || continue
+        if [ -f "$ROOTFS_DIR/$path" ]; then
+            sudo cp -a "$ROOTFS_DIR/$path" "$MERGE_WORK/$(echo "$path" | tr / _)"
+        fi
+    done <<< "$MERGE_PATHS"
+    # NOTE the explicit return. Ending on a test which is false - and on the
+    # first package none of these files exist yet - makes the loop, and so the
+    # function, return non zero, and 'set -e' then kills the build with no
+    # message at all.
+    return 0
+}
+
+# 'drop' and 'regenerate' both mean the file must not be installed from a
+# package. The regenerated ones are rebuilt afterwards by regen().
+apply_drops() {
+    local glob n=0
+    while read -r glob; do
+        [ -n "$glob" ] || continue
+        for f in $(sudo sh -c "ls -d $ROOTFS_DIR$glob 2>/dev/null" || true); do
+            sudo rm -rf "$f"; n=$((n + 1))
+        done
+    done <<< "$DROP_GLOBS"
+    [ "$n" -gt 0 ] && echo "  removed $n file(s) which no image should carry"
+    return 0
+}
 
 # The core and the distro packages are installed together, in the order they
 # were built, rather than the core first and the distro second.
@@ -87,6 +192,42 @@ if [ -n "$unknown" ]; then
     printf '%s\n' "$unknown" | sed 's/^/  /'
     printf '%s\n' "$unknown" | install_packages
 fi
+
+# Every file under /etc or /var which more than one package ships needs a line
+# in the policy. Without one the last package unpacked wins and whatever the
+# others put there is gone - which is how /etc/passwd lost the dhcpcd and sshd
+# accounts while both packages were installed, and why that only showed up when
+# the distro was booted.
+#
+# Refusing here is the whole point of the policy file: a file which starts
+# being shared cannot slip in unnoticed, it stops the assembly and has to be
+# decided about.
+FILE_INDEX="${LFS_PACKAGES:-packages}/.files"
+if [ ! -f "$FILE_INDEX" ] || [ -n "$(find "${LFS_PACKAGES:-packages}" -name '*.tar.gz' -newer "$FILE_INDEX" -print -quit 2>/dev/null)" ]; then
+    echo "Indexing the files which several packages ship..."
+    "$BASE_DIR/scripts/packages/build-file-index.sh"
+fi
+
+echo "Checking the shared files against the policy..."
+undecided=0
+while read -r path pkgs; do
+    [ -n "$path" ] || continue
+    if ! strategy_for "$path" > /dev/null; then
+        echo "  $path
+      shipped by:$pkgs
+      no policy: the last of them unpacked would win and the rest be lost"
+        undecided=$((undecided + 1))
+    fi
+done < "$FILE_INDEX"
+if [ "$undecided" -gt 0 ]; then
+    echo "
+$undecided shared file(s) have no entry in scripts/packages/file-policy.conf.
+Add one for each, choosing merge-lines:<field>, regenerate, drop or last-wins.
+last-wins is the behaviour without a policy - stating it records that someone
+looked at the file and decided, which is the difference this check exists for."
+    exit 1
+fi
+echo "  every shared file has a policy"
 
 echo "Installing the core and the $distro packages in build order..."
 build_order | grep -xF -f <(printf '%s\n' "$wanted") | install_packages
@@ -108,6 +249,26 @@ done
 # None of it belongs in an image - /tmp is scratch space the boot scripts clear
 # on the way up - so it is emptied here once, rather than chased through the
 # build scripts one at a time.
+# The one deletion the account merge cannot express. 8.79-clean runs
+# 'userdel -r tester' to remove the account the test suites run as, but it says
+# so only by writing an /etc/passwd without it, which is indistinguishable from
+# one written before the account existed. The merge therefore keeps tester, and
+# it is removed here instead. Nothing should ship a login which exists to run
+# a compiler test suite.
+if [ -f "$ROOTFS_DIR/etc/passwd" ] && sudo grep -q "^tester:" "$ROOTFS_DIR/etc/passwd"; then
+    echo "Removing the tester account..."
+    for f in etc/passwd etc/group etc/shadow etc/gshadow; do
+        [ -f "$ROOTFS_DIR/$f" ] || continue
+        sudo sed -i '/^tester:/d' "$ROOTFS_DIR/$f"
+    done
+    sudo rm -rf "$ROOTFS_DIR/home/tester"
+fi
+
+# 'drop' and 'regenerate' in the policy: files which must not be installed
+# from a package, removed here before the regenerated ones are rebuilt.
+echo "Applying the file policy..."
+apply_drops
+
 echo "Emptying /tmp..."
 sudo rm -rf "${ROOTFS_DIR:?}/tmp"
 sudo install -d -m1777 "$ROOTFS_DIR/tmp"
@@ -182,6 +343,45 @@ if [ -d "$DISTRO_DIR/files" ]; then
     echo "Applying the $distro files..."
     sudo cp -a --no-preserve=ownership "$DISTRO_DIR/files/." "$ROOTFS_DIR/"
 fi
+
+# Files which are generated from the contents of the tree, not authored. Each
+# is written by whichever package happened to install last among those that
+# touch it, and then goes stale as later packages add to what it indexes -
+# ld.so.cache, for instance, arrives knowing nothing of gtk, mesa or firefox,
+# because the last package to ship one was built long before them.
+#
+# Nothing fails outright: the loader falls back to searching /usr/lib when the
+# cache misses. They are regenerated here so the tree describes itself rather
+# than describing whatever existed when a package was built.
+#
+# Each is guarded on its tool being installed: a distro without gtk has no
+# gtk-update-icon-cache and needs no icon cache.
+#
+# NOTE this has to run after the top level symlinks exist. Before them there
+# is no /lib64/ld-linux-x86-64.so.2, so nothing dynamically linked can run in
+# the chroot and every tool here fails - except ldconfig, which is static and
+# succeeds, which makes the mistake look like a problem with the others.
+echo "Regenerating the caches which describe the tree..."
+regen() {
+    # regen <description> <command...>
+    local what="$1"; shift
+    # the tool is tested from here, not with 'chroot test': test is itself a
+    # binary which need not be installed, and chrooting to it fails silently
+    [ -x "$ROOTFS_DIR$1" ] || return 0
+    if sudo chroot "$ROOTFS_DIR" "$@" > /dev/null 2>&1; then
+        echo "  $what"
+    else
+        echo "  $what FAILED"
+    fi
+}
+regen "shared library cache"    /usr/sbin/ldconfig
+regen "mime database"           /usr/bin/update-mime-database /usr/share/mime
+regen "glib schemas"            /usr/bin/glib-compile-schemas /usr/share/glib-2.0/schemas
+regen "gdk-pixbuf loaders"      /usr/bin/gdk-pixbuf-query-loaders --update-cache
+regen "font cache"              /usr/bin/fc-cache -s
+regen "icon cache"              /usr/bin/gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor
+
+
 
 # how this rootfs was assembled
 sudo tee "$ROOTFS_DIR/etc/lfs-distro" > /dev/null <<EOF
