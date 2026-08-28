@@ -78,3 +78,10 @@
 # a menu, a toolbar and workspaces
 24-make-dejavu-fonts.tar.gz
 27-make-fluxbox.tar.gz
+
+# wireless
+9-make-libnl.tar.gz
+9-make-iw.tar.gz
+9-make-wireless-regdb.tar.gz
+9-make-linux-firmware-iwlwifi.tar.gz
+14-make-wpa-supplicant.tar.gz

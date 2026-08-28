@@ -162,6 +162,13 @@ $build /scripts/packages/blfs/12-make-usbutils.sh
 $build /scripts/packages/blfs/12-make-dbus.sh
 $build /scripts/packages/blfs/12-make-acpid.sh
 $build /scripts/packages/blfs/14-make-dhcpcd.sh
+
+# wireless. libnl first, both iw and wpa_supplicant link against it.
+$build /scripts/packages/blfs/9-make-libnl.sh
+$build /scripts/packages/blfs/9-make-iw.sh
+$build /scripts/packages/blfs/9-make-wireless-regdb.sh
+$build /scripts/packages/blfs/9-make-linux-firmware-iwlwifi.sh
+$build /scripts/packages/blfs/14-make-wpa-supplicant.sh
 $build /scripts/packages/blfs/48-make-sgml-common.sh
 $build /scripts/packages/blfs/12-make-unzip.sh
 $build /scripts/packages/blfs/49-make-docbook-xml.sh

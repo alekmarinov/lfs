@@ -75,7 +75,25 @@ download() {
     md5sum -c "$md5sums"
 }
 
+# Some files have to be fetched from a url whose last path component is not the
+# name the file has to be saved under - a firmware blob pinned to a tag carries
+# the tag in a query string, and wget --input-file has no way to rename what it
+# downloads. Those are listed separately as '<filename> <url>' and fetched one
+# at a time with -O.
+download_extra() {
+    local list="$1" name="$2" file url
+    [ -f "$list" ] || return 0
+    echo "Checking the individually named $name files.."
+    while read -r file url; do
+        case "$file" in ''|'#'*) continue ;; esac
+        if [ -f "$file" ]; then continue; fi
+        echo "Downloading $file .."
+        wget $WGET_OPTS -O "$file" "$url" || rm -f "$file"
+    done < "$list"
+}
+
 download lfs-11.2.md5sums  lfs-11.2.wget-list  LFS
+download_extra blfs-11.2.extra-list BLFS
 download blfs-11.2.md5sums blfs-11.2.wget-list BLFS
 
 popd

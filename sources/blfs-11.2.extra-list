@@ -1,0 +1,7 @@
+# <filename> <url>
+#
+# The iwlwifi firmware is pinned to the linux-firmware tag contemporary with
+# LFS 11.2. The file was later moved out of the top level of that repository,
+# so an unpinned url returns 404, and the tag lives in a query string which
+# wget --input-file cannot turn into the right file name.
+iwlwifi-7265D-29.ucode https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/iwlwifi-7265D-29.ucode?h=20220913
