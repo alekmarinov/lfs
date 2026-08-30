@@ -11,7 +11,10 @@ echo "Required disk space: < 1 MB"
 mkdir -pv $LFS_BASE/{tools,etc,var,usr/{bin,lib,sbin},tmp}
 
 for i in bin lib sbin; do
-  ln -sv usr/$i $LFS_BASE/$i
+  # -f to replace an existing link and -n so that an existing link is not
+  # followed: without -n a rerun creates $LFS_BASE/bin/bin inside the link
+  # made the first time, and the build stops before it starts.
+  ln -sfvn usr/$i $LFS_BASE/$i
 done
 
 case $(uname -m) in

@@ -29,7 +29,6 @@ https://www.linuxfromscratch.org/patches/blfs/11.2/cmake-3.24.1-upstream_fix-1.p
 https://www.linuxfromscratch.org/patches/blfs/11.2/nss-3.82-standalone-1.patch
 https://github.com/linux-pam/linux-pam/releases/download/v1.5.2/Linux-PAM-1.5.2.tar.xz
 https://github.com/linux-pam/linux-pam/releases/download/v1.5.2/Linux-PAM-1.5.2-docs.tar.xz
-https://github.com/shadow-maint/shadow/releases/download/4.12.2/shadow-4.12.2.tar.xz
 https://anduin.linuxfromscratch.org/BLFS/bdb/db-5.3.28.tar.gz
 https://github.com/thkukuk/libnsl/releases/download/v2.0.0/libnsl-2.0.0.tar.xz
 https://ftp.gnu.org/gnu/sharutils/sharutils-4.15.2.tar.xz
@@ -75,9 +74,7 @@ https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2
 https://www.kernel.org/pub/software/utils/pciutils/pciutils-3.8.0.tar.xz
 https://www.kernel.org/pub/linux/utils/usb/usbutils/usbutils-014.tar.xz
 https://dbus.freedesktop.org/releases/dbus/dbus-1.14.0.tar.xz
-https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.0p1.tar.gz
 https://www.sudo.ws/dist/sudo-1.9.11p3.tar.gz
-https://github.com/NetworkConfiguration/dhcpcd/archive/refs/tags/v9.4.1.tar.gz
 https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.14.0.tar.xz
 https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files/archive/refs/tags/microcode-20220809.tar.gz
 https://anduin.linuxfromscratch.org/BLFS/linux-firmware/amd-ucode/microcode_amd.bin
@@ -141,7 +138,6 @@ https://xorg.freedesktop.org/archive/individual/data/xbitmaps-1.1.2.tar.bz2
 https://xorg.freedesktop.org/archive/individual/xserver/xorg-server-21.1.4.tar.xz
 https://www.freedesktop.org/software/libevdev/libevdev-1.13.0.tar.xz
 https://bitmath.org/code/mtdev/mtdev-1.1.6.tar.bz2
-https://gitlab.freedesktop.org/libinput/libinput/-/archive/1.21.0/libinput-1.21.0.tar.gz
 https://xorg.freedesktop.org/archive/individual/driver/xf86-input-libinput-1.2.1.tar.xz
 https://xorg.freedesktop.org/archive/individual/app/xkbcomp-1.4.5.tar.bz2
 https://xorg.freedesktop.org/archive/individual/app/xauth-1.1.2.tar.xz
@@ -168,7 +164,6 @@ https://github.com/thom311/libnl/releases/download/libnl3_7_0/libnl-3.7.0.tar.gz
 https://www.kernel.org/pub/software/network/iw/iw-5.19.tar.xz
 https://www.kernel.org/pub/software/network/wireless-regdb/wireless-regdb-2022.08.12.tar.xz
 https://w1.fi/releases/wpa_supplicant-2.10.tar.gz
-https://files.pythonhosted.org/packages/source/M/MarkupSafe/MarkupSafe-2.1.1.tar.gz
 https://files.pythonhosted.org/packages/source/M/Mako/Mako-1.2.1.tar.gz
 https://archive.mesa3d.org/older-versions/22.x/mesa-22.1.6.tar.xz
 https://download.gnome.org/sources/libepoxy/1.5/libepoxy-1.5.10.tar.xz
@@ -196,3 +191,17 @@ https://github.com/eqrion/cbindgen/archive/v0.24.3/cbindgen-0.24.3.tar.gz
 https://www.alsa-project.org/files/pub/lib/alsa-lib-1.2.7.2.tar.bz2
 https://archive.mozilla.org/pub/firefox/releases/102.2.0esr/source/firefox-102.2.0esr.source.tar.xz
 https://dbus.freedesktop.org/releases/dbus-glib/dbus-glib-0.112.tar.gz
+https://gitlab.freedesktop.org/libinput/libinput/-/archive/1.21.0/libinput-1.21.0.tar.gz
+https://www.python.org/ftp/python/3.10.18/Python-3.10.18.tar.xz
+https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-10.0p2.tar.gz
+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_nic/rtl8106e-1.fw
+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_nic/rtl8168e-2.fw
+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_nic/rtl8168e-3.fw
+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_nic/rtl8168f-1.fw
+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_nic/rtl8168f-2.fw
+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_nic/rtl8168g-2.fw
+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_nic/rtl8168g-3.fw
+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_nic/rtl8168h-1.fw
+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_nic/rtl8168h-2.fw
+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_nic/rtl8411-2.fw
+https://github.com/NetworkConfiguration/dhcpcd/releases/download/v10.2.4/dhcpcd-10.2.4.tar.xz

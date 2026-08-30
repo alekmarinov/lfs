@@ -34,6 +34,12 @@ xset-1.2.4.tar.bz2
 xsetroot-1.1.2.tar.bz2
 "
 
+# The X sources are old C: they name variables 'true' and use the empty
+# parameter list to mean 'unspecified'. Both changed meaning in C23, which GCC
+# 15 defaults to, so the whole set is built against the standard it was written
+# for rather than patching each package in turn.
+export CC='gcc -std=gnu17'
+
 for package in $PACKAGES; do
     packagedir=${package%.tar.?z*}
     echo "=== $packagedir ==="

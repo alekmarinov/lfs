@@ -11,7 +11,7 @@ echo "Required disk space: 45 MB"
 # link to come up at all.
 # https://www.linuxfromscratch.org/blfs/view/11.2/basicnet/wpa_supplicant.html
 #
-# BUILD_REQUIRES: 17-make-libnl 8.46-make-openssl 8.11-make-readline
+# BUILD_REQUIRES: 17-make-libnl 8.48-make-openssl 8.12-make-readline
 # RUNTIME_REQUIRES: 14-make-dhcpcd
 
 tar -xf /sources/wpa_supplicant-*.tar.gz -C /tmp/ \

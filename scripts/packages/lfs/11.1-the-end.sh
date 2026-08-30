@@ -6,12 +6,12 @@ echo "Finalize LFS configuration.."
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter11/theend.html
 
 # LFS version file
-echo 11.2 > /etc/lfs-release
+echo "${LFS_VER:?}" > /etc/lfs-release
 
 # LSB version file
 cat > /etc/lsb-release << "EOF"
 DISTRIB_ID="Linux From Scratch"
-DISTRIB_RELEASE="11.2"
+DISTRIB_RELEASE="${LFS_VER:?}"
 DISTRIB_CODENAME="fetus"
 DISTRIB_DESCRIPTION="Linux From Scratch"
 EOF

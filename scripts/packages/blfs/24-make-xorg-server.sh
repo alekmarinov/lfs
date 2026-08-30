@@ -19,7 +19,12 @@ echo "Required disk space: 340 MB"
 # recommended, and now present: mesa, libepoxy
 # https://www.linuxfromscratch.org/blfs/view/11.2/x/xorg-server.html
 #
-# BUILD_REQUIRES: 24-make-mesa 25-make-libepoxy 24-make-libxcvt 10-make-pixman 24-make-xkeyboard-config 24-make-xorg-libraries 8.53-make-meson 8.52-make-ninja
+# NOTE -Wno-error=array-bounds. GCC 15 traces the strncpy in Xorg's own
+# Xtrans.c far enough to see it copying past the end of utsname.nodename, and
+# xorg-server compiles with -Werror. The call is bounded by the destination
+# size, so the truncation it warns about is what the code intends.
+#
+# BUILD_REQUIRES: 24-make-mesa 25-make-libepoxy 24-make-libxcvt 10-make-pixman 24-make-xkeyboard-config 24-make-xorg-libraries 8.57-make-meson 8.56-make-ninja
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a
@@ -44,6 +49,7 @@ meson --prefix=$XORG_PREFIX \
       -Ddri2=true \
       -Ddri3=true \
       -Dglx=true \
+      -Dc_args="-Wno-error=array-bounds" \
       ..
 ninja
 ninja install

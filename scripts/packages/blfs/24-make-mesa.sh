@@ -14,7 +14,7 @@ echo "Required disk space: 700 MB"
 # required: mako, libdrm, the xorg libraries, llvm
 # https://www.linuxfromscratch.org/blfs/view/11.2/x/mesa.html
 #
-# BUILD_REQUIRES: x-make-mako 24-make-libdrm 24-make-xorg-libraries 13-make-llvm 8.38-make-expat 8.6-make-zlib 8.9-make-zstd 8.53-make-meson 8.52-make-ninja
+# BUILD_REQUIRES: x-make-mako 24-make-libdrm 24-make-xorg-libraries 13-make-llvm 8.40-make-expat 8.6-make-zlib 8.10-make-zstd 8.57-make-meson 8.56-make-ninja
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a

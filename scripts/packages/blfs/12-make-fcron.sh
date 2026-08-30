@@ -8,6 +8,9 @@ echo "Required disk space: 5.1 MB"
 # The Fcron package contains a periodical command scheduler which aims at replacing Vixie Cron.
 # optional: vim,linux-pam,docbook-utils
 # https://www.linuxfromscratch.org/blfs/view/stable/general/fcron.html
+#
+# NOTE -std=gnu17. fcron declares its own 'true', which C23 - the GCC 15
+# default - turns into a keyword.
 
 tar -xf /sources/fcron-*.tar.gz -C /tmp/ \
     && mv /tmp/fcron-* /tmp/fcron \
@@ -29,7 +32,7 @@ groupadd -g 22 fcron \
 
 find doc -type f -exec sed -i 's:/usr/local::g' {} \;
 
-./configure \
+CC='gcc -std=gnu17' ./configure \
     --prefix=/usr \
     --sysconfdir=/etc \
     --localstatedir=/var \
@@ -102,6 +105,13 @@ cat > /var/spool/fcron/systab.orig << "EOF"
 &bootrun 22 4 * * 0 root run-parts /etc/cron.weekly
 &bootrun 42 4 1 * * root run-parts /etc/cron.monthly
 EOF
+
+# Unpack the bootscripts here unless an earlier package left them behind:
+# every package builds in its own overlay, so /tmp is not a reliable way to
+# hand a tree from one package to the next.
+[ -d /tmp/blfs-bootscripts ] \
+    || { tar -xf /sources/blfs-bootscripts-*.tar.xz -C /tmp/ \
+         && mv /tmp/blfs-bootscripts-* /tmp/blfs-bootscripts; }
 
 pushd /tmp/blfs-bootscripts \
     && make install-fcron \

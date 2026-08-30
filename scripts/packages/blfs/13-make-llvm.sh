@@ -15,21 +15,30 @@ echo "Required disk space: 3.1 GB"
 # optional: doxygen,git,graphviz,libxml2,pygments,rsync(for tests),
 #           texlive/install-tl-unx,valgrind,pyyaml,zip
 # https://www.linuxfromscratch.org/blfs/view/stable/general/llvm.html
+#
+# NOTE compiler-rt is not built. It is the sanitizer runtime, and nothing here
+# uses it: rust wants llvm-config and firefox wants clang. Version 14 of it
+# does not compile against glibc 2.42 - it measures the 'struct termio' that
+# glibc removed, and its own -ffreestanding build flag leaves stdlib.h
+# declaring nothing, so dfsan loses malloc and strtol. Those are its flags to
+# choose, not something a caller can correct from outside.
+#
+# NOTE -include cstdint. LLVM 14 reaches uint64_t through headers that
+# libstdc++ used to pull in for free and no longer does, so SmallVector.h fails
+# with 'uint64_t was not declared'. Forcing that one header into every
+# translation unit fixes every such site at once.
 
 VER=$(ls /sources/llvm-*.src.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
-COMPILER_RT_VER=$(ls /sources/compiler-rt-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/llvm-*.tar.xz -C /tmp/ \
     && mv /tmp/llvm-* /tmp/llvm \
     && pushd /tmp/llvm \
     && tar -xf /sources/clang-*.tar.xz -C tools \
     && mv tools/clang-* tools/clang \
-    && tar -xf /sources/compiler-rt-*.tar.xz -C projects \
-    && mv projects/compiler-rt-* projects/compiler-rt \
     && grep -rl '#!.*python' | xargs sed -i '1s/python$/python3/' \
-    && patch -Np2 -d projects/compiler-rt < /sources/compiler-rt-$COMPILER_RT_VER-glibc_2_36-1.patch \
     && mkdir -v build \
     && cd build \
     && CC=gcc CXX=g++ cmake \
+        -DCMAKE_CXX_FLAGS="-include cstdint" \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DLLVM_ENABLE_FFI=ON \
         -DCMAKE_BUILD_TYPE=Release \

@@ -2,7 +2,7 @@ FROM debian:11
 
 # image info
 LABEL description="Automated LFS build"
-LABEL version="11.2"
+LABEL version="12.4"
 LABEL maintainer="alekmarinov@gmail.com"
 
 # install required packages

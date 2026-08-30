@@ -9,6 +9,9 @@ echo "Required disk space: 44 MB"
 # recommended: libtasn1,make-ca (runtime)
 # optional: gtk-doc,libxslt,nss (runtime)
 # https://www.linuxfromscratch.org/blfs/view/stable/postlfs/p11-kit.html
+#
+# NOTE c_std=gnu17. p11-kit uses 'thread_local' as an ordinary variable
+# name, and C23 - which GCC 15 defaults to - made it a keyword.
 
 tar -xf /sources/p11-kit-*.tar.xz -C /tmp/ \
     && mv /tmp/p11-kit-* /tmp/p11-kit \
@@ -29,6 +32,7 @@ mkdir -p p11-build \
         --prefix=/usr \
         --buildtype=release \
         -Dtrust_paths=/etc/pki/anchors \
+        -Dc_std=gnu17 \
     && ninja \
     && if [ $LFS_TEST -eq 1 ]; then ninja test || true; fi \
     && ninja install \

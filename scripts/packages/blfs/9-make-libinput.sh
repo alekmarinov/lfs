@@ -7,7 +7,7 @@ echo "Building BLFS-libinput.."
 # required: libevdev, mtdev
 # https://www.linuxfromscratch.org/blfs/view/11.2/general/libinput.html
 
-tar -xf /sources/libinput-*.tar.xz -C /tmp/ \
+tar -xf /sources/libinput-*.tar.* -C /tmp/ \
     && mv /tmp/libinput-* /tmp/libinput \
     && pushd /tmp/libinput \
     && mkdir build && pushd build \

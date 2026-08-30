@@ -7,7 +7,7 @@ echo "Building BLFS-shared-mime-info.."
 # is, and gtk to pick an icon for it.
 # https://www.linuxfromscratch.org/blfs/view/11.2/general/shared-mime-info.html
 #
-# BUILD_REQUIRES: 9-make-glib 9-make-libxml2 8.53-make-meson 8.52-make-ninja
+# BUILD_REQUIRES: 9-make-glib 9-make-libxml2 8.57-make-meson 8.56-make-ninja
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a

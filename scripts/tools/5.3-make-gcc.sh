@@ -7,6 +7,16 @@ echo "Required disk space: 3.8 GB"
 # 5.3. GCC
 # The GCC package contains the GNU compiler collection, which includes the C and C++ compilers.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter05/gcc-pass1.html
+#
+# NOTE the full internal limits.h is written to include/, not to
+# install-tools/include/ as it was through 11.2. Writing it to the old
+# path leaves gcc using its stub header, and nothing complains until the
+# first package which includes a glibc header - m4, here - stops with
+# '#error "Assumed value of MB_LEN_MAX wrong"', which says nothing about
+# where the real problem is.
+
+GLIBC_VER=$(ls $LFS_BASE/sources/glibc-*.tar.xz \
+    | sed 's|.*/glibc-||; s|\.tar\.xz$||')
 
 rm -rf /tmp/gcc \
     && tar -xf $LFS_BASE/sources/gcc-*.tar.xz -C /tmp/ \
@@ -28,14 +38,15 @@ rm -rf /tmp/gcc \
     && ../configure               \
         --target=$LFS_TGT         \
         --prefix=$LFS_BASE/tools       \
-        --with-glibc-version=2.36 \
+        --with-glibc-version=$GLIBC_VER \
         --with-sysroot=$LFS_BASE       \
         --with-newlib             \
         --without-headers         \
+        --enable-default-pie      \
+        --enable-default-ssp      \
         --disable-nls             \
         --disable-shared          \
         --disable-multilib        \
-        --disable-decimal-float   \
         --disable-threads         \
         --disable-libatomic       \
         --disable-libgomp         \
@@ -48,6 +59,6 @@ rm -rf /tmp/gcc \
     && make install \
     && cd .. \
     && cat gcc/limitx.h gcc/glimits.h gcc/limity.h > \
-        `dirname $($LFS_TGT-gcc -print-libgcc-file-name)`/install-tools/include/limits.h \
+        `dirname $($LFS_TGT-gcc -print-libgcc-file-name)`/include/limits.h \
     && popd \
     && rm -rf /tmp/gcc

@@ -11,7 +11,6 @@ echo "Required disk space: 56 MB"
 tar -xf /sources/zstd-*.tar.gz -C /tmp/ \
     && mv /tmp/zstd-* /tmp/zstd \
     && pushd /tmp/zstd \
-    && patch -Np1 -i $(ls /sources/zstd-*-upstream_fixes-1.patch) \
     && make prefix=/usr \
     && make prefix=/usr install \
     && rm -v /usr/lib/libzstd.a \

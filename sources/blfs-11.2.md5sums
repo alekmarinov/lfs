@@ -29,7 +29,6 @@ b1379c46074c820c3a582c185f73d9bc  cmake-3.24.1-upstream_fix-1.patch
 f8a7ce473bd61792ef182cf0fb2d359a  nss-3.82-standalone-1.patch
 895e8adfa14af334f679bbeb28503f66  Linux-PAM-1.5.2.tar.xz
 ceb3dc248cb2f49a40904b93cb91db1b  Linux-PAM-1.5.2-docs.tar.xz
-52637cb34c357acf85c617cf95da34a6  shadow-4.12.2.tar.xz
 b99454564d5b4479750567031d66fe24  db-5.3.28.tar.gz
 1e8c0615071ea13202452304de1eaab9  libnsl-2.0.0.tar.xz
 5975ce21da36491d7aa6dc2b0d9788e0  sharutils-4.15.2.tar.xz
@@ -75,9 +74,7 @@ ef3829db177fc1d92af2cf5b940e7f3d  compiler-rt-14.0.6-glibc_2_36-1.patch
 72ba4ca1eed8b2972a785ee5aac0b138  pciutils-3.8.0.tar.xz
 f21aa68ee7870b161921a590be7765e6  usbutils-014.tar.xz
 ddd5570aff05191dbee8e42d751f1b7d  dbus-1.14.0.tar.xz
-5ed8252a0ee379c0f7c9e0d25d32424d  openssh-9.0p1.tar.gz
 07e95c947129d8820c78caa1fc79c7fd  sudo-1.9.11p3.tar.gz
-a810265ff49a97a393a4ba3a4df25e4c  dhcpcd-9.4.1.tar.gz
 e12700a9d522bdfec06b6b7e72646987  fontconfig-2.14.0.tar.xz
 0cb2de92d2ae8bf457e43263608d419b  microcode-20220809.tar.gz
 55ae79b82cbfddcf7142058be3c9ec2d  microcode_amd.bin
@@ -141,7 +138,6 @@ cedeef095918aca86da79a2934e03daf  xbitmaps-1.1.2.tar.bz2
 1fee73752bc08a9d364d5e39f19f464f  xorg-server-21.1.4.tar.xz
 5b15b4cf97c4f9f1393e499526a57665  libevdev-1.13.0.tar.xz
 bf8ef2482e84a00b5db8fbd3ce00e249  mtdev-1.1.6.tar.bz2
-3d8f0561b83fafc187bbc2d5bd0fe217  libinput-1.21.0.tar.xz
 c6e942a1d639ebe2621905cc84eb26b9  xf86-input-libinput-1.2.1.tar.xz
 c45e9f7971a58b8f0faf10f6d8f298c0  xkbcomp-1.4.5.tar.bz2
 dbcf944eb59343b84799b2cc70aace16  xauth-1.1.2.tar.xz
@@ -169,7 +165,6 @@ fd17ca2dd5f160a5d9e5fd3f8a69f416  iw-5.19.tar.xz
 c9763dd44ce7dc9dff120afeb2234695  wireless-regdb-2022.08.12.tar.xz
 d26797fcb002898d4ee989179346e1cc  wpa_supplicant-2.10.tar.gz
 3f653e562129cc5748dfa319545369e0  iwlwifi-7265D-29.ucode
-9809f9fdd98bc835b0c21aa8f79cbf30  MarkupSafe-2.1.1.tar.gz
 00dd92cae729b20b9c4d9e4bbd79d5ad  Mako-1.2.1.tar.gz
 3ad535f0c1441f9c06e006579e9bb5cd  mesa-22.1.6.tar.xz
 10c635557904aed5239a4885a7c4efb7  libepoxy-1.5.10.tar.xz
@@ -198,3 +193,17 @@ ae838aa438c3a4c6bb0e3f765960a688  node-v16.17.0.tar.xz
 055c6688e74609b0e01984e43749d971  alsa-lib-1.2.7.2.tar.bz2
 dd6b04f0972a2256b8e2d66ae6b855e3  firefox-102.2.0esr.source.tar.xz
 021e6c8a288df02c227e4aafbf7e7527  dbus-glib-0.112.tar.gz
+3d8f0561b83fafc187bbc2d5bd0fe217  libinput-1.21.0.tar.gz
+14ea0982a7dd4dbfc3f50537c723df41  Python-3.10.18.tar.xz
+689148621a2eaa734497b12bed1c5202  openssh-10.0p2.tar.gz
+f1c44f8be0f4d9381a1060a6b3bf72a6  rtl8106e-1.fw
+6f5c444506137276f405dff374f2e910  rtl8168e-2.fw
+46843793bae7d5b81317a0a52ba5eccb  rtl8168e-3.fw
+624831688e25aa47fa84c30c045fcae3  rtl8168f-1.fw
+8a1ff9b90bcdf6e9df4ef02aa89dcccd  rtl8168f-2.fw
+fd88afedf0330844015ad58f09f9b386  rtl8168g-2.fw
+09483ae9732a8581c472284b53f82cda  rtl8168g-3.fw
+dcd7adbf77cf62df09f64cde73b664d9  rtl8168h-1.fw
+11b4899d299ed119ba41099739145f69  rtl8168h-2.fw
+15fe6fb2ad8a0df590611d086c4f8c8c  rtl8411-2.fw
+ce62bc6caf02421ac40135dbb92377b5  dhcpcd-10.2.4.tar.xz

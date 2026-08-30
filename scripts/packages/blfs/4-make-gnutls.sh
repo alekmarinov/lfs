@@ -13,12 +13,16 @@ echo "Required disk space: 167 MB"
 # optional: brotli,doxygen,gtk-doc,guile,libidn,libidn2,libseccomp,net-tools(for tests),
 #           texlive(or install-tl-unx),unbound,valgrind(for tests)
 # https://www.linuxfromscratch.org/blfs/view/stable/postlfs/gnutls.html
+#
+# NOTE -std=gnu17. The gnulib bundled with this gnutls expands its nodiscard
+# attribute to a form that predates C23's own [[nodiscard]], and under C23 the
+# declarations it decorates no longer parse.
 
 VER=$(ls /sources/gnutls-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/gnutls-*.tar.xz -C /tmp/ \
     && mv /tmp/gnutls-* /tmp/gnutls \
     && pushd /tmp/gnutls \
-    && ./configure \
+    && CC='gcc -std=gnu17' ./configure \
         --prefix=/usr \
         --docdir=/usr/share/doc/gnutls-$VER \
         --disable-guile \

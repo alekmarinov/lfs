@@ -9,6 +9,17 @@ echo "Required disk space: 716 MB"
 # program while it executes -- or what another program was doing at the moment it crashed.
 # recommended: six
 # https://www.linuxfromscratch.org/blfs/view/stable/general/gdb.html
+#
+# NOTE --without-python. gdb 12 calls PySys_SetPath(), which Python removed
+# in 3.13 - the version LFS 12.4 installs. Only gdb's Python scripting is
+# lost by this, pretty-printers among it; the debugger itself is unaffected.
+# Restoring it means a gdb newer than what BLFS 11.2 pins.
+#
+# NOTE -fpermissive. This is gdb 12 from BLFS 11.2 built with
+# --with-system-readline against the readline that LFS 12.4 installs, which
+# added const to the completion callback types. The conversion gdb performs
+# is read-only, so relaxing the check is safe here; -g -O2 is repeated
+# because naming CXXFLAGS replaces configure's own default.
 
 VER=$(ls /sources/gdb-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/gdb-*.tar.xz -C /tmp/ \
@@ -16,10 +27,10 @@ tar -xf /sources/gdb-*.tar.xz -C /tmp/ \
     && pushd /tmp/gdb \
     && mkdir build \
     && cd build \
-    && ../configure \
+    && ../configure CXXFLAGS="-g -O2 -fpermissive" \
         --prefix=/usr \
         --with-system-readline \
-        --with-python=/usr/bin/python3 \
+        --without-python \
     && make \
     && if [ $LFS_DOCS -eq 1 ]; then make -C gdb/doc doxy; fi \
     && if [ $LFS_TEST -eq 1 ]; then \

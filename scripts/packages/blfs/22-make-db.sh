@@ -9,6 +9,13 @@ echo "Required disk space: 265 MB"
 # other applications for database related functions.
 # optional: libnsl,sharutils
 # https://www.linuxfromscratch.org/blfs/view/stable/server/db.html
+#
+# NOTE configure's own probe for pthread mutexes is a program written as
+# 'main() {' with no return type. C23 removed implicit int, and GCC 14 made
+# that diagnostic an error by default - which -std=gnu17 alone does not undo,
+# so the warning has to be demoted explicitly. Without this the probe fails
+# to compile, configure decides pthread mutexes are unavailable, falls back
+# to fcntl ones and then stops because those were removed in 4.8.
 
 VER=$(ls /sources/db-*.tar.gz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/db-*.tar.gz -C /tmp/ \
@@ -16,7 +23,7 @@ tar -xf /sources/db-*.tar.gz -C /tmp/ \
     && pushd /tmp/db \
     && sed -i 's/\(__atomic_compare_exchange\)/\1_db/' src/dbinc/atomic.h \
     && cd build_unix \
-    && ../dist/configure \
+    && CC='gcc -std=gnu17 -Wno-error=implicit-int' ../dist/configure \
         --prefix=/usr \
         --enable-compat185 \
         --enable-dbm \

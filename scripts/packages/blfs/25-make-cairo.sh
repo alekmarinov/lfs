@@ -7,6 +7,9 @@ echo "Building BLFS-cairo.."
 # with it, gtk draws widgets with it.
 # https://www.linuxfromscratch.org/blfs/view/11.2/x/cairo.html
 #
+# NOTE -std=gnu17. cairo's pdiff helper typedefs its own 'bool', which C23
+# turned into a keyword.
+#
 # BUILD_REQUIRES: 9-make-glib 10-make-fontconfig 10-make-freetype 10-make-libpng 10-make-pixman 24-make-xorg-libraries 24-make-mesa
 # RUNTIME_REQUIRES:
 #
@@ -34,7 +37,7 @@ pushd /tmp/cairo
 #
 # --enable-symbol-lookup=no stops cairo-sphinx being built, the last of the
 # three and the other half of the lzo dependency.
-./configure --prefix=/usr \
+CC='gcc -std=gnu17' ./configure --prefix=/usr \
     --disable-static \
     --enable-tee \
     --enable-trace=no \

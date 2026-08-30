@@ -13,12 +13,19 @@ echo "Required disk space: 28 MB"
 # required: cmake
 # optional: freetype2,silgraphite,harfbuzz,asciidoc(for docs),doxygen,texlive/install-tl-useful,
 # https://www.linuxfromscratch.org/blfs/view/svn/general/graphite2.html
+#
+# NOTE the tests directory is dropped from the build. Its programs use
+# uint16_t without including cstdint and assign a brace-enclosed initialiser
+# to a std::pair, neither of which current GCC accepts, and 'make' builds them
+# even though the suite itself is only run when LFS_TEST is set. The library
+# and everything installed from it are unaffected.
 
 VER=$(ls /sources/graphite2-*.tgz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/graphite2-*.tgz -C /tmp/ \
     && mv /tmp/graphite2-* /tmp/graphite2 \
     && pushd /tmp/graphite2 \
     && sed -i '/cmptest/d' tests/CMakeLists.txt \
+    && sed -i '/add_subdirectory(tests)/d' CMakeLists.txt \
     && mkdir build \
     && cd build \
     && cmake -DCMAKE_INSTALL_PREFIX=/usr .. \

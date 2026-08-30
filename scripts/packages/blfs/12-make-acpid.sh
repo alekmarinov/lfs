@@ -43,6 +43,13 @@ EOF
 chmod -v 755 /etc/acpi/power.sh
 
 # the acpid boot script comes from the BLFS bootscripts unpacked in /tmp
+# Unpack the bootscripts here unless an earlier package left them behind:
+# every package builds in its own overlay, so /tmp is not a reliable way to
+# hand a tree from one package to the next.
+[ -d /tmp/blfs-bootscripts ] \
+    || { tar -xf /sources/blfs-bootscripts-*.tar.xz -C /tmp/ \
+         && mv /tmp/blfs-bootscripts-* /tmp/blfs-bootscripts; }
+
 pushd /tmp/blfs-bootscripts \
     && make install-acpid \
     && popd

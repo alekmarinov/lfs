@@ -10,12 +10,15 @@ echo "Required disk space: 161 MB"
 # recommended: gnutls,pinentry
 # optional: curl,fuse,imagemagick,libusb,openldap,sqlite,texlive,fig2dev(for doc)
 # https://www.linuxfromscratch.org/blfs/view/stable/postlfs/gnupg.html
+#
+# NOTE -std=gnu17. gnupg declares its own 'true' in asschk.c, which C23 turned
+# into a keyword.
 
 VER=$(ls /sources/gnupg-*.tar.bz2 | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/gnupg-*.tar.bz2 -C /tmp/ \
     && mv /tmp/gnupg-* /tmp/gnupg \
     && pushd /tmp/gnupg \
-    && ./configure \
+    && CC='gcc -std=gnu17' ./configure \
         --prefix=/usr \
         --localstatedir=/var \
         --sysconfdir=/etc \

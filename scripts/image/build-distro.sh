@@ -70,7 +70,7 @@ build_order() {
 # is the first field, so passwd, group, shadow and gshadow stay in step.
 #
 # NOTE this cannot express a deletion. A package which removes an account -
-# 8.79-clean removes the tester account the test suites use - writes a file
+# 8.85-clean removes the tester account the test suites use - writes a file
 # which simply lacks it, and that is indistinguishable from a file written
 # before the account existed. Such a removal has to be repeated below.
 install_packages() {
@@ -249,7 +249,7 @@ done
 # None of it belongs in an image - /tmp is scratch space the boot scripts clear
 # on the way up - so it is emptied here once, rather than chased through the
 # build scripts one at a time.
-# The one deletion the account merge cannot express. 8.79-clean runs
+# The one deletion the account merge cannot express. 8.85-clean runs
 # 'userdel -r tester' to remove the account the test suites run as, but it says
 # so only by writing an /etc/passwd without it, which is indistinguishable from
 # one written before the account existed. The merge therefore keeps tester, and

@@ -3,7 +3,6 @@
 	    update-scripts build-package find-package-file install-package
 
 SHELL=/bin/bash
-LFS_VER=11.2
 TARGET_TOOLS=lfs-tools-$(LFS_VER).tar.gz
 
 # .env is read as a makefile, so everything in it has file origin, which beats

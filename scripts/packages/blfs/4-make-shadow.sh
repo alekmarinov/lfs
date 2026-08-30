@@ -13,9 +13,13 @@ echo "Required disk space: 36 MB"
 # required: linux-pam|cracklib
 # https://www.linuxfromscratch.org/blfs/view/stable/postlfs/shadow.html
 #
+# NOTE this rebuilds the shadow that LFS installed, now against Linux-PAM, so
+# it is the same 4.18.0 and needs the same options: --without-libbsd for it to
+# use its bundled readpassphrase(), and --with-{b,yes}crypt for libxcrypt.
+#
 # BUILD_REQUIRES: 4-make-linux-pam
 #
-# Not a cycle: this is a second, separate package from 8.25-make-shadow,
+# Not a cycle: this is a second, separate package from 8.28-make-shadow,
 # which is built in chapter 8 without pam so that pam has a shadow to build
 # against. Two nodes, one edge, no rebuild needed.
 
@@ -32,8 +36,10 @@ tar -xf /sources/shadow-*.tar.xz -C /tmp/ \
         -e '/PATH=/{s@/sbin:@@;s@/bin:@@}' \
         -i etc/login.defs \
     && ./configure \
-        --sysconfdir=/etc \
-        --disable-static \
+        --sysconfdir=/etc   \
+        --disable-static    \
+        --with-{b,yes}crypt \
+        --without-libbsd    \
         --with-group-name-max-length=32 \
     && make \
     && make exec_prefix=/usr install \

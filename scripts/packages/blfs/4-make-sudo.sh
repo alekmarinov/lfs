@@ -9,12 +9,16 @@ echo "Required disk space: 60 MB"
 # ability to run some commands as root or another user.
 # optional: linux-pam
 # https://www.linuxfromscratch.org/blfs/view/11.2/postlfs/sudo.html
+#
+# NOTE -std=gnu17. sudo declares plugin entry points as 'int (*)()', meaning
+# an unspecified argument list. C23 reads that as 'no arguments', so assigning
+# the real functions to those fields becomes a pointer type mismatch.
 
 VER=$(ls /sources/sudo-*.tar.gz | sed 's/^[^-]*-//' | sed 's/\.tar\.gz$//')
 tar -xf /sources/sudo-*.tar.gz -C /tmp/ \
     && mv /tmp/sudo-* /tmp/sudo \
     && pushd /tmp/sudo \
-    && ./configure \
+    && CC='gcc -std=gnu17' ./configure \
         --prefix=/usr \
         --libexecdir=/usr/lib \
         --with-secure-path \

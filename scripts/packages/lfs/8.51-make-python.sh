@@ -8,8 +8,8 @@ echo "Required disk space: 283 MB"
 # The Python 3 package contains the Python development environment.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/Python.html
 #
-# BUILD_REQUIRES: 8.38-make-expat 8.49-make-libffi 8.46-make-openssl
-# REBUILD_AFTER: 22-make-sqlite 8.73-make-util-linux
+# BUILD_REQUIRES: 8.40-make-expat 8.50-make-libffi 8.48-make-openssl
+# REBUILD_AFTER: 22-make-sqlite 8.79-make-util-linux
 #
 # Python is built twice. It has to exist early because meson and ninja are
 # written in it and most of the build needs them, and at that point sqlite has

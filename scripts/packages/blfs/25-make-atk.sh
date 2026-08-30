@@ -7,7 +7,7 @@ echo "Building BLFS-atk.."
 # anything uses them, so it is required rather than optional.
 # https://www.linuxfromscratch.org/blfs/view/11.2/x/atk.html
 #
-# BUILD_REQUIRES: 9-make-glib 8.53-make-meson 8.52-make-ninja
+# BUILD_REQUIRES: 9-make-glib 8.57-make-meson 8.56-make-ninja
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a

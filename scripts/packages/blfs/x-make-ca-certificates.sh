@@ -12,7 +12,7 @@ echo "Generating the CA trust store.."
 # of the sources instead, so the store is built from a file with a known
 # checksum rather than from whatever the network returns during a build.
 #
-# BUILD_REQUIRES: 4-make-make-ca 4-make-p11-kit 4-make-nss 8.46-make-openssl
+# BUILD_REQUIRES: 4-make-make-ca 4-make-p11-kit 4-make-nss 8.48-make-openssl
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a

@@ -37,7 +37,7 @@ make modules_install
 # keeps the old kernel.
 # copy kernel image
 VER=$(ls /sources/linux-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
-cp -vf arch/x86/boot/bzImage /boot/vmlinuz-$VER-lfs-11.2
+cp -vf arch/x86/boot/bzImage /boot/vmlinuz-$VER-lfs-${LFS_VER:?}
 # copy symbols
 cp -vf System.map /boot/System.map-$VER
 # copy original configuration

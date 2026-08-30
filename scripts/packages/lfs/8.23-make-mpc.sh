@@ -9,7 +9,7 @@ echo "Required disk space: 21 MB"
 # with arbitrarily high precision and correct rounding of the result.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/mpc.html
 
-VER=$(ls /sources/mpc-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
+VER=$(ls /sources/mpc-*.t* | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/mpc-*.tar.gz -C /tmp/ \
     && mv /tmp/mpc-* /tmp/mpc \
     && pushd /tmp/mpc \

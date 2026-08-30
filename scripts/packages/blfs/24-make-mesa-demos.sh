@@ -20,7 +20,7 @@ echo "Required disk space: 60 MB to build, 1 MB installed"
 # required: mesa, glu
 # https://www.linuxfromscratch.org/blfs/view/11.2/x/mesa.html
 #
-# BUILD_REQUIRES: 24-make-mesa 25-make-glu 24-make-xorg-libraries 8.53-make-meson 8.52-make-ninja
+# BUILD_REQUIRES: 24-make-mesa 25-make-glu 24-make-xorg-libraries 8.57-make-meson 8.56-make-ninja
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a

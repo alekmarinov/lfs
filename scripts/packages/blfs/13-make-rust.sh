@@ -11,7 +11,7 @@ echo "Required disk space: 9 GB"
 #
 # https://www.linuxfromscratch.org/blfs/view/11.2/general/rust.html
 #
-# BUILD_REQUIRES: 13-make-llvm 7.10-make-python 17-make-curl 8.46-make-openssl x-make-ca-certificates
+# BUILD_REQUIRES: 13-make-llvm 7.10-make-python 17-make-curl 8.48-make-openssl x-make-ca-certificates
 # RUNTIME_REQUIRES:
 # BUILD_ONLY: the rust code in firefox is compiled into libxul, there is no rust runtime to ship
 #

@@ -8,7 +8,7 @@ echo "Building BLFS-alsa-lib.."
 # daemon that goes with it.
 # https://www.linuxfromscratch.org/blfs/view/11.2/multimedia/alsa-lib.html
 #
-# BUILD_REQUIRES: 8.65-make-make
+# BUILD_REQUIRES: 8.69-make-make
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a

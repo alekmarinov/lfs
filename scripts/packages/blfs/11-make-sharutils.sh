@@ -7,6 +7,9 @@ echo "Required disk space: 22 MB"
 # 11. sharutils
 # The Sharutils package contains utilities that can create 'shell' archives.
 # https://www.linuxfromscratch.org/blfs/view/stable/general/sharutils.html
+#
+# NOTE -std=gnu17. sharutils typedefs its own 'bool' in compat/compat.h, and
+# C23 - the GCC 15 default - makes bool a keyword.
 
 tar -xf /sources/sharutils-*.tar.xz -C /tmp/ \
     && mv /tmp/sharutils-* /tmp/sharutils \
@@ -15,7 +18,7 @@ tar -xf /sources/sharutils-*.tar.xz -C /tmp/ \
     && sed -i '/program_name/s/^/extern /' src/*opts.h \
     && sed -i 's/IO_ftrylockfile/IO_EOF_SEEN/' lib/*.c \
     && echo "#define _IO_IN_BACKUP 0x100" >> lib/stdio-impl.h \
-    && ./configure \
+    && CC='gcc -std=gnu17' ./configure \
         --prefix=/usr \
     && make \
     && if [ $LFS_TEST -eq 1 ]; then make check || true; fi \

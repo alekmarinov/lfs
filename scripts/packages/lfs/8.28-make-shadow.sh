@@ -20,19 +20,25 @@ find man -name Makefile.in -exec sed -i 's/groups\.1 / /'   {} \;
 find man -name Makefile.in -exec sed -i 's/getspnam\.3 / /' {} \;
 find man -name Makefile.in -exec sed -i 's/passwd\.5 / /'   {} \;
 
-# Instead of using the default crypt method, use the more secure SHA-512
-# method of password encryption, which also allows passwords longer
-# than 8 characters. It is also necessary to change the obsolete
+# Instead of using the default crypt method, use yescrypt, which the book
+# now prefers over SHA-512 and which libxcrypt provides. It is also
+# necessary to change the obsolete
 # /var/spool/mail location for user mailboxes that Shadow uses by
 # default to the /var/mail location used currently:
-sed -e 's:#ENCRYPT_METHOD DES:ENCRYPT_METHOD SHA512:' \
+sed -e 's:#ENCRYPT_METHOD DES:ENCRYPT_METHOD YESCRYPT:' \
     -e 's:/var/spool/mail:/var/mail:'                 \
     -e '/PATH=/{s@/sbin:@@;s@/bin:@@}'                \
     -i etc/login.defs
 
 touch /usr/bin/passwd
-./configure --sysconfdir=/etc \
-            --disable-static  \
+# --without-libbsd: shadow 4.18 takes readpassphrase() from libbsd, and falls
+# back to its own bundled copy only when told libbsd is not wanted. Left to
+# search, it fails to find libbsd and then stops rather than falling back.
+# --with-{b,yes}crypt needs libxcrypt, built just before this.
+./configure --sysconfdir=/etc   \
+            --disable-static    \
+            --with-{b,yes}crypt \
+            --without-libbsd    \
             --with-group-name-max-length=32
 
 # Compile the package:

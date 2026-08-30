@@ -7,6 +7,11 @@ echo "Required disk space: 4.5 GB"
 # 6.18. GCC
 # The GCC package contains the GNU compiler collection, which includes the C and C++ compilers.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter06/gcc-pass2.html
+#
+# NOTE no --disable-decimal-float. GCC 15 still compiles libdecnumber into
+# libgcc when it is disabled, but points the include path at
+# libdecnumber/$enable_decimal_float - literally 'no' - and decimal128.h is
+# then not found. The book leaves decimal float enabled.
 
 rm -rf /tmp/gcc \
     && tar -xf $LFS_BASE/sources/gcc-*.tar.xz -C /tmp/ \
@@ -34,12 +39,13 @@ rm -rf /tmp/gcc \
         LDFLAGS_FOR_TARGET=-L$PWD/$LFS_TGT/libgcc \
         --prefix=/usr \
         --with-build-sysroot=$LFS_BASE \
-        --enable-initfini-array \
         --disable-nls \
         --disable-multilib \
-        --disable-decimal-float \
+        --enable-default-pie \
+        --enable-default-ssp \
         --disable-libatomic \
         --disable-libgomp \
+        --disable-libsanitizer \
         --disable-libquadmath \
         --disable-libssp \
         --disable-libvtv \

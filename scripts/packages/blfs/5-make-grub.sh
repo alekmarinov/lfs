@@ -10,6 +10,10 @@ echo "Required disk space: 137 MB"
 # recommended: efibootmgr,freetype2
 # optional: lvm2
 # https://www.linuxfromscratch.org/blfs/view/svn/postlfs/grub-efi.html
+#
+# NOTE extra_deps.lst is written by hand, as for the grub in chapter 8: grub
+# 2.12 lists it as a prerequisite of syminfo.lst without shipping a rule that
+# builds it. The words in it are literal.
 
 VER=$(ls /sources/grub-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 UNIFONT_VER=$(ls /sources/unifont-*.pcf.gz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
@@ -35,6 +39,8 @@ case $(uname -m) in i?86 )
     popd
     export TARGET_CC=$PWD/x86_64-gcc/bin/x86_64-linux-gnu-gcc
 esac
+
+echo depends bli part_gpt > grub-core/extra_deps.lst
 
 ./configure \
     --prefix=/usr \

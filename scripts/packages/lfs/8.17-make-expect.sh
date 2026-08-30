@@ -13,6 +13,7 @@ VER=$(ls /sources/expect*.tar.gz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 tar -xf /sources/expect*.tar.gz -C /tmp/ \
     && mv /tmp/expect* /tmp/expect \
     && pushd /tmp/expect \
+    && patch -Np1 -i $(ls /sources/expect-*-gcc15-1.patch) \
     && ./configure \
         --prefix=/usr \
         --with-tcl=/usr/lib \

@@ -9,10 +9,10 @@
 
 # --- everything the minimal distro has ---
 8.7-make-bzip2.tar.gz
-8.10-make-file.tar.gz
-8.19-make-gmp.tar.gz
-8.40-make-less.tar.gz
-8.69-make-vim.tar.gz
+8.11-make-file.tar.gz
+8.21-make-gmp.tar.gz
+8.42-make-less.tar.gz
+8.73-make-vim.tar.gz
 12-make-which.tar.gz
 5-make-grub.tar.gz
 17-make-libnsl.tar.gz
@@ -23,13 +23,13 @@
 12-make-pciutils.tar.gz
 
 # --- the C++ runtime, which the X stack links against ---
-8.26-make-gcc.tar.gz
-8.20-make-mpfr.tar.gz
-8.21-make-mpc.tar.gz
+8.29-make-gcc.tar.gz
+8.22-make-mpfr.tar.gz
+8.23-make-mpc.tar.gz
 
 # --- font rendering ---
 # expat parses the fontconfig configuration and the X resources
-8.38-make-expat.tar.gz
+8.40-make-expat.tar.gz
 10-make-libpng.tar.gz
 10-make-graphite2.tar.gz
 10-make-harfbuzz.tar.gz
@@ -81,7 +81,7 @@
 # code at build time. glib links the original pcre, not pcre2.
 # libffi is what glib needs for its closures, libxml2 what shared-mime-info
 # parses its database with
-8.49-make-libffi.tar.gz
+8.50-make-libffi.tar.gz
 9-make-libxml2.tar.gz
 9-make-pcre.tar.gz
 9-make-glib.tar.gz
@@ -125,4 +125,5 @@
 15-make-iw.tar.gz
 x-make-wireless-regdb.tar.gz
 x-make-linux-firmware-iwlwifi.tar.gz
+x-make-linux-firmware-realtek.tar.gz
 15-make-wpa-supplicant.tar.gz

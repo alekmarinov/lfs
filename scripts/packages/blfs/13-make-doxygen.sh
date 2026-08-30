@@ -11,6 +11,10 @@ echo "Required disk space: 214 MB"
 #           qt-5(for doxywizard),texlive(or install-tl-unx),
 #           xapian(for doxyindexer),javacc
 # https://www.linuxfromscratch.org/blfs/view/svn/general/doxygen.html
+#
+# NOTE PYTHON_EXECUTABLE is given rather than found. doxygen looks for python
+# through cmake's old FindPythonInterp, whose list of known interpreter names
+# stops well before the 3.13 that LFS 12.4 installs, so it finds nothing.
 
 VER=$(ls /sources/doxygen-*.src.tar.gz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/doxygen-*.src.tar.gz -C /tmp/ \
@@ -19,6 +23,7 @@ tar -xf /sources/doxygen-*.src.tar.gz -C /tmp/ \
     && mkdir -v build \
     && cd build \
     && cmake \
+        -DPYTHON_EXECUTABLE=/usr/bin/python3 \
         -G "Unix Makefiles" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \

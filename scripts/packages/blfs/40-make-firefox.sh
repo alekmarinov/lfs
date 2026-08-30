@@ -24,6 +24,14 @@ tar -xf /sources/firefox-*.source.tar.xz -C /tmp/
 mv /tmp/firefox-* /tmp/firefox
 pushd /tmp/firefox
 
+# Build under python3.10, installed alongside the system 3.13 for exactly this.
+# Firefox 102 predates the removal of distutils, pipes, imp and
+# pkgutil.ImpImporter, and reaches for all of them - from its vendored pip and
+# pkg_resources as much as from its own code. mach uses whichever interpreter
+# starts it, so naming that interpreter is the whole fix.
+PY=python3.10
+$PY --version
+
 # mach keeps its state and its python virtualenv here. Without it being set,
 # it writes to $HOME, which is /root in the chroot and works, but keeping it
 # under /tmp means the whole build disappears with the source tree.
@@ -107,12 +115,17 @@ ac_add_options --enable-linker=bfd
 
 ac_add_options --without-wasm-sandboxed-libraries
 
+# Rect.h and others reach for std::int32_t without including <cstdint>. That
+# used to arrive through some other header and no longer does, so it is forced
+# into every translation unit instead of patching each site.
+export CXXFLAGS="-include cstdint"
+
 mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/objdir
 mk_add_options AUTOCLOBBER=1
 ENDCONFIG
 
-./mach build
-./mach install
+$PY ./mach build
+$PY ./mach install
 
 popd
 rm -rf /tmp/firefox /tmp/mozbuild

@@ -8,6 +8,9 @@ echo "Building BLFS-dbus-glib.."
 #
 # https://www.linuxfromscratch.org/blfs/view/11.2/general/dbus-glib.html
 #
+# NOTE -std=gnu17. dbus-glib uses 'bool' as an ordinary identifier, which C23
+# turned into a keyword.
+#
 # BUILD_REQUIRES: 12-make-dbus 9-make-glib 9-make-libxml2
 # RUNTIME_REQUIRES:
 #
@@ -19,7 +22,7 @@ rm -rf /tmp/dbus-glib
 tar -xf /sources/dbus-glib-*.tar.gz -C /tmp/
 mv /tmp/dbus-glib-* /tmp/dbus-glib
 pushd /tmp/dbus-glib
-./configure --prefix=/usr --sysconfdir=/etc --disable-static
+CC='gcc -std=gnu17' ./configure --prefix=/usr --sysconfdir=/etc --disable-static
 make
 make install
 popd

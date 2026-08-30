@@ -51,6 +51,12 @@ libxshmfence-1.3.tar.bz2
 "
 
 pushd /tmp
+# The X libraries are old C: libXt names a variable 'true' and others use the
+# empty parameter list to mean 'unspecified'. Both changed meaning in C23, which
+# GCC 15 defaults to, so the whole set is built against the standard it was
+# written for rather than patching each library in turn.
+export CC='gcc -std=gnu17'
+
 for package in $PACKAGES; do
     packagedir=${package%.tar.?z*}
     echo "=== $packagedir ==="

@@ -11,8 +11,14 @@ echo "Building BLFS-gtk3.."
 # compositor - and introspection is off so gobject-introspection is not needed.
 # https://www.linuxfromscratch.org/blfs/view/11.2/x/gtk3.html
 #
-# BUILD_REQUIRES: 25-make-gdk-pixbuf 25-make-pango 25-make-at-spi2-atk 25-make-libepoxy 25-make-cairo 9-make-glib 24-make-xorg-libraries 8.53-make-meson 8.52-make-ninja
+# BUILD_REQUIRES: 25-make-gdk-pixbuf 25-make-pango 25-make-at-spi2-atk 25-make-libepoxy 25-make-cairo 9-make-glib 24-make-xorg-libraries 8.57-make-meson 8.56-make-ninja
 # RUNTIME_REQUIRES:
+#
+# NOTE the C args. GTK 3 passes subclass pointers where the declared parameter
+# is a different widget type, relying on the cast being harmless, and GCC 14
+# turned that from a warning into an error. It also declares functions such as
+# _gtk_get_slowdown with an empty parameter list while defining them with
+# arguments, which only agree before C23.
 #
 # NOTE the commands are written one per line rather than chained with &&: a
 # failing && chain does not trip 'set -e', so a chain followed by more commands
@@ -35,6 +41,7 @@ meson --prefix=/usr \
       -Dwayland_backend=false \
       -Dbroadway_backend=false \
       -Dprint_backends=file \
+      -Dc_args="-std=gnu17 -Wno-error=incompatible-pointer-types" \
       ..
 ninja
 ninja install

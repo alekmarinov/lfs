@@ -7,6 +7,12 @@ echo "Required disk space: 5 MB"
 # 5. mdadm
 # The mdadm package contains administration tools for software RAID.
 # https://www.linuxfromscratch.org/blfs/view/stable/postlfs/mdadm.html
+#
+# NOTE mdadm compiles with -Werror, and GCC 15 added a warning about string
+# initialisers that fill an array exactly and so drop the NUL. CXFLAGS is
+# the Makefile's documented hook for extra compiler flags and is expanded
+# after its own warning flags, so the -Wno-error there wins. -O2 is repeated
+# because setting CXFLAGS on the command line replaces its default.
 
 # Kernel config:
 # ------------------------------------------------------------------------
@@ -23,7 +29,7 @@ echo "Required disk space: 5 MB"
 tar -xf /sources/mdadm-*.tar.xz -C /tmp/ \
     && mv /tmp/mdadm-* /tmp/mdadm \
     && pushd /tmp/mdadm \
-    && make \
-    && make BINDIR=/usr/sbin install \
+    && make CXFLAGS="-O2 -Wno-error=unterminated-string-initialization" \
+    && make CXFLAGS="-O2 -Wno-error=unterminated-string-initialization" BINDIR=/usr/sbin install \
     && popd \
     && rm -rf /tmp/mdadm

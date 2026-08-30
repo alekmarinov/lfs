@@ -6,7 +6,7 @@ echo "Building BLFS-at-spi2-core.."
 # The service side of accessibility, which talks over dbus.
 # https://www.linuxfromscratch.org/blfs/view/11.2/x/at-spi2-core.html
 #
-# BUILD_REQUIRES: 9-make-glib 12-make-dbus 9-make-libxml2 8.53-make-meson 8.52-make-ninja
+# BUILD_REQUIRES: 9-make-glib 12-make-dbus 9-make-libxml2 8.57-make-meson 8.56-make-ninja
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a

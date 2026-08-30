@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# LFS and BLFS are separate books with separate version numbers, so the two
+# lists are named independently. BLFS_VER defaults to LFS_VER when unset.
+: "${LFS_VER:?LFS_VER is not set}"
+: "${BLFS_VER:=$LFS_VER}"
+
 pushd $LFS_BASE/sources
 
 WGET_OPTS="--no-check-certificate --timestamping -c --timeout=30 --tries=5 --report-speed=bits"
@@ -8,7 +13,7 @@ WGET_OPTS="--no-check-certificate --timestamping -c --timeout=30 --tries=5 --rep
 # Mirrors holding the complete LFS package set. They are tried for the packages
 # which can't be fetched from their upstream location.
 FALLBACK_MIRRORS="\
-https://ftp.osuosl.org/pub/lfs/lfs-packages/11.2 \
+https://ftp.osuosl.org/pub/lfs/lfs-packages/${LFS_VER:-12.4} \
 https://anduin.linuxfromscratch.org/LFS \
 https://anduin.linuxfromscratch.org/BLFS"
 
@@ -94,8 +99,8 @@ download_extra() {
     done < "$list"
 }
 
-download lfs-11.2.md5sums  lfs-11.2.wget-list  LFS
-download_extra blfs-11.2.extra-list BLFS
-download blfs-11.2.md5sums blfs-11.2.wget-list BLFS
+download "lfs-$LFS_VER.md5sums"  "lfs-$LFS_VER.wget-list"  LFS
+download_extra "blfs-$BLFS_VER.extra-list" BLFS
+download "blfs-$BLFS_VER.md5sums" "blfs-$BLFS_VER.wget-list" BLFS
 
 popd

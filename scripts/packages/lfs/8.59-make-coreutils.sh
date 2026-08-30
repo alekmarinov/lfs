@@ -7,12 +7,18 @@ echo "Required disk space: 159 MB"
 # 8.54. Coreutils
 # The Coreutils package contains utilities for showing and setting the basic system characteristics.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/coreutils.html
+#
+# NOTE 'autoreconf -fv' then 'automake -af', not 'autoreconf -fiv'. The -i
+# reinstalls the auxiliary m4 files over the ones the i18n patch brings in,
+# and configure then stops on undefined gnulib macros such as gl_PTHREADLIB.
 
 tar -xf /sources/coreutils-*.tar.xz -C /tmp/ \
     && mv /tmp/coreutils-* /tmp/coreutils \
     && pushd /tmp/coreutils \
+    && patch -Np1 -i $(ls /sources/coreutils-*-upstream_fix-1.patch) \
     && patch -Np1 -i $(ls /sources/coreutils-*-i18n-1.patch) \
-    && autoreconf -fiv \
+    && autoreconf -fv \
+    && automake -af \
     && FORCE_UNSAFE_CONFIGURE=1 ./configure \
         --prefix=/usr \
         --enable-no-install-program=kill,uptime \

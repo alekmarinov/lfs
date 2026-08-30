@@ -12,6 +12,10 @@ echo "Required disk space: 135 MB"
 # optional: cairo,git,gtk-doc
 # https://www.linuxfromscratch.org/blfs/view/svn/general/harfbuzz.html
 #
+# NOTE tests are disabled. The threading tests call printf, atoi and calloc
+# without including cstdio or cstdlib, which current GCC no longer supplies
+# indirectly, and ninja builds them as part of the default target.
+#
 # BUILD_REQUIRES: 10-make-freetype 10-make-graphite2 9-make-icu
 
 VER=$(ls /sources/harfbuzz-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
@@ -24,6 +28,7 @@ tar -xf /sources/harfbuzz-* -C /tmp/ \
         --prefix=/usr \
         --buildtype=release \
         -Dgraphite2=enabled \
+        -Dtests=disabled \
     && ninja \
     && if [ $LFS_TEST -eq 1 ]; then ninja test || true; fi \
     && ninja install \

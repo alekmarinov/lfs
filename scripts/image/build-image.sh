@@ -7,8 +7,11 @@ ROOTFS_DIR="rootfs"
 # The name of the produced image file
 IMAGE_FILE=${IMAGE_FILE:-image.img}
 
-# the image size in MB, default 10000 (10G)
-IMAGE_SIZE=${IMAGE_SIZE:-10240}
+# The image size in MB. .env sets this for every build and so is where to
+# change it; the value here is only a fallback for running this script on its
+# own. The largest distro, 'full', uses about 3G, so 7G leaves room to install
+# into while still fitting an 8G USB stick.
+IMAGE_SIZE=${IMAGE_SIZE:-7168}
 
 # the directory the image partitions are mounted on while it is being built
 MNT_DIR="$(dirname $(readlink -f $IMAGE_FILE))/mnt"
@@ -219,13 +222,18 @@ if loadfont /boot/grub/fonts/unicode.pf2; then
     terminal_output gfxterm
 fi
 
+# net.ifnames=0 keeps the kernel's eth0, eth1 names. udev otherwise derives a
+# name from where the card sits on the bus - enp0s2 under qemu, something else
+# on each real machine - and the interface configuration in /etc/sysconfig is
+# written for eth0. One image is meant to boot on several machines, so the
+# stable-across-machines name is the useful one here.
 menuentry "$PRETTY_NAME" {
     # Hand the frame buffer grub is using straight to the kernel. Without this
     # grub restores the text mode before booting, and a machine which booted
     # over UEFI has no VGA text mode to go back to - the screen goes black at
     # exactly the moment the kernel starts.
     set gfxpayload=keep
-    linux   /boot/$KERNEL_NAME rootwait root=$ROOT_DEV ro
+    linux   /boot/$KERNEL_NAME rootwait root=$ROOT_DEV ro net.ifnames=0
 $MICROCODE_LINE}
 
 # A machine which comes up with a lit but empty screen is almost always a
@@ -236,7 +244,7 @@ $MICROCODE_LINE}
 # uncached memory - but it turns a black screen into a readable log.
 menuentry "$PRETTY_NAME (verbose console)" {
     set gfxpayload=keep
-    linux   /boot/$KERNEL_NAME rootwait root=$ROOT_DEV ro earlycon=efifb keep_bootcon
+    linux   /boot/$KERNEL_NAME rootwait root=$ROOT_DEV ro net.ifnames=0 earlycon=efifb keep_bootcon
 $MICROCODE_LINE}
 
 EOF

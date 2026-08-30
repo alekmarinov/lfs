@@ -6,7 +6,7 @@ echo "Building BLFS-nasm.."
 # The assembler libjpeg-turbo needs for its SIMD routines, and which Firefox
 # also requires. Build only - nothing runs it on the finished system.
 #
-# BUILD_REQUIRES: 8.65-make-make
+# BUILD_REQUIRES: 8.69-make-make
 # RUNTIME_REQUIRES:
 # BUILD_ONLY: assembles libjpeg-turbo's SIMD routines at build time
 #

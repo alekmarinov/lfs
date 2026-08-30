@@ -8,13 +8,19 @@ echo "Required disk space: 17 MB"
 # The cpio package contains tools for archiving.
 # optional: texlive
 # https://www.linuxfromscratch.org/blfs/view/stable/general/cpio.html
+#
+# NOTE -std=gnu17. This is a BLFS 11.2 recipe being built by GCC 15, which
+# defaults to C23. Under C23 a declaration like 'xstat()' means it takes no
+# arguments rather than an unspecified number, so cpio's own calls to it
+# become errors. BLFS 11.2 predates that change, so the standard is pinned
+# to what the code was written against.
 
 VER=$(ls /sources/cpio-*.tar.bz2 | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/cpio-*.tar.bz2 -C /tmp/ \
     && mv /tmp/cpio-* /tmp/cpio \
     && pushd /tmp/cpio \
     && sed -i '/The name/,+2 d' src/global.c \
-    && ./configure \
+    && ./configure CC='gcc -std=gnu17' \
         --prefix=/usr \
         --enable-mt \
         --with-rmt=/usr/libexec/rmt \

@@ -14,6 +14,6 @@
 10-make-graphite2
 10-make-libpng
 9-make-icu
-8.26-make-gcc
-8.20-make-mpfr
-8.21-make-mpc
+8.29-make-gcc
+8.22-make-mpfr
+8.23-make-mpc

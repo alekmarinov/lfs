@@ -10,6 +10,9 @@ echo "Required disk space: 245 MB"
 # recommended: curl
 # optional: gnupg,openssh,pcre2,subversion,tk,valgrind,perl-io-socket-ssl
 # https://www.linuxfromscratch.org/blfs/view/svn/general/git.html
+#
+# NOTE -std=gnu17. C23 added an unreachable() macro to stddef.h, and git has
+# its own unreachable of a different shape.
 
 VER=$(ls /sources/git-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 PERL5_VER=$(ls /sources/perl-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
@@ -17,7 +20,7 @@ PERL5_VER=${PERL5_VER%.*}
 tar -xf /sources/git-*.tar.xz -C /tmp/ \
     && mv /tmp/git-* /tmp/git \
     && pushd /tmp/git \
-    && ./configure \
+    && CC='gcc -std=gnu17' ./configure \
         --prefix=/usr \
         --with-gitconfig=/etc/gitconfig \
         --with-python=python3 \

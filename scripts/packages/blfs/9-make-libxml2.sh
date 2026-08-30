@@ -8,6 +8,10 @@ echo "Required disk space: 96 MB"
 # The libxml2 package contains libraries and utilities used for parsing XML files.
 # optional: icu,valgrind
 # https://www.linuxfromscratch.org/blfs/view/stable/general/libxml2.html
+#
+# NOTE --without-python. The bindings call PyEval_CallObject(), which Python
+# removed in 3.13 - the version LFS 12.4 installs. Only the Python bindings
+# go; the C library every dependent here actually uses is unaffected.
 
 VER=$(ls /sources/libxml2-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/libxml2-*.tar.xz -C /tmp/ \
@@ -19,7 +23,7 @@ tar -xf /sources/libxml2-*.tar.xz -C /tmp/ \
         --sysconfdir=/etc \
         --disable-static \
         --with-history \
-        PYTHON=/usr/bin/python3 \
+        --without-python \
         --docdir=/usr/share/doc/libxml2-$VER \
     && make \
     && if [ $LFS_TEST -eq 1 ]; then \

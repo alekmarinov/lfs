@@ -13,7 +13,7 @@ echo "Building BLFS-pcre.."
 #
 # https://www.linuxfromscratch.org/blfs/view/11.2/general/pcre.html
 #
-# BUILD_REQUIRES: 8.6-make-zlib 8.7-make-bzip2 8.11-make-readline
+# BUILD_REQUIRES: 8.6-make-zlib 8.7-make-bzip2 8.12-make-readline
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a
