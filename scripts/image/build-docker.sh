@@ -2,8 +2,13 @@
 # Archives the assembled rootfs as a docker image named after the distro
 set -e
 
-ROOTFS_DIR="rootfs"
-tag=$1
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# Same argument as build-distro.sh, then the tag. Every image-side script
+# takes the distro and derives the one output directory from it.
+OUT=$("$SCRIPT_DIR/../resolve-distro.sh" -o "$1")
+ROOTFS_DIR="$OUT/rootfs"
+tag=$2
 
 [ -d "$ROOTFS_DIR" ] || { echo "Directory '$ROOTFS_DIR' is missing, run 'make distro DISTRO=...' first"; exit 1; }
 [ -f "$ROOTFS_DIR/etc/os-release" ] || { echo "'$ROOTFS_DIR' holds no distro, /etc/os-release is missing"; exit 1; }

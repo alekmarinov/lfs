@@ -19,9 +19,18 @@ if [[ "$distro" == "" ]]; then
     exit 1
 fi
 
-DISTRO_DIR="$BASE_DIR/distros/$distro"
+# A distro is either one of ours, named, or anyone's, given as a path - see
+# scripts/resolve-distro.sh, which build-distro-packages.sh also uses.
+DISTRO_DIR=$("$BASE_DIR/scripts/resolve-distro.sh" "$distro")
 CORE_DIR="$BASE_DIR/distros/core"
-ROOTFS_DIR="rootfs"
+
+# Where this distro's rootfs and image are written. One directory per distro,
+# so two can be assembled side by side, and $OUT so a client can put its own
+# somewhere else entirely - which is the expected case, because an output
+# directory named after somebody else's distro has no business in here.
+OUT=$("$BASE_DIR/scripts/resolve-distro.sh" -o "$distro")
+ROOTFS_DIR="$OUT/rootfs"
+mkdir -p "$OUT"
 
 [ -d packages ] || { echo "Directory 'packages' is missing, run 'make packages' first"; exit 1; }
 [ -d "$DISTRO_DIR" ] || { echo "Unknown distro '$distro', expected $DISTRO_DIR"; exit 1; }
@@ -42,6 +51,21 @@ strip_override=$STRIP
 . "$DISTRO_DIR/distro.conf"
 STRIP=${strip_override:-${STRIP:-0}}
 
+# ID names the distro everywhere it is written down: /etc/os-release, the
+# release file, the output directory. It used to be able to go missing - an
+# unset ID wrote 'ID=' into os-release and created a file called /etc/-release
+# - which was invisible until the output directory was named after it. It is
+# required now, and checked here rather than discovered later.
+case "$ID" in
+    "")       echo "$DISTRO_DIR/distro.conf sets no ID. It names the distro in"
+              echo "/etc/os-release, /etc/<ID>-release and the output directory."
+              exit 1 ;;
+    *[!a-zA-Z0-9._-]*)
+              echo "ID '$ID' in $DISTRO_DIR/distro.conf: letters, digits, dot,"
+              echo "dash and underscore only - it is used as a directory name."
+              exit 1 ;;
+esac
+
 # the packages a list names, without the comments and the empty lines
 read_pkglist() {
     sed 's/#.*//' "$1" | tr -d '[:blank:]' | grep -v '^$'
@@ -54,6 +78,23 @@ build_order() {
         | grep -oE '/scripts/packages/(lfs|blfs)/[^ ]+\.sh' \
         | sed 's|.*/||; s|\.sh$|.tar.gz|' \
         | nl -ba | tac | awk '!seen[$2]++' | tac | awk '{print $2}'
+
+    # then the recipes the distro brings of its own, last and in the order
+    # build-distro-packages.sh built them.
+    #
+    # Without this they are not unknown to the installer - they are worse than
+    # unknown. Anything in packages.list which build_order does not name falls
+    # into the 'unknown' bucket below and is installed *first*, before the core
+    # and before everything it was built against, reported as a note rather
+    # than an error. A distro's own packages depend on what the book builds, so
+    # first is exactly wrong and would have worked only by luck.
+    #
+    # Their names are the distro's business: the x- prefix marks a package the
+    # LFS book does not cover and belongs to this repository's own tree, not to
+    # somebody else's directory.
+    if [ -d "$DISTRO_DIR/packages" ]; then
+        ( cd "$DISTRO_DIR/packages" && ls *.sh 2>/dev/null | sort | sed 's|\.sh$|.tar.gz|' )
+    fi
 }
 
 # install the given packages, one per line
@@ -183,6 +224,48 @@ apply_drops() {
 # so it has to be the one unpacked last, whichever list happens to name it.
 wanted=$( { read_pkglist "$CORE_DIR/packages.list"
             read_pkglist "$DISTRO_DIR/packages.list"; } | sort -u )
+
+# Everything named has to be in the cache before anything is unpacked. The
+# install loop checks each package as it reaches it, which is correct but tells
+# you about them one per run: three missing packages take three builds to find,
+# and each of those builds has already half assembled a tree before it stops.
+#
+# The distinction that matters is which list the missing ones came from. A
+# package the book builds is missing because 'make packages' has not been run.
+# A recipe the distro brought of its own is missing because
+# 'make distro-packages' has not been run - a step that does not exist for the
+# distros in this repository, so it is exactly the one a client forgets. Same
+# symptom, different fix, and saying which is the whole value of checking here.
+missing=$(printf '%s\n' "$wanted" | while read -r package; do
+    [ -n "$package" ] || continue
+    [ -f "packages/$package" ] || echo "$package"
+done)
+if [ -n "$missing" ]; then
+    own=""
+    if [ -d "$DISTRO_DIR/packages" ]; then
+        own=$(printf '%s\n' "$missing" | grep -xF -f \
+            <( cd "$DISTRO_DIR/packages" && ls *.sh 2>/dev/null | sed 's|\.sh$|.tar.gz|' ) || true)
+    fi
+    theirs=$(printf '%s\n' "$missing" | { [ -n "$own" ] && grep -vxF "$own" || cat; })
+
+    echo "'$distro' names packages which are not in the cache:"
+    if [ -n "$theirs" ]; then
+        echo "
+  built by this repository:"
+        printf '%s\n' "$theirs" | sed 's/^/      /'
+        echo "
+    sudo make packages"
+    fi
+    if [ -n "$own" ]; then
+        echo "
+  brought by the distro itself:"
+        printf '%s\n' "$own" | sed 's/^/      /'
+        echo "
+    sudo make distro-packages DISTRO=$distro"
+    fi
+    echo
+    exit 1
+fi
 
 # a package which build-packages.sh does not build has no place in the order,
 # it is installed first so that a built package can still override it
@@ -384,8 +467,22 @@ regen "icon cache"              /usr/bin/gtk-update-icon-cache -q -t -f /usr/sha
 
 
 # how this rootfs was assembled
+# build-image.sh needs the distro's own settings - the kernel command line,
+# the menu timeout, the extra boot entries - and it runs against rootfs/ with
+# no idea where the distro directory was. It used to rebuild the path as
+# distros/$DISTRO, which stops being possible the moment a distro can live
+# anywhere. So the files travel with the rootfs that was built from them.
+sudo rm -rf "$ROOTFS_DIR/etc/lfs-distro.d"
+sudo install -d -m755 "$ROOTFS_DIR/etc/lfs-distro.d"
+for f in distro.conf boot-entries check.ignore; do
+    if [ -f "$DISTRO_DIR/$f" ]; then
+        sudo cp "$DISTRO_DIR/$f" "$ROOTFS_DIR/etc/lfs-distro.d/$f"
+    fi
+done
+
 sudo tee "$ROOTFS_DIR/etc/lfs-distro" > /dev/null <<EOF
 DISTRO=$distro
+ID=$ID
 BUILD_ID=$BUILD_ID
 BUILD_DATE="$(date -u +'%Y-%m-%d %H:%M:%S UTC')"
 PACKAGES=$(cat "$CORE_DIR/packages.list" "$DISTRO_DIR/packages.list" | grep -cvE '^\s*#|^\s*$')

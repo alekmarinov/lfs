@@ -24,3 +24,15 @@ tar -xf /sources/gawk-*.tar.xz -C /tmp/ \
     fi \
     && popd \
     && rm -rf /tmp/gawk
+
+# gawk's own 'make install' creates this symlink, and that is not enough. A
+# package is the diff of its build, so a link 'make install' skips because it
+# is already in the base layer is not captured - which is exactly what
+# happened: /usr/bin/awk has been in overlay/base since 2026-08-29 and in no
+# package since. Every distro that installed gawk got gawk and no awk.
+#
+# 'ln -sf' replaces the link whether or not it is there, so it always writes
+# and is always in the diff. Explicit, and immune to the base layer's state.
+ln -sfv gawk /usr/bin/awk
+
+test -L /usr/bin/awk || { echo "/usr/bin/awk was not created"; exit 1; }

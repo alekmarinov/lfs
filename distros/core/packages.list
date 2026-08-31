@@ -38,6 +38,7 @@
 8.36-make-bash.tar.gz
 8.41-make-inetutils.tar.gz
 8.59-make-coreutils.tar.gz
+8.61-make-gawk.tar.gz
 8.62-make-findutils.tar.gz
 8.65-make-gzip.tar.gz
 8.66-make-iproute2.tar.gz
@@ -67,7 +68,11 @@
 10.2-create-fstab.tar.gz
 11.1-the-end.tar.gz
 
-# kernel and the cpu microcode loaded next to it
-10.3-make-linux-kernel.tar.gz
+# The cpu microcode loaded next to the kernel. The kernel itself is NOT here:
+# it is the one part of the core that is properly per-distro - a desktop and an
+# appliance want different drivers built in, different console behaviour and
+# different boot times. Each distro names the kernel package it wants in its own
+# packages.list. This list is concatenated with the distro's, so anything left
+# here would be installed alongside whatever the distro chose.
 12-make-cpio.tar.gz
 3-make-microcode.tar.gz

@@ -62,3 +62,18 @@ tar -xf /sources/openssh-*.tar.gz -C /tmp/ \
 pushd /tmp/blfs-bootscripts \
     && make install-sshd \
     && popd
+
+# The host keys are this machine's identity, and 'make install' above ran
+# 'ssh-keygen -A' as part of its own install rules. Left alone, one set of
+# private keys is baked into the package and from there into every image ever
+# built from it: every device answering with the same fingerprint, and the
+# private half sitting in a build tree. Remove them, and have the boot script
+# make its own the first time it starts - which is what an appliance needs and
+# costs a second once per device.
+rm -f /etc/ssh/ssh_host_*
+
+sed -i 's|^        log_info_msg "Starting SSH Server\.\.\."|        if [ ! -f /etc/ssh/ssh_host_ed25519_key ]; then\n            log_info_msg "Generating SSH host keys..."\n            ssh-keygen -A >/dev/null 2>\&1\n            evaluate_retval\n        fi\n\n&|' /etc/rc.d/init.d/sshd
+
+grep -q "ssh-keygen -A" /etc/rc.d/init.d/sshd || { echo "the sshd boot script was not patched"; exit 1; }
+grep -q 'log_info_msg "Starting SSH Server' /etc/rc.d/init.d/sshd || { echo "the patch ate the start line"; exit 1; }
+sh -n /etc/rc.d/init.d/sshd || { echo "the patched sshd boot script is not valid shell"; exit 1; }

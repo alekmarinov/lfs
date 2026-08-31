@@ -51,7 +51,6 @@
 8.56-make-ninja.tar.gz
 8.57-make-meson.tar.gz
 8.60-make-diffutils.tar.gz
-8.61-make-gawk.tar.gz
 8.63-make-groff.tar.gz
 8.64-make-grub.tar.gz
 8.68-make-libpipeline.tar.gz
@@ -62,6 +61,7 @@
 8.74-make-markupsafe.tar.gz
 8.75-make-jinja2.tar.gz
 8.77-make-man-db.tar.gz
+10.3-make-linux-kernel.tar.gz
 2-blfs-bootscripts.tar.gz
 5-make-dosfstools.tar.gz
 5-make-mkinitramfs.tar.gz

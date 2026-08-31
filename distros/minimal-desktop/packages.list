@@ -8,6 +8,9 @@
 # the distro packages together, in the order build-packages.sh built them.
 
 # --- everything the minimal distro has ---
+# the kernel this distro boots - see distros/core/packages.list
+10.3-make-linux-kernel.tar.gz
+
 8.7-make-bzip2.tar.gz
 8.11-make-file.tar.gz
 8.21-make-gmp.tar.gz

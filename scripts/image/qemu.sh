@@ -2,7 +2,13 @@
 # Boots the produced image with QEMU
 set -e
 
-IMAGE_FILE=${IMAGE_FILE:-image.img}
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# Same argument as build-distro.sh and build-image.sh: one distro, one output
+# directory, every script deriving it the same way.
+OUT=$("$SCRIPT_DIR/../resolve-distro.sh" -o "$1")
+shift
+IMAGE_FILE=${IMAGE_FILE:-$OUT/image.img}
 
 [ -f "$IMAGE_FILE" ] || { echo "'$IMAGE_FILE' is missing, run 'make image' first"; exit 1; }
 
@@ -63,6 +69,14 @@ if [ ! -f "$OVMF_VARS_COPY" ] || [ "$IMAGE_FILE" -nt "$OVMF_VARS_COPY" ]; then
     cp -f "$OVMF_VARS" "$OVMF_VARS_COPY"
 fi
 
+# A guest behind user mode networking can reach out but nothing can reach in,
+# which makes a daemon on it untestable. QEMU_HOSTFWD adds one forward, e.g.
+#
+#     QEMU_HOSTFWD=tcp::2222-:22 make qemu     then  ssh -p 2222 root@localhost
+#
+# It is off unless asked for: a port on the host that reaches a machine with a
+# known root password should be something you turned on.
+
 # The display is a single virtio-gpu head rather than the default VGA: the
 # kernel drives it with KMS, and one head keeps the console where it is looked
 # for. The pointer is a USB tablet, which is absolute - the guest cursor tracks
@@ -70,7 +84,7 @@ fi
 # is relative, so the two cursors drift apart until the window is clicked to
 # grab input, which looks like a window manager that will not move its windows.
 
-PRETTY_NAME=$(sed -n 's/^PRETTY_NAME="\(.*\)"/\1/p' rootfs/etc/os-release 2>/dev/null)
+PRETTY_NAME=$(sed -n 's/^PRETTY_NAME="\(.*\)"/\1/p' "$OUT/rootfs/etc/os-release" 2>/dev/null)
 echo "Booting $IMAGE_FILE ${PRETTY_NAME:+($PRETTY_NAME) }with $OVMF_CODE"
 
 exec sudo qemu-system-x86_64 \
@@ -83,7 +97,7 @@ exec sudo qemu-system-x86_64 \
     -drive file="$IMAGE_FILE",format=raw,if=none,id=disk0 \
     -device ahci,id=ahci \
     -device ide-hd,drive=disk0,bus=ahci.0 \
-    -netdev user,id=net0 \
+    -netdev user,id=net0${QEMU_HOSTFWD:+,hostfwd=$QEMU_HOSTFWD} \
     -device e1000e,netdev=net0 \
     -vga none \
     -device virtio-gpu-pci \

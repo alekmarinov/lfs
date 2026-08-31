@@ -11,7 +11,10 @@
 # by the grub package, so the image never runs it
 /usr/bin/grub-mkfont
 
-# the C++ wrapper libraries of gmp, ncurses and db, which nothing links against
-/usr/lib/libgmpxx.so.4.6.1
-/usr/lib/libncurses++w.so.6.3
-/usr/lib/libdb_cxx-5.3.so
+# the C++ wrapper libraries of gmp, ncurses and db, which nothing links against.
+# Matched as patterns rather than exact sonames: pinning the version means the
+# entry silently stops matching when the package is updated, and the distro
+# fails a check for a reason unrelated to whatever actually changed.
+/usr/lib/libgmpxx.so.*
+/usr/lib/libncurses++w.so.*
+/usr/lib/libdb_cxx-*.so

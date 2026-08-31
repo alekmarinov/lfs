@@ -6,6 +6,9 @@
 # Lines starting with # and empty lines are ignored, the order is the order the
 # packages were built in.
 
+# the kernel this distro boots - see distros/core/packages.list
+10.3-make-linux-kernel.tar.gz
+
 8.7-make-bzip2.tar.gz
 8.11-make-file.tar.gz
 8.21-make-gmp.tar.gz

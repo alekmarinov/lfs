@@ -1,5 +1,5 @@
 .PHONY: all clean packages packages-continue distro check docker image qemu \
-	    deps why closure deps-check deps-declared deps-order deps-verify file-index \
+	    distro-packages deps why closure deps-check deps-declared deps-order deps-verify file-index \
 	    update-scripts build-package find-package-file install-package
 
 SHELL=/bin/bash
@@ -29,8 +29,16 @@ export MAKEFLAGS="--jobs=$(JOB_COUNT)"
 
 PACKAGES_STAMP=$(LFS_PACKAGES)/.built
 
-# the distro to assemble, one of the directories under distros/
+# the distro to assemble: a name under distros/, or a path to one anywhere
 DISTRO?=minimal
+
+# Where its rootfs and image are written - one directory per distro, so two
+# can be built side by side. Every image-side script derives this the same way
+# from the same DISTRO; it is computed here only so the help text can show it.
+# A client building its own distro passes its own OUT and keeps its output in
+# its own tree.
+OUT ?= $(shell ./scripts/resolve-distro.sh -o $(DISTRO) 2>/dev/null)
+export OUT
 # the tag the assembled distro is archived under
 TAG?=$(shell date +%Y%m%d)
 
@@ -39,19 +47,21 @@ all:
 Welcome to LFS linux building tool!\n\n\
 A distro is built in four steps:\n\n\
 \tsudo make packages              - builds every package from source, once\n\
-\tmake distro DISTRO=$(DISTRO)    - assembles distros/$(DISTRO) into rootfs/\n\
-\tmake image                      - turns rootfs/ into a bootable $(IMAGE_FILE)\n\
-\tmake qemu                       - boots $(IMAGE_FILE)\n\n\
+\tmake distro DISTRO=$(DISTRO)    - assembles it into $(OUT)/rootfs\n\
+\tmake image                      - turns $(OUT)/rootfs into a bootable image\n\
+\tmake qemu                       - boots $(OUT)/image.img\n\n\
+A distro which brings recipes of its own builds them between the first two:\n\n\
+\tsudo make distro-packages DISTRO=$(DISTRO)\n\n\
 and the assembled rootfs can be checked and archived with:\n\n\
-\tmake check                      - resolves every program against rootfs/\n\
-\tmake docker TAG=$(TAG)      - archives rootfs/ as a docker image\n\n\
+\tmake check                      - resolves every program against $(OUT)/rootfs\n\
+\tmake docker TAG=$(TAG)      - archives $(OUT)/rootfs as a docker image\n\n\
 Available distros: $(shell ls -m distros | sed 's/core, //')\n\
 "
 
 clean:
-	@echo -n "Removing overlay tmp rootfs mnt $(IMAGE_FILE) $(LFS_PACKAGES) $(TARGET_TOOLS) [y/N] " \
+	@echo -n "Removing overlay tmp build $(LFS_PACKAGES) $(TARGET_TOOLS) [y/N] " \
 		&& read ans && [ $${ans:-N} = y ]
-	sudo rm -rf overlay tmp rootfs mnt $(IMAGE_FILE) $(LFS_PACKAGES) $(TARGET_TOOLS)
+	sudo rm -rf overlay tmp build $(LFS_PACKAGES) $(TARGET_TOOLS)
 
 $(TARGET_TOOLS):
 	mkdir -p $(LFS_BASE)
@@ -84,27 +94,35 @@ packages-continue:
 	./scripts/packages/build-packages.sh
 	touch $(PACKAGES_STAMP)
 
-# Assembles distros/$(DISTRO) into rootfs/
+# Builds the recipes $(DISTRO) brings of its own into the shared package cache.
+# 'make packages' stays distro agnostic and expensive; this is the small
+# incremental build on top of it, and a distro with no recipes of its own needs
+# it not at all.
+distro-packages:
+	./scripts/packages/build-distro-packages.sh $(DISTRO)
+
+# Assembles $(DISTRO) into $(OUT)/rootfs
 distro:
 	./scripts/image/build-distro.sh $(DISTRO)
 
-# Resolves every program of rootfs/ against its own libraries
+# Resolves every program of $(OUT)/rootfs against its own libraries
 check:
-	./scripts/image/check-distro.sh
+	./scripts/image/check-distro.sh $(DISTRO)
 
 # Archives rootfs/ as the docker image <distro id>:$(TAG)
 docker:
 	EXPECT_DISTRO=$(if $(filter command line,$(origin DISTRO)),$(DISTRO)) \
-		./scripts/image/build-docker.sh $(TAG)
+		./scripts/image/build-docker.sh $(DISTRO) $(TAG)
 
-# Turns rootfs/ into the bootable $(IMAGE_FILE)
+# Turns $(OUT)/rootfs into the bootable $(OUT)/image.img
 #
-# DISTRO is not what gets imaged - rootfs/ is - but if it is given on the
-# command line it is passed down so the image refuses to be built from a
-# different distro than the one named.
+# It takes the same DISTRO as 'make distro', because that is what says which
+# output directory to read. EXPECT_DISTRO stays as a cheap assertion that the
+# rootfs found there really is the one named - it used to be the only guard
+# against imaging the wrong tree, when every distro shared one rootfs/.
 image:
 	EXPECT_DISTRO=$(if $(filter command line,$(origin DISTRO)),$(DISTRO)) \
-		./scripts/image/build-image.sh
+		./scripts/image/build-image.sh $(DISTRO)
 
 # Derives the dependency graph from the built packages
 deps:
@@ -138,9 +156,9 @@ deps-order:
 deps-verify:
 	@./scripts/packages/order-deps.sh verify
 
-# Boots $(IMAGE_FILE)
+# Boots $(OUT)/image.img
 qemu:
-	./scripts/image/qemu.sh $(QEMU_ARGS)
+	./scripts/image/qemu.sh $(DISTRO) $(QEMU_ARGS)
 
 update-scripts:
 	cp -R scripts $(LFS_BASE)

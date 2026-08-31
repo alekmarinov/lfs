@@ -2,16 +2,25 @@
 # Turns the assembled rootfs into a bootable uefi image
 set -e
 
-ROOTFS_DIR="rootfs"
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+BASE_DIR=$( cd -- "$SCRIPT_DIR/../.." &> /dev/null && pwd )
+
+# Same argument as build-distro.sh. 'make image' used to take none, because
+# there was one shared rootfs/ and nothing to choose between - which is also
+# why EXPECT_DISTRO had to exist. With one output directory per distro the
+# path comes from the same place the assembly did, and there is nothing left
+# to disagree about.
+OUT=$("$SCRIPT_DIR/../resolve-distro.sh" -o "$1")
+ROOTFS_DIR="$OUT/rootfs"
 
 # The name of the produced image file
-IMAGE_FILE=${IMAGE_FILE:-image.img}
+IMAGE_FILE=${IMAGE_FILE:-$OUT/image.img}
 
-# The image size in MB. .env sets this for every build and so is where to
-# change it; the value here is only a fallback for running this script on its
-# own. The largest distro, 'full', uses about 3G, so 7G leaves room to install
-# into while still fitting an 8G USB stick.
-IMAGE_SIZE=${IMAGE_SIZE:-7168}
+# IMAGE_SIZE is resolved further down, from the distro's own distro.conf. It
+# used to come from .env, which meant one number for every distro whatever it
+# held - and .env is exported wholesale by the Makefile, so a per-distro value
+# could never have won against it. How big its image needs to be is a property
+# of the distro, so that is where it is declared now.
 
 # the directory the image partitions are mounted on while it is being built
 MNT_DIR="$(dirname $(readlink -f $IMAGE_FILE))/mnt"
@@ -23,8 +32,12 @@ MNT_DIR="$(dirname $(readlink -f $IMAGE_FILE))/mnt"
 # produce a minimal-desktop image under a name which says otherwise. If DISTRO
 # was given on the command line, it has to agree with what is actually there.
 DISTRO_IN_ROOTFS=$(sed -n 's/^DISTRO=//p' "$ROOTFS_DIR/etc/lfs-distro" 2>/dev/null)
+ID_IN_ROOTFS=$(sed -n 's/^ID=//p' "$ROOTFS_DIR/etc/lfs-distro" 2>/dev/null)
+# DISTRO= may have been a bare name or a path, so the rootfs records both what
+# was asked for and the ID it resolved to. Either one agreeing is agreement.
 if [[ "$EXPECT_DISTRO" != "" && "$DISTRO_IN_ROOTFS" != "" \
-      && "$EXPECT_DISTRO" != "$DISTRO_IN_ROOTFS" ]]; then
+      && "$EXPECT_DISTRO" != "$DISTRO_IN_ROOTFS" \
+      && "$EXPECT_DISTRO" != "$ID_IN_ROOTFS" ]]; then
     echo "'$ROOTFS_DIR' holds the distro '$DISTRO_IN_ROOTFS', not '$EXPECT_DISTRO'.
 Assemble the one you want first:
 
@@ -72,9 +85,31 @@ fi
 # identity of the distro being made bootable
 PRETTY_NAME=$(sed -n 's/^PRETTY_NAME="\(.*\)"/\1/p' "$ROOTFS_DIR/etc/os-release" 2>/dev/null)
 PRETTY_NAME=${PRETTY_NAME:-Linux}
+
+# How long the menu waits, what is on the kernel command line, and how big the
+# image is are the distro's business, not this script's: an appliance wants to
+# boot straight through in silence and a desktop wants a menu you can actually
+# catch. All are read from the distro's own distro.conf, with the old defaults
+# when it says nothing. They are read with sed rather than sourced - that file is
+# configuration, and sourcing it would let it set anything in here.
+DISTRO_CONF="$ROOTFS_DIR/etc/lfs-distro.d/distro.conf"
+conf_value() {
+    [ -f "$DISTRO_CONF" ] || return 0
+    sed -n "s/^$1=\"\\(.*\\)\"$/\\1/p; s/^$1=\\([^\"]*\\)$/\\1/p" "$DISTRO_CONF" | tail -1
+}
+GRUB_TIMEOUT=${GRUB_TIMEOUT:-$(conf_value GRUB_TIMEOUT)}
 GRUB_TIMEOUT=${GRUB_TIMEOUT:-5}
+KERNEL_CMDLINE=${KERNEL_CMDLINE:-$(conf_value KERNEL_CMDLINE)}
+KERNEL_CMDLINE=${KERNEL_CMDLINE:-net.ifnames=0}
+IMAGE_SIZE=${IMAGE_SIZE:-$(conf_value IMAGE_SIZE)}
+IMAGE_SIZE=${IMAGE_SIZE:-7168}
+case "$IMAGE_SIZE" in
+    ""|*[!0-9]*) echo "IMAGE_SIZE '$IMAGE_SIZE' is not a number of megabytes"; exit 1 ;;
+esac
 
 echo "Using IMAGE_FILE=$IMAGE_FILE, IMAGE_SIZE=$IMAGE_SIZE, building '$PRETTY_NAME'"
+echo "Kernel command line: $KERNEL_CMDLINE"
+echo "Menu timeout: ${GRUB_TIMEOUT}s"
 
 # Attach the image file to available loop device
 LOOP=$(losetup -f)
@@ -206,11 +241,50 @@ else
     MICROCODE_LINE=""
 fi
 
+# This script generates the two entries it can derive from the kernel command
+# line: the default, and the same thing with the console made verbose. Every
+# other entry a distro wants - a rescue mode, an alternative for a machine
+# whose hardware needs different flags - is the distro's own knowledge, and it
+# declares them in a 'boot-entries' file in its own directory:
+#
+#     rescue: console only|net.ifnames=0 someflag
+#     with nouveau|net.ifnames=0 quiet loglevel=0
+#
+# one per line, title before the '|' and the kernel command line after it,
+# blank lines and '#' comments ignored. Read rather than sourced, like
+# distro.conf, so that a distro file cannot set variables in this script.
+# A distro that declares nothing gets the two entries below and no others.
+EXTRA_ENTRIES=""
+BOOT_ENTRIES="$ROOTFS_DIR/etc/lfs-distro.d/boot-entries"
+if [ -f "$BOOT_ENTRIES" ]; then
+    while IFS='|' read -r entry_title entry_cmdline || [ -n "$entry_title" ]; do
+        case "$entry_title" in ""|"#"*) continue ;; esac
+        if [ -z "$entry_cmdline" ]; then
+            echo "$BOOT_ENTRIES: entry '$entry_title' declares no kernel command line"
+            exit 1
+        fi
+        EXTRA_ENTRIES="$EXTRA_ENTRIES
+menuentry \"$PRETTY_NAME ($entry_title)\" {
+    set gfxpayload=keep
+    linux   /boot/$KERNEL_NAME rootwait root=$ROOT_DEV ro $entry_cmdline
+$MICROCODE_LINE}
+"
+    done < "$BOOT_ENTRIES"
+    echo "Boot entries from the distro:$(grep -vE '^[[:space:]]*(#|$)' "$BOOT_ENTRIES" \
+        | sed 's/|.*//; s/^/ /' | tr '\n' ',' | sed 's/,$//')"
+fi
+
 # Configure grub
 cat > $MNT_DIR/boot/grub/grub.cfg << EOF
 # Begin /boot/grub/grub.cfg
 set default=0
-set timeout=15
+# hidden shows no menu but still watches the keyboard for the timeout. Without
+# it, 'timeout=0' boots at once and never reads a key, so a distro which sets
+# zero to boot straight through has no way back to the menu - on EFI holding
+# shift does not help either. One second of black screen buys a reachable
+# rescue entry; press Esc during it.
+set timeout_style=hidden
+set timeout=$GRUB_TIMEOUT
 
 insmod part_msdos
 insmod ext2
@@ -233,7 +307,7 @@ menuentry "$PRETTY_NAME" {
     # over UEFI has no VGA text mode to go back to - the screen goes black at
     # exactly the moment the kernel starts.
     set gfxpayload=keep
-    linux   /boot/$KERNEL_NAME rootwait root=$ROOT_DEV ro net.ifnames=0
+    linux   /boot/$KERNEL_NAME rootwait root=$ROOT_DEV ro $KERNEL_CMDLINE
 $MICROCODE_LINE}
 
 # A machine which comes up with a lit but empty screen is almost always a
@@ -242,9 +316,10 @@ $MICROCODE_LINE}
 # over, from the first line of the boot, and keeps doing so after the kernel
 # switches to its own console. It is slow - every scrolled line is a copy over
 # uncached memory - but it turns a black screen into a readable log.
+$EXTRA_ENTRIES
 menuentry "$PRETTY_NAME (verbose console)" {
     set gfxpayload=keep
-    linux   /boot/$KERNEL_NAME rootwait root=$ROOT_DEV ro net.ifnames=0 earlycon=efifb keep_bootcon
+    linux   /boot/$KERNEL_NAME rootwait root=$ROOT_DEV ro $KERNEL_CMDLINE earlycon=efifb keep_bootcon
 $MICROCODE_LINE}
 
 EOF

@@ -254,6 +254,7 @@ $build /scripts/packages/blfs/25-make-gtk3.sh
 # the firefox tier. rust is a build tool and is in no distro.
 $build /scripts/packages/blfs/12-make-zip.sh
 $build /scripts/packages/blfs/42-make-alsa-lib.sh
+$build /scripts/packages/blfs/42-make-alsa-utils.sh
 $build /scripts/packages/blfs/13-make-rust.sh
 $build /scripts/packages/blfs/9-make-nodejs.sh
 $build /scripts/packages/blfs/13-make-cbindgen.sh
