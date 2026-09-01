@@ -216,5 +216,18 @@ done
 # Rename the /etc/limits file using the following command:
 [ -f /etc/limits ] && mv -v /etc/limits{,.NOUSE}
 
-# Set default root password
-echo -e "$LFS_ROOT_PASSWORD\n$LFS_ROOT_PASSWORD" | passwd root
+# Set a default root password, if one is configured.
+#
+# Baking it here puts the hash inside the package, where it is a secret in a
+# build artifact that every image installing this package inherits - the same
+# class of mistake as shipping ssh host keys, and for the same reason: a
+# package is a diff, and whatever the build wrote is in it. build-distro.sh
+# sets the password per distro at assembly time, which is where it belongs.
+#
+# It is skipped when nothing is configured rather than feeding passwd two empty
+# lines, which fails and takes the build with it.
+if [ -n "$LFS_ROOT_PASSWORD" ]; then
+    echo -e "$LFS_ROOT_PASSWORD\n$LFS_ROOT_PASSWORD" | passwd root
+else
+    echo "No LFS_ROOT_PASSWORD configured; root is left without a usable password."
+fi

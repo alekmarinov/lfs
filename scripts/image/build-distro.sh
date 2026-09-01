@@ -404,8 +404,29 @@ if [[ "$password" != "" ]]; then
     hash=$(openssl passwd -6 "$password")
     sudo sed -i "s|^root:[^:]*:|root:$hash:|" "$ROOTFS_DIR/etc/shadow"
 else
-    echo "Neither ROOT_PASSWORD nor LFS_ROOT_PASSWORD is set, the root account stays locked.
-Boot with 'init=/bin/bash' appended to the kernel command line to get a shell."
+    # Actively write a field with no usable password, rather than leaving
+    # whatever the packages happened to carry.
+    #
+    # This branch used to write nothing, and that was wrong in the dangerous
+    # direction. /etc/shadow is a shared file, so a package captures the whole
+    # of it, not its own line - and any package built after a root password
+    # existed in the base layer carries that hash. Measured: 4-make-shadow bakes
+    # one at build time, and 14-make-dhcpcd, 4-make-openssh and 8.85-clean all
+    # carry a copy of it. The account merge then faithfully preserves it. So a
+    # distro that configured no password still shipped one, while this script
+    # printed that the account was locked.
+    #
+    # '*' rather than '!': measured on hardware, sshd built without linux-pam
+    # treats a '!'-prefixed field as a locked *account* and refuses public key
+    # logins too, which would make a key-authorised appliance unreachable. '*'
+    # denies every password and leaves key authentication working.
+    echo "No root password configured; writing an account with none."
+    sudo sed -i "s|^root:[^:]*:|root:*:|" "$ROOTFS_DIR/etc/shadow"
+    echo "  No password authenticates root, here or over ssh. Public key logins
+  are unaffected - a distro shipping root/.ssh/authorized_keys is the expected
+  case. For a console, run agetty with --autologin, or set ROOT_PASSWORD in
+  distro.conf. 'init=/bin/bash' on the kernel command line remains the last
+  resort."
 fi
 
 # NOTE --no-preserve=ownership is what keeps these files owned by root. Plain
