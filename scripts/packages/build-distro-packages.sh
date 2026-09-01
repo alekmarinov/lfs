@@ -61,7 +61,28 @@ fi
 # missing file, which is a worse message.
 if [ -d "$DISTRO_DIR/sources" ]; then
     echo "Staging $ID sources into $LFS_BASE/sources"
+
+    # Remove what this distro staged last time, first.
+    #
+    # Copying alone merges, so an older version of a tarball stays behind
+    # beside the new one - and a recipe globbing 'name-*.tar.xz' then hands
+    # tar two files, which makes it treat the second as a member name to
+    # extract from the first. Measured, with exactly that error, on the first
+    # rebuild after a version changed. The distro's own sources/ is cleaned by
+    # its stage step; this directory has to be cleaned by whoever fills it.
+    #
+    # The manifest is how we know what is ours: /sources also holds hundreds
+    # of upstream tarballs that must not be touched.
+    manifest="$LFS_BASE/sources/.staged-$ID"
+    if [ -f "$manifest" ]; then
+        while read -r stale; do
+            [ -n "$stale" ] && rm -f "$LFS_BASE/sources/$stale"
+        done < "$manifest"
+    fi
+
     cp -R "$DISTRO_DIR/sources/." "$LFS_BASE/sources/"
+    ( cd "$DISTRO_DIR/sources" && find . -maxdepth 1 -type f -printf '%P\n' ) \
+        > "$manifest"
 fi
 
 STAGE="$LFS_BASE/scripts/packages/$ID"
@@ -83,7 +104,13 @@ for recipe in $(cd "$STAGE" && ls *.sh 2>/dev/null | sort); do
         echo "resolver may place it before the compiler that builds it."
         exit 1
     fi
-    ./scripts/packages/build-package.sh "/scripts/packages/$ID/$recipe"
+    # -f, always. Staging is the statement that these sources are new, and the
+    # .ready flag is keyed on the recipe name rather than on what it builds —
+    # so without this, 'make stage' followed by this script rebuilds nothing,
+    # says nothing, and the image quietly keeps the previous renderer. The
+    # flag exists to avoid rebuilding the two hundred packages of the book,
+    # not the handful a distro brings.
+    ./scripts/packages/build-package.sh -f "/scripts/packages/$ID/$recipe"
     built=$((built + 1))
 done
 

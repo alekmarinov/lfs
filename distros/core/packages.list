@@ -34,6 +34,7 @@
 8.4-make-iana-etc.tar.gz
 8.28-make-shadow.tar.gz
 8.31-make-sed.tar.gz
+8.32-make-psmisc.tar.gz
 8.35-make-grep.tar.gz
 8.36-make-bash.tar.gz
 8.41-make-inetutils.tar.gz
