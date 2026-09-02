@@ -80,7 +80,11 @@ if [ -d "$DISTRO_DIR/sources" ]; then
         done < "$manifest"
     fi
 
-    cp -R "$DISTRO_DIR/sources/." "$LFS_BASE/sources/"
+    # -p, to preserve the timestamps. Without it every staged tarball arrives
+    # looking brand new on every run, and the "is this recipe older than its
+    # sources" test below then says yes for all of them, always — which is the
+    # unconditional rebuild this was supposed to have stopped doing.
+    cp -Rp "$DISTRO_DIR/sources/." "$LFS_BASE/sources/"
     ( cd "$DISTRO_DIR/sources" && find . -maxdepth 1 -type f -printf '%P\n' ) \
         > "$manifest"
 fi
@@ -104,13 +108,41 @@ for recipe in $(cd "$STAGE" && ls *.sh 2>/dev/null | sort); do
         echo "resolver may place it before the compiler that builds it."
         exit 1
     fi
-    # -f, always. Staging is the statement that these sources are new, and the
-    # .ready flag is keyed on the recipe name rather than on what it builds —
-    # so without this, 'make stage' followed by this script rebuilds nothing,
-    # says nothing, and the image quietly keeps the previous renderer. The
-    # flag exists to avoid rebuilding the two hundred packages of the book,
-    # not the handful a distro brings.
-    ./scripts/packages/build-package.sh -f "/scripts/packages/$ID/$recipe"
+    # Force a rebuild only when this recipe is older than the sources it would
+    # build from, which is what `make` has always meant.
+    #
+    # It used to force every time, for a good reason badly applied: the .ready
+    # flag is keyed on the recipe name rather than on what it builds, so
+    # 'make stage' followed by this script rebuilt nothing and the image
+    # quietly kept the previous renderer. Forcing everything fixed that and
+    # cost a full kernel compile on every run — measured at 38 minutes, during
+    # which the packages that had actually changed were still waiting their
+    # turn.
+    #
+    # Matched on the recipe's own name, not on every staged file. `avatari.sh`
+    # is rebuilt when `avatari-*.tar.xz` moves and `audi.sh` when
+    # `audi-models-*` does, which is what the naming already says.
+    #
+    # A recipe with no staged source of its own — the kernel, whose source is a
+    # config file — is never forced by somebody else's staging. That was the
+    # whole 38 minutes: one `make stage` invalidated every recipe, and the
+    # kernel is at the front of the queue.
+    #
+    # `find -newer` rather than comparing timestamps in shell: the sources are
+    # files and this is exactly the question find answers.
+    flag="$BASE_DIR/tmp/${recipe%.sh}.ready"
+    force=""
+    if [ ! -f "$flag" ]; then
+        force="-f"
+    elif [ -n "$(find "$LFS_BASE/sources" -maxdepth 1 -newer "$flag" \
+                      -name "${recipe%.sh}*.tar.*" -print -quit 2>/dev/null)" ]; then
+        force="-f"
+    fi
+    if [ -z "$force" ]; then
+        echo "$recipe is newer than every staged source; skipping"
+        continue
+    fi
+    ./scripts/packages/build-package.sh $force "/scripts/packages/$ID/$recipe"
     built=$((built + 1))
 done
 

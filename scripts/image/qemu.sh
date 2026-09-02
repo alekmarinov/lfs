@@ -89,6 +89,7 @@ echo "Booting $IMAGE_FILE ${PRETTY_NAME:+($PRETTY_NAME) }with $OVMF_CODE"
 
 exec sudo qemu-system-x86_64 \
     -enable-kvm \
+    -cpu host \
     -m ${QEMU_MEMORY:-2048} \
     -smp ${QEMU_CPUS:-4} \
     -machine q35 \
