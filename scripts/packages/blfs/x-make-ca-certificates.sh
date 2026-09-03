@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  ca-certificates
+# SOURCE:   certdata.txt
+# VERSION:  11.2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Generating the CA trust store.."
 

@@ -1,0 +1,1241 @@
+#!/bin/bash
+# lpkg - install packages onto an LFS system, from a channel or from disk.
+#
+#   lpkg sync                    fetch and verify the channel index
+#   lpkg install <name>...       install packages and whatever they need
+#                                a name may be '@group' for a named set
+#   lpkg remove <name>...        remove packages
+#   lpkg upgrade [<name>...]     move to what the channel now has
+#   lpkg list [--upgradable]     what is installed
+#   lpkg info <name>             what the channel and the database say
+#   lpkg owns <path>             which package a file belongs to
+#   lpkg verify [<name>...]      installed files against what was recorded
+#   lpkg build <name>            compile it here, from the channel's source package
+#
+#   --root <dir>   act on a tree other than /
+#   --yes          do not ask
+#   --dry-run      say what would happen
+#   --force        override a refusal that is there for a reason
+#   --reinstall    install again even at the version already installed
+#   --from <file>  install this .lpkg rather than one from the channel
+#
+# WHAT A PACKAGE IS
+#
+# The overlay upper layer of its build: every file the build wrote, as final
+# content, plus a .meta directory describing it. That format can express a
+# deletion, which most cannot - a character device in the payload is an
+# overlayfs whiteout and means "remove this path".
+#
+# WHAT THE DATABASE IS FOR
+#
+# Packages share files. Several add lines to /etc/passwd; several ship a
+# directory. Removing a package therefore cannot mean "delete everything in
+# it" - it means "delete what it owns and nobody else does", and 'owners' is
+# what makes that answerable. Without it, removing any package breaks the ones
+# it happened to overlap.
+#
+# ABI
+#
+# Every package is compiled against one exact core. A channel is keyed on a
+# fingerprint of that core and this refuses one which is not its own, because
+# the alternative is a binary that installs perfectly and dies on first use
+# looking for a library version that was never here.
+set -u
+
+VERSION=5
+
+# --------------------------------------------------------------------- setup
+
+ROOT=/
+ASSUME_YES=0
+DRY_RUN=0
+FORCE=0
+REINSTALL=0
+FROM=""
+
+die()  { echo "lpkg: $*" >&2; exit 1; }
+warn() { echo "lpkg: $*" >&2; }
+say()  { [ "$DRY_RUN" = 1 ] && printf 'would: '; echo "$*"; }
+
+# Every path this touches goes through here, so --root is honoured everywhere
+# rather than in the places somebody remembered.
+r() { case "$ROOT" in /) echo "$1" ;; *) echo "${ROOT%/}$1" ;; esac; }
+
+CMD=""
+ARGS=()
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --root)    ROOT="$2"; shift 2 ;;
+        --yes|-y)  ASSUME_YES=1; shift ;;
+        --dry-run) DRY_RUN=1; shift ;;
+        --force)   FORCE=1; shift ;;
+        --reinstall) REINSTALL=1; shift ;;
+        --from)    FROM="$2"; shift 2 ;;
+        --upgradable) ARGS+=("$1"); shift ;;
+        -h|--help) sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -*)        die "unknown option $1" ;;
+        *)         if [ -z "$CMD" ]; then CMD="$1"; else ARGS+=("$1"); fi; shift ;;
+    esac
+done
+[ -n "$CMD" ] || { sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
+
+DB=$(r /var/lib/lpkg)
+CACHE=$(r /var/cache/lpkg)
+CONF=$(r /etc/lpkg/lpkg.conf)
+TRUSTED=$(r /etc/lpkg/trusted.pub)
+INDEX="$DB/channels/INDEX"
+OWNERS="$DB/owners"
+
+REPO_URL=""
+[ -f "$CONF" ] && REPO_URL=$(sed -n 's/^REPO_URL=//p' "$CONF" | tail -1)
+
+mkdir -p "$DB/db" "$DB/channels" "$DB/journal" "$CACHE/pkg" 2>/dev/null || true
+
+WORK=$(mktemp -d)
+trap 'rm -rf "$WORK"' EXIT
+
+# ----------------------------------------------------------------- system abi
+
+system_abi() {
+    local osr; osr=$(r /etc/os-release)
+    [ -f "$osr" ] && sed -n 's/^ABI_ID=//p' "$osr" | tail -1
+}
+
+# ------------------------------------------------------------- index handling
+#
+# The index is stanzas separated by blank lines. Rather than re-parse it for
+# every lookup - which for a few hundred packages inside a resolver loop is
+# slow enough to notice on the machines this runs on - it is turned once into
+# a flat table and read from there.
+
+INDEX_TAB="$WORK/index.tab"
+PROVIDERS="$WORK/providers.tab"
+# GROUPS_TAB, not GROUPS: bash owns GROUPS as a special array of the caller's
+# group ids, and assigning a path to it does not take - the name keeps
+# expanding to the primary gid. So the group table was written to a file
+# called '1003' in whatever directory lpkg happened to be run from, and read
+# back from the same place. It worked, which is why it went unnoticed, and it
+# littered the working directory every time and would have failed outright
+# wherever that directory was not writable.
+GROUPS_TAB="$WORK/groups.tab"
+
+load_index() {
+    [ -f "$INDEX" ] || die "no channel index; run 'lpkg sync' first"
+    awk '
+        function flush(   i, n, s) {
+            if (pkg == "") return
+            print pkg "\t" ver "\t" rel "\t" cls "\t" file "\t" size "\t" sha "\t" req "\t" prov "\t" fall "\t" rcp "\t" breq "\t" lsrc "\t" lsha "\t" star "\t" ssha "\t" rtp "\t" grp > tab
+            n = split(prov, s, " ")
+            for (i = 1; i <= n; i++) if (s[i] != "") print s[i] "\t" pkg "\tsoname" > pv
+            n = split(fall, s, " ")
+            for (i = 1; i <= n; i++) if (s[i] != "") print s[i] "\t" pkg "\tfallback" > pv
+            pkg = ""; prov = ""; fall = ""; req = ""
+            rcp = ""; breq = ""; lsrc = ""; lsha = ""; star = ""; ssha = ""; rtp = ""; grp = ""
+        }
+        /^Package: /            { flush(); pkg = substr($0, 10) }
+        /^Version: /            { ver  = substr($0, 10) }
+        /^Release: /            { rel  = substr($0, 10) }
+        /^Class: /              { cls  = substr($0, 8) }
+        /^File: /               { file = substr($0, 7) }
+        /^Size: /               { size = substr($0, 7) }
+        /^SHA256: /             { sha  = substr($0, 9) }
+        /^Provides: /           { prov = substr($0, 11) }
+        /^Provides-Fallback: /  { fall = substr($0, 20) }
+        /^Requires: /           { req  = substr($0, 11) }
+        /^Recipe: /             { rcp  = substr($0, 9) }
+        /^Requires-Package: /   { rtp  = substr($0, 19) }
+        /^Group: /              { grp  = substr($0, 8); print grp "\t" pkg > gp }
+        /^Build-Requires: /     { breq = substr($0, 17) }
+        /^Source-Package: /     { lsrc = substr($0, 17) }
+        /^Source-Package-SHA256: / { lsha = substr($0, 24) }
+        /^Source-Tarball: /     { star = substr($0, 17) }
+        /^Source-Tarball-SHA256: /  { ssha = substr($0, 24) }
+        END                     { flush() }
+    ' tab="$INDEX_TAB" pv="$PROVIDERS" gp="$GROUPS_TAB" "$INDEX"
+    touch "$INDEX_TAB" "$PROVIDERS" "$GROUPS_TAB"
+}
+
+# fields of one package, tab separated:
+#   name ver rel class file size sha requires provides fallback
+#   recipe buildrequires lsrc lsrcsha srctarball srcsha
+#   requirespackage group
+declare -A IDX=()
+IDX_LOADED=0
+load_idx() {
+    [ "$IDX_LOADED" = 1 ] && return 0
+    local line n
+    while IFS= read -r line; do
+        n=${line%%$'\t'*}
+        [ -n "$n" ] && IDX[$n]="$line"
+    done < "$INDEX_TAB"
+    IDX_LOADED=1
+}
+idx() { load_idx; echo "${IDX[$1]:-}"; }
+
+# which package provides a soname - a real SONAME beats a file-name fallback.
+# Read into memory the first time it is asked, because the resolver asks once
+# per dependency of every package it walks.
+declare -A PROV_SONAME=()
+declare -A PROV_FALLBACK=()
+PROV_LOADED=0
+load_providers() {
+    [ "$PROV_LOADED" = 1 ] && return 0
+    local so pkg kind
+    while IFS=$'\t' read -r so pkg kind; do
+        [ -n "$so" ] || continue
+        case "$kind" in
+            soname)   [ -n "${PROV_SONAME[$so]:-}" ]   || PROV_SONAME[$so]="$pkg" ;;
+            fallback) [ -n "${PROV_FALLBACK[$so]:-}" ] || PROV_FALLBACK[$so]="$pkg" ;;
+        esac
+    done < "$PROVIDERS"
+    PROV_LOADED=1
+}
+provider_of() {
+    load_providers
+    if [ -n "${PROV_SONAME[$1]:-}" ]; then echo "${PROV_SONAME[$1]}"
+    elif [ -n "${PROV_FALLBACK[$1]:-}" ]; then echo "${PROV_FALLBACK[$1]}"; fi
+}
+
+# ---------------------------------------------------------------- the database
+
+installed_version() {
+    local p="$DB/db/$1/PKGINFO"
+    [ -f "$p" ] || return 1
+    echo "$(sed -n 's/^version=//p' "$p")-$(sed -n 's/^release=//p' "$p")"
+}
+
+is_installed() { [ -d "$DB/db/$1" ]; }
+
+# Is a<b? Version comparison is a swamp; sort -V is coreutils' answer to it and
+# is what this system has. Good enough to say "the channel has something newer",
+# which is the only question asked.
+newer_than() {
+    [ "$1" = "$2" ] && return 1
+    [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -1)" = "$1" ]
+}
+
+# every soname provided by something already installed
+installed_provides() {
+    cat "$DB"/db/*/provides 2>/dev/null | cut -f1 | sort -u
+}
+
+# ------------------------------------------------------------------- resolving
+#
+# Dependencies are sonames, not package names. 'curl' requires libssl.so.3 and
+# whatever provides that satisfies it - which survives a package being renamed
+# or split, and is read out of the binaries rather than declared.
+
+resolve() {
+    local want=("$@") queue=() seen="" pkg line req so prov
+    queue=("${want[@]}")
+    : > "$WORK/plan"
+    : > "$WORK/unmet"
+
+    # Taken once. This used to be recomputed for every soname of every
+    # package considered - cat the whole database, cut, sort - which is
+    # quadratic in what is installed and turned a routine install into
+    # minutes of work before anything was downloaded.
+    installed_provides > "$WORK/have"
+
+    while [ ${#queue[@]} -gt 0 ]; do
+        pkg="${queue[0]}"; queue=("${queue[@]:1}")
+        case " $seen " in *" $pkg "*) continue ;; esac
+        seen="$seen $pkg"
+
+        line=$(idx "$pkg")
+        if [ -z "$line" ]; then
+            echo "$pkg" >> "$WORK/unmet"
+            continue
+        fi
+        echo "$pkg" >> "$WORK/plan"
+
+        # Declared runtime dependencies: what a package needs that no binary
+        # mentions. Xorg reads the XKB rule files out of xkeyboard-config and
+        # links nothing from it, so on sonames alone the X server installs
+        # and then refuses to start.
+        for dep in $(echo "$line" | cut -f17); do
+            case " $seen " in *" $dep "*) ;; *) queue+=("$dep") ;; esac
+        done
+
+        req=$(echo "$line" | cut -f8)
+        for so in $req; do
+            # already satisfied by something on the system
+            if grep -qxF "$so" "$WORK/have"; then continue; fi
+            prov=$(provider_of "$so")
+            if [ -z "$prov" ]; then
+                echo "$pkg needs $so, which nothing provides" >> "$WORK/unmet"
+                continue
+            fi
+            case " $seen " in *" $prov "*) ;; *) queue+=("$prov") ;; esac
+        done
+    done
+}
+
+# ------------------------------------------------------------------ fetching
+
+fetch() {
+    local rel="$1" dest="$2" url
+    case "$REPO_URL" in
+        "") die "no REPO_URL in $CONF" ;;
+        http://*|https://*)
+            url="$REPO_URL/$rel"
+            command -v curl > /dev/null || die "curl is needed to reach $url"
+            curl -fsS -o "$dest" "$url" || die "could not fetch $url" ;;
+        file://*) cp "${REPO_URL#file://}/$rel" "$dest" || die "no $rel in $REPO_URL" ;;
+        *)        cp "$REPO_URL/$rel" "$dest" || die "no $rel in $REPO_URL" ;;
+    esac
+}
+
+# ---------------------------------------------------------------------- sync
+
+cmd_sync() {
+    local abi; abi=$(system_abi)
+    [ -n "$abi" ] || die "no ABI_ID in $(r /etc/os-release); this system cannot be matched to a channel"
+    local arch="${ARCH:-x86_64}"
+
+    # The channel path carries the ABI, so a system can only ever reach the
+    # one built for its own core.
+    local base="$abi/$arch"
+    fetch "$base/INDEX"     "$WORK/INDEX"
+    fetch "$base/INDEX.sig" "$WORK/INDEX.sig" 2>/dev/null || true
+
+    if [ -f "$TRUSTED" ]; then
+        [ -f "$WORK/INDEX.sig" ] || die "channel is unsigned and $TRUSTED says to require a signature"
+        command -v openssl > /dev/null || die "openssl is needed to check the channel signature"
+        openssl pkeyutl -verify -rawin -pubin -inkey "$TRUSTED" \
+            -sigfile "$WORK/INDEX.sig" -in "$WORK/INDEX" > /dev/null 2>&1 \
+            || die "the channel index is not signed by the key in $TRUSTED"
+        echo "signature ok"
+    else
+        # Saying so every time is the point. An unverified channel is a
+        # stranger telling you what your libc should be.
+        warn "no $TRUSTED - the channel is not being verified"
+    fi
+
+    local iabi; iabi=$(sed -n 's/^ABI: //p' "$WORK/INDEX" | head -1)
+    [ "$iabi" = "$abi" ] || die "channel is for ABI $iabi, this system is $abi"
+
+    mkdir -p "$DB/channels"
+    cp "$WORK/INDEX" "$INDEX"
+    [ -f "$WORK/INDEX.sig" ] && cp "$WORK/INDEX.sig" "$DB/channels/INDEX.sig"
+    echo "$(grep -c '^Package: ' "$INDEX") packages in channel $abi/$arch"
+}
+
+# ------------------------------------------------------------------- ownership
+
+# every path the named package owns
+owned_by() { cat "$DB/db/$1/files" 2>/dev/null; }
+
+# Loaded once. Installing a package asks this for every file in it, and a
+# scan of the whole owners table per file is what made a large install crawl.
+declare -A OWNER=()
+OWNER_LOADED=0
+load_owners() {
+    [ "$OWNER_LOADED" = 1 ] && return 0
+    local f n
+    if [ -f "$OWNERS" ]; then
+        while IFS=$'\t' read -r f n; do
+            [ -n "$f" ] && [ -z "${OWNER[$f]:-}" ] && OWNER[$f]="$n"
+        done < "$OWNERS"
+    fi
+    OWNER_LOADED=1
+}
+owner_of() { load_owners; echo "${OWNER[$1]:-}"; }
+
+# The path -> package index, rebuilt from the per-package file lists.
+#
+# Read by plain redirection from each list, not through a process
+# substitution. '< <(...)' needs /dev/fd, and where that is missing - a chroot
+# without /proc, which is exactly the "install into a new root" case this is
+# meant to support - the read silently produces nothing. The install itself
+# succeeded and this then wrote an empty owners file over a good one, which
+# takes the ownership model out entirely: nothing conflicts, and removing any
+# package deletes files another one shares.
+rebuild_owners() {
+    local d n l with_files=0
+    : > "$WORK/owners"
+    for d in "$DB"/db/*/; do
+        [ -d "$d" ] || continue
+        n=$(basename "$d")
+        l="$d/files"
+        [ -f "$l" ] || continue
+        [ -s "$l" ] && with_files=$((with_files + 1))
+        while IFS= read -r f; do
+            [ -n "$f" ] && printf '%s\t%s\n' "$f" "$n"
+        done < "$l" >> "$WORK/owners"
+    done
+
+    # An index with nothing in it, built from packages which do have files, is
+    # a failure and not an answer.
+    if [ "$with_files" -gt 0 ] && [ ! -s "$WORK/owners" ]; then
+        die "the owners index came out empty from $with_files package(s) - not writing it"
+    fi
+
+    sort -o "$WORK/owners" "$WORK/owners"
+    mv "$WORK/owners" "$OWNERS"
+    OWNER=(); OWNER_LOADED=0
+}
+
+# --------------------------------------------------------------------- config
+#
+# Anything under /etc is treated as configuration: its hash is recorded when it
+# is installed, and on the next install the file on disk is compared against
+# that. Unchanged, it is replaced. Changed, the new one is written beside it as
+# .new and the administrator is told.
+#
+# A package cannot declare this because the question is not "is this a config
+# file" but "did somebody edit it", and only the database knows.
+
+is_config() { case "$1" in /etc/*) return 0 ;; *) return 1 ;; esac; }
+
+hash_of() { [ -f "$1" ] && sha256sum "$1" 2>/dev/null | cut -d' ' -f1; }
+
+recorded_hash() { awk -F'\t' -v p="$1" '$1 == p { print $2 }' "$DB/db/$2/config" 2>/dev/null; }
+
+# ------------------------------------------------------------------ installing
+
+# stage_package <lpkg file> <dir>
+stage_package() {
+    mkdir -p "$2"
+    tar xzf "$1" -C "$2" 2>/dev/null || die "$1 is not readable as a package"
+}
+
+# The files a staged package would install, relative and without .meta
+staged_files() {
+    ( cd "$1" && find . \( -type f -o -type l -o -type c \) -not -path './.meta/*' -print ) \
+        | sed 's|^\.||' | grep -v '^/tmp/' | sort
+}
+
+install_one() {
+    local name="$1" file="$2" ver="$3" rel="$4" cls="$5" txid="$6"
+    local ix_req="${7:-}" ix_prov="${8:-}" ix_fall="${9:-}"
+    local stage="$WORK/stage/$name"
+    rm -rf "$stage"; stage_package "$file" "$stage"
+
+    local jdir="$DB/journal/$txid"
+    mkdir -p "$jdir/backup"
+
+    local conflicts=0 kept_new=()
+    : > "$WORK/files.$name"
+    : > "$WORK/config.$name"
+    : > "$WORK/bulk.$name"
+
+    # The payload is listed into a file first, and the loop reads that.
+    #
+    # Not a style choice. Reading it through '< <(staged_files ...)' needs
+    # /dev/fd, and in a chroot without /proc mounted the redirection fails,
+    # the loop body never runs, and the package is recorded as having
+    # installed no files at all - while the transaction reports success. A
+    # package which stages files and places none of them is a failure, and it
+    # now says so instead of writing an empty database entry over a good one.
+    staged_files "$stage" > "$WORK/list.$name"
+    local staged_count
+    staged_count=$(wc -l < "$WORK/list.$name")
+    if [ "$staged_count" -eq 0 ]; then
+        die "$name staged no files - the package is empty or could not be read"
+    fi
+
+    while IFS= read -r p; do
+        [ -n "$p" ] || continue
+        local src="$stage$p" dst; dst=$(r "$p")
+
+        # A character device in the payload is an overlayfs whiteout: the
+        # package is deleting a path the layer below it had.
+        if [ -c "$src" ]; then
+            if [ -e "$dst" ]; then
+                mkdir -p "$jdir/backup${p%/*}"
+                cp -a "$dst" "$jdir/backup$p" 2>/dev/null || true
+                echo "D $p" >> "$jdir/manifest"
+                [ "$DRY_RUN" = 1 ] || rm -rf "$dst"
+            fi
+            continue
+        fi
+
+        # file-policy.conf is consulted for every path, not only for one
+        # somebody else already owns.
+        #
+        # 'drop' and 'regenerate' are properties of the path itself:
+        # /etc/ld.so.cache describes the tree rather than being authored, and
+        # must never arrive from a package however few packages ship it. When
+        # this was only reached on a conflict, the first package to carry
+        # ld.so.cache installed it, the second was compared against it, and
+        # 'lpkg verify' then reported the file as edited by the administrator.
+        policy_for "$p"
+        local pol="$POL"
+        case "$pol" in
+            drop|regenerate) continue ;;
+        esac
+
+        load_owners
+        local own="${OWNER[$p]:-}"
+        if [ -n "$own" ] && [ "$own" != "$name" ]; then
+            case "$pol" in
+                merge-lines:*|last-wins) ;;
+                *)
+                    # The same line build-distro.sh draws when it assembles a
+                    # rootfs: a shared file under /etc or /var with no decision
+                    # recorded for it stops the work, because those are where
+                    # the accumulators live and losing one is how a system
+                    # boots without the accounts its services need. Elsewhere
+                    # the later package wins, which is what assembly has always
+                    # done - but it is said out loud rather than done quietly,
+                    # because one package overwriting another's file is worth
+                    # knowing about even when it is expected.
+                    case "$p" in
+                        /etc/*|/var/*)
+                            echo "  $p is owned by $own and file-policy.conf has no entry for it"
+                            conflicts=$((conflicts + 1))
+                            continue ;;
+                        *)  echo "  $p: taking over from $own" ;;
+                    esac ;;
+            esac
+        fi
+
+        # A file several packages add to, rather than one they fight over.
+        #
+        # /etc/passwd is the case: every package which brings a service
+        # account ships the whole file, containing its own account and not
+        # anyone else's. Unpacking them in order keeps only the last, and the
+        # system then boots with "no such user dhcpcd" while dhcpcd is
+        # installed. The union is taken instead, keyed on the field the policy
+        # names - the first, for the account files, so passwd, group, shadow
+        # and gshadow stay in step.
+        #
+        # This cannot express a deletion: a package removing an account ships
+        # a file which merely lacks it, and that is indistinguishable from one
+        # written before the account existed.
+        case "$pol" in
+            merge-lines:*)
+                if [ -f "$dst" ]; then
+                    local fld="${pol#merge-lines:}" kept
+                    kept=$(awk -F: -v f="$fld" '
+                        NR == FNR { if ($f != "") have[$f] = 1; next }
+                        $f != "" && !($f in have) { print $f }
+                    ' "$src" "$dst" | tr '\n' ' ')
+                    if [ -n "$kept" ]; then
+                        mkdir -p "$jdir/backup${p%/*}"
+                        cp -a "$dst" "$jdir/backup$p" 2>/dev/null || true
+                        echo "R $p" >> "$jdir/manifest"
+                        # through a temporary file: awk reading a file which is
+                        # being truncated under it keeps only part of the merge
+                        awk -F: -v f="$fld" '
+                            NR == FNR { if ($f != "") have[$f] = 1; print; next }
+                            $f != "" && !($f in have) { print }
+                        ' "$src" "$dst" > "$WORK/merged"
+                        [ "$DRY_RUN" = 1 ] || cp "$WORK/merged" "$dst"
+                        echo "  merged into $p, kept: $kept"
+                        echo "$p" >> "$WORK/files.$name"
+                        is_config "$p" && echo "$p	$(hash_of "$dst")" >> "$WORK/config.$name"
+                        continue
+                    fi
+                fi ;;
+        esac
+
+        # Edited configuration is never overwritten.
+        if is_config "$p" && [ -f "$dst" ]; then
+            local was now
+            was=$(recorded_hash "$p" "$name")
+            now=$(hash_of "$dst")
+            if [ -n "$was" ] && [ "$was" != "$now" ]; then
+                [ "$DRY_RUN" = 1 ] || { mkdir -p "$(dirname "$dst")"; cp -a "$src" "$dst.new"; }
+                kept_new+=("$p")
+                echo "$p	$was" >> "$WORK/config.$name"
+                echo "$p" >> "$WORK/files.$name"
+                continue
+            fi
+        fi
+
+        if [ -e "$dst" ] || [ -L "$dst" ]; then
+            mkdir -p "$jdir/backup${p%/*}"
+            cp -a "$dst" "$jdir/backup$p" 2>/dev/null || true
+            echo "R $p" >> "$jdir/manifest"
+        else
+            echo "A $p" >> "$jdir/manifest"
+        fi
+
+        # Placed in bulk once the whole package has been classified, rather
+        # than one 'mkdir -p' and 'cp -a' per file. At roughly 3 ms a file
+        # that loop cost ten seconds for glibc alone - more than unpacking the
+        # package in the first place - and a handful of packages was minutes.
+        # Only the paths needing individual treatment are handled above.
+        echo ".$p" >> "$WORK/bulk.$name"
+        echo "$p" >> "$WORK/files.$name"
+        is_config "$p" && echo "$p	$(hash_of "$src")" >> "$WORK/config.$name"
+    done < "$WORK/list.$name"
+
+    if [ "$DRY_RUN" != 1 ] && [ -s "$WORK/bulk.$name" ]; then
+        # tar to tar: one process pair for the whole payload, preserving modes
+        # and ownership the way the package recorded them.
+        #
+        # --unlink-first, so a file is replaced by a new inode rather than
+        # truncated and rewritten in place. Two reasons, and the second is why
+        # lpkg can upgrade itself:
+        #
+        #   a running process keeps the file it started from. Overwriting a
+        #   shared library under a program using it, or a shell script under
+        #   the shell reading it, is how a package manager corrupts a machine
+        #   mid-transaction. bash reads a script by file offset as it runs, so
+        #   lpkg rewriting /usr/bin/lpkg in place would have the running shell
+        #   read the tail of the new file from the old position.
+        #
+        #   a package should replace a file, not edit it. In-place truncation
+        #   also writes through a hardlink, which would silently modify the
+        #   copy in the package cache the channel hardlinked from.
+        # Errors are kept, not discarded, and both halves of the pipe are
+        # checked. They used to go to /dev/null with only the reader's status
+        # tested, and the cost of that was a machine where sixteen libraries
+        # had been installed as empty files: tar had been failing, saying so,
+        # and being silenced. A package manager that cannot say why an install
+        # went wrong is worse than one that cannot install.
+        set -o pipefail
+        if ! tar -C "$stage" -cf - --files-from "$WORK/bulk.$name" 2> "$WORK/tar.err" \
+             | tar -C "${ROOT%/}/" -xpf - --unlink-first 2>> "$WORK/tar.err"; then
+            set +o pipefail
+            echo "lpkg: placing $name into ${ROOT%/}/ failed:" >&2
+            sed 's/^/    /' "$WORK/tar.err" >&2
+            die "$name was not installed"
+        fi
+        set +o pipefail
+        if [ -s "$WORK/tar.err" ]; then
+            warn "$name: tar reported"
+            sed 's/^/    /' "$WORK/tar.err" >&2
+        fi
+    fi
+
+    if [ "$conflicts" -gt 0 ] && [ "$FORCE" != 1 ]; then
+        die "$name would take over $conflicts file(s) owned by another package"
+    fi
+
+    if [ "$DRY_RUN" != 1 ] && [ ! -s "$WORK/files.$name" ]; then
+        die "$name placed none of its $staged_count files - refusing to record it"
+    fi
+
+    [ "$DRY_RUN" = 1 ] && return 0
+
+    # ---- record it
+    local d="$DB/db/$name"
+    mkdir -p "$d"
+    # Packages built before recipes recorded their own linkage carry no
+    # .meta/provides. The channel index has it either way - build-meta.sh
+    # scanned them - so the database is filled from there when the package
+    # cannot fill it. Without this, 'lpkg remove' cannot tell that something
+    # still needs a library, and the resolver re-fetches providers it has.
+    if [ -f "$stage/.meta/provides" ]; then
+        cp "$stage/.meta/provides" "$d/provides"
+    else
+        : > "$d/provides"
+        for so in $ix_prov; do printf '%s\tsoname\n'   "$so" >> "$d/provides"; done
+        for so in $ix_fall; do printf '%s\tfallback\n' "$so" >> "$d/provides"; done
+    fi
+    if [ -f "$stage/.meta/requires" ]; then
+        cp "$stage/.meta/requires" "$d/requires"
+    else
+        : > "$d/requires"
+        for so in $ix_req; do echo "$so" >> "$d/requires"; done
+    fi
+    # PKGINFO is what the database is read through, and it is rewritten every
+    # time - never merely filled in when absent.
+    #
+    # It used to be written only if the file did not exist, which meant an
+    # upgrade kept the version already recorded: the new files were installed,
+    # 'lpkg list' went on reporting the old release, and the package showed as
+    # upgradable for ever. Nothing else in the transaction was wrong, which is
+    # what made it hard to see.
+    if [ -f "$stage/.meta/PKGINFO" ]; then
+        cp "$stage/.meta/PKGINFO" "$d/PKGINFO"
+    else
+        # Packages built before recipes declared themselves carry no PKGINFO;
+        # the channel is the authority for those.
+        printf 'name=%s\nversion=%s\nrelease=%s\nclass=%s\n' "$name" "$ver" "$rel" "$cls" > "$d/PKGINFO"
+    fi
+    sort -u "$WORK/files.$name" > "$d/files"
+    sort -u "$WORK/config.$name" > "$d/config" 2>/dev/null || : > "$d/config"
+
+    for p in "${kept_new[@]:-}"; do
+        [ -n "$p" ] && echo "  kept your $p; the new one is at $p.new"
+    done
+
+    if [ -x "$stage/.meta/hooks/post-install" ]; then
+        if [ "$ROOT" = / ]; then
+            "$stage/.meta/hooks/post-install" || warn "$name post-install hook failed"
+        else
+            warn "$name has a post-install hook, not run because --root is set"
+        fi
+    fi
+
+    # The staged copy goes once it has been placed and its hook has run. It
+    # used to be left for the life of the process, so a transaction installing
+    # thirty packages held thirty unpacked trees at once - on a small root
+    # that is the difference between working and filling up halfway through.
+    rm -rf "$stage"
+    return 0
+}
+
+# ------------------------------------------------------------------ file policy
+#
+# The same table build-distro.sh uses when it assembles a rootfs. Shipped with
+# lpkg so a running system answers the question the same way the image build
+# did - two implementations of it would drift, and the symptom would be a
+# system whose /etc/passwd lost the accounts its services need.
+
+POLICY=$(r /etc/lpkg/file-policy.conf)
+
+# The table is read once and answered through $POL rather than on stdout.
+#
+# Both halves matter. This is asked for every path in every package - 7596 of
+# them in openssl alone - and as a command substitution it forked a subshell
+# each time, milliseconds apiece and minutes in total. It also re-read the
+# file on every call.
+POLICY_PAT=(); POLICY_STRAT=(); POLICY_LOADED=0
+load_policy() {
+    [ "$POLICY_LOADED" = 1 ] && return 0
+    if [ -f "$POLICY" ]; then
+        local pat strat
+        while read -r pat strat _; do
+            case "$pat" in ''|'#'*) continue ;; esac
+            POLICY_PAT+=("$pat"); POLICY_STRAT+=("$strat")
+        done < "$POLICY"
+    fi
+    POLICY_LOADED=1
+}
+
+POL=""
+policy_for() {
+    load_policy
+    local i
+    POL=""
+    # first matching pattern wins, which is what the policy file's own comment says
+    for i in "${!POLICY_PAT[@]}"; do
+        # shellcheck disable=SC2254
+        case "$1" in ${POLICY_PAT[$i]}) POL="${POLICY_STRAT[$i]}"; return ;; esac
+    done
+}
+
+
+# ------------------------------------------------------------------- building
+#
+# Compiling a package here produces the same kind of artifact the build host
+# produces: the upper layer of an overlay, plus the .meta describing it. One
+# recipe, one format, two build sites - so a package built on this machine
+# installs through the code path above and can be published back.
+#
+# THE BUILD ROOT
+#
+# The obvious thing is to overlay / and chroot into it. That works and is a
+# reproducibility trap: the build then sees whatever happens to be installed
+# on this particular machine, so a package picks up an optional dependency
+# here and not there, silently. It is the automagic-dependency problem, and it
+# is cheaper to design out than to debug.
+#
+# So the lower layer is built from a declared set instead:
+#
+#   the base       every core package, plus the toolchain group
+#   the declared   the recipe's own '# BUILD_REQUIRES:', transitively
+#   their runtime  whatever provides the sonames all of that needs
+#
+# and the result is cached under a hash of exactly that list, so two machines
+# resolving the same set build in the same place.
+#
+# The base is there because only 50 of the 234 recipes in this tree declare
+# BUILD_REQUIRES at all. A lower layer built purely from declarations would be
+# empty for the rest - no compiler, no libc, nothing. A fixed base plus
+# declarations is what other distributions do too, and it is honest about the
+# limit: a recipe which needs something outside that set fails to find it
+# rather than quietly linking whatever was lying around.
+
+TOOLCHAIN_DEFAULT="gcc binutils make m4 bash coreutils sed grep gawk findutils
+                   tar gzip xz bzip2 patch diffutils file pkgconf perl texinfo
+                   gettext bison flex libtool automake autoconf which"
+
+toolchain_set() {
+    local f; f=$(r /etc/lpkg/toolchain)
+    if [ -f "$f" ]; then grep -v '^[[:space:]]*#' "$f"; else echo "$TOOLCHAIN_DEFAULT"; fi
+}
+
+# recipe coordinate -> package name, from the index's Recipe: field
+recipe_to_package() {
+    awk -F'\t' -v want="$1" '$11 == want { print $1; exit }' "$INDEX_TAB"
+}
+
+# Everything the build root should contain, one package name per line.
+build_root_set() {
+    local target="$1" line breq co pkgname
+    : > "$WORK/brset"
+
+    # the base: core plus the toolchain group
+    awk -F'\t' '$4 == "core" { print $1 }' "$INDEX_TAB" >> "$WORK/brset"
+    local t
+    for t in $(toolchain_set); do
+        [ -n "$(idx "$t")" ] && echo "$t" >> "$WORK/brset"
+    done
+
+    # the recipe's declared build dependencies, transitively
+    local queue=("$target") seen="" cur
+    while [ ${#queue[@]} -gt 0 ]; do
+        cur="${queue[0]}"; queue=("${queue[@]:1}")
+        case " $seen " in *" $cur "*) continue ;; esac
+        seen="$seen $cur"
+        line=$(idx "$cur"); [ -n "$line" ] || continue
+        breq=$(echo "$line" | cut -f12)
+        for co in $breq; do
+            pkgname=$(recipe_to_package "$co")
+            if [ -z "$pkgname" ]; then
+                warn "$cur declares build dependency '$co' which is in no package"
+                continue
+            fi
+            echo "$pkgname" >> "$WORK/brset"
+            queue+=("$pkgname")
+        done
+    done
+
+    # and whatever provides the sonames all of that needs, so the compiler and
+    # its friends can actually run
+    local pass p req so prov
+    for pass in 1 2 3; do
+        sort -u "$WORK/brset" > "$WORK/brset.in"
+        while IFS= read -r p; do
+            line=$(idx "$p"); [ -n "$line" ] || continue
+            req=$(echo "$line" | cut -f8)
+            for so in $req; do
+                prov=$(provider_of "$so")
+                [ -n "$prov" ] && echo "$prov" >> "$WORK/brset"
+            done
+        done < "$WORK/brset.in"
+    done
+    sort -u "$WORK/brset"
+}
+
+cmd_build() {
+    [ ${#ARGS[@]} -gt 0 ] || die "build what?"
+    [ "$(id -u)" = 0 ] || die "building needs root: it mounts an overlay and chroots into it"
+    command -v unshare > /dev/null || warn "unshare not found; the build mount will be global"
+
+    load_index
+    local name="${ARGS[0]}" line
+    line=$(idx "$name") || true
+    [ -n "$line" ] || die "$name is not in the channel"
+
+    local lsrc lsrc_sha srctar src_sha ver rel cls
+    ver=$(echo "$line" | cut -f2);  rel=$(echo "$line" | cut -f3)
+    cls=$(echo "$line" | cut -f4)
+    lsrc=$(echo "$line" | cut -f13); lsrc_sha=$(echo "$line" | cut -f14)
+    srctar=$(echo "$line" | cut -f15); src_sha=$(echo "$line" | cut -f16)
+    [ -n "$lsrc" ] || die "$name has no source package in this channel"
+
+    # The toolchain has to exist in the channel, not on this system.
+    #
+    # The build happens in a chroot whose lower layer is materialised out of
+    # the channel, and the toolchain group is part of that - so the compiler
+    # is brought in for the build and is gone again afterwards. A minimal
+    # system can therefore build without installing gcc into itself, which is
+    # what makes "any distro can build" mean something rather than "any distro
+    # willing to grow a compiler first".
+    #
+    # What it does cost is disk: the build root is a few gigabytes, cached
+    # under $CACHE/roots and shared by every build resolving the same set.
+    local missing=() t
+    for t in gcc binutils make; do
+        [ -n "$(idx "$t")" ] || missing+=("$t")
+    done
+    if [ ${#missing[@]} -gt 0 ] && [ "$FORCE" != 1 ]; then
+        echo "the channel has no toolchain: ${missing[*]} are not in it." >&2
+        echo "nothing can be compiled from a channel which cannot supply a compiler." >&2
+        exit 1
+    fi
+
+    local base; base="$(system_abi)/${ARCH:-x86_64}"
+    mkdir -p "$CACHE/src" "$CACHE/roots" "$CACHE/build"
+
+    # ---- the source package
+    local lp="$CACHE/src/$lsrc"
+    [ -f "$lp" ] || fetch "$base/src/$lsrc" "$lp"
+    [ "$(sha256sum "$lp" | cut -d' ' -f1)" = "$lsrc_sha" ] \
+        || die "$lsrc does not match its hash in the index"
+
+    rm -rf "$WORK/src"; mkdir -p "$WORK/src"
+    tar xzf "$lp" -C "$WORK/src"
+    [ -f "$WORK/src/recipe.sh" ] || die "$lsrc carries no recipe"
+
+    local st=""
+    if [ -n "$srctar" ]; then
+        st="$CACHE/src/$srctar"
+        [ -f "$st" ] || fetch "$base/src/sources/$srctar" "$st"
+        [ "$(sha256sum "$st" | cut -d' ' -f1)" = "$src_sha" ] \
+            || die "$srctar does not match its hash in the index"
+    fi
+
+    # ---- the build root, cached on exactly what goes into it
+    build_root_set "$name" > "$WORK/brlist"
+    local rhash; rhash=$(sha256sum "$WORK/brlist" | cut -c1-12)
+    local broot="$CACHE/roots/$rhash"
+    echo "build root $rhash: $(wc -l < "$WORK/brlist") packages"
+
+    if [ ! -f "$broot/.complete" ]; then
+        say "materialise the build root"
+        [ "$DRY_RUN" = 1 ] || {
+            rm -rf "$broot"; mkdir -p "$broot"
+            local p pline pfile
+            while IFS= read -r p; do
+                pline=$(idx "$p"); [ -n "$pline" ] || continue
+                pfile=$(echo "$pline" | cut -f5)
+                local pp="$CACHE/pkg/$pfile"
+                [ -f "$pp" ] || fetch "$base/$pfile" "$pp"
+                tar xzf "$pp" -C "$broot" --exclude='./.meta' --exclude='./.meta/*' 2>/dev/null || true
+            done < "$WORK/brlist"
+            # The things a working root needs which belong to no package,
+            # because the tools build made them directly rather than any
+            # recipe installing them: the /usr merge symlinks, the dynamic
+            # loader's path, and /bin/sh. Without the last, every configure
+            # script in the book stops at "bad interpreter" - which is how
+            # this list was found, one entry at a time.
+            local i
+            for i in bin lib sbin; do [ -e "$broot/$i" ] || ln -sfn "usr/$i" "$broot/$i"; done
+            mkdir -p "$broot/lib64" "$broot/proc" "$broot/sys" "$broot/dev" "$broot/tmp" "$broot/sources"
+            ln -sfn ../lib/ld-linux-x86-64.so.2 "$broot/lib64/ld-linux-x86-64.so.2" 2>/dev/null || true
+            [ -e "$broot/usr/bin/sh" ] || ln -sfn bash "$broot/usr/bin/sh"
+            chmod 1777 "$broot/tmp"
+            touch "$broot/.complete"
+        }
+    else
+        echo "  reusing the cached build root"
+    fi
+    [ "$DRY_RUN" = 1 ] && { echo "would build $name $ver-$rel"; return 0; }
+
+    # ---- overlay, and run the recipe inside it
+    local bdir="$CACHE/build/$name"
+    rm -rf "$bdir"; mkdir -p "$bdir/upper" "$bdir/work" "$bdir/root"
+    cp "$WORK/src/recipe.sh" "$broot/tmp/recipe.sh"; chmod +x "$broot/tmp/recipe.sh"
+    [ -n "$st" ] && cp "$st" "$broot/sources/"
+
+    mount -t overlay overlay \
+        "-olowerdir=$broot,upperdir=$bdir/upper,workdir=$bdir/work" "$bdir/root" \
+        || die "could not mount the build overlay"
+    mount --bind /proc "$bdir/root/proc" 2>/dev/null || true
+    mount --bind /dev  "$bdir/root/dev"  2>/dev/null || true
+
+    local status=0
+    chroot "$bdir/root" /usr/bin/env -i \
+        HOME=/root TERM="${TERM:-dumb}" PATH=/usr/bin:/usr/sbin LC_ALL=POSIX \
+        LFS_TEST=0 LFS_DOCS=0 \
+        /bin/bash --login +h -c "/tmp/recipe.sh > /tmp/build.log 2>&1" || status=$?
+
+    umount "$bdir/root/dev"  2>/dev/null || true
+    umount "$bdir/root/proc" 2>/dev/null || true
+    sync
+    umount "$bdir/root" || umount -l "$bdir/root"
+
+    if [ "$status" != 0 ]; then
+        echo "build failed; the tail of its log:" >&2
+        tail -n 25 "$bdir/upper/tmp/build.log" 2>/dev/null | sed 's/^/    /' >&2
+        exit 1
+    fi
+
+    # ---- the artifact, in the same shape the build host produces
+    local up="$bdir/upper"
+    rm -rf "$up/tmp" "$up/sources"
+    local meta="$up/.meta"
+    rm -rf "$meta"; mkdir -p "$meta"
+
+    ( cd "$up" && find . \( -type f -o -type l -o -type c \) -not -path './.meta/*' -print ) \
+        | sed 's|^\.||' | sort > "$WORK/built"
+    if [ ! -s "$WORK/built" ]; then
+        die "the recipe exited 0 and wrote no files - see $bdir/upper/tmp/build.log"
+    fi
+
+    ( cd "$up" && find . \( -type f -o -type l \) -not -path './.meta/*' -print ) \
+        | sed 's|^\./||' > "$meta/created"
+    : > "$meta/modified"
+    ( cd "$up" && find . -type c -not -path './.meta/*' -print ) \
+        | sed 's|^\./||' > "$meta/removed"
+
+    cp "$WORK/src/.meta/SRCINFO" "$meta/PKGINFO"
+    echo "builtby=lpkg" >> "$meta/PKGINFO"
+    echo "builddate=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$meta/PKGINFO"
+
+    # The sonames, read out of what was just compiled.
+    #
+    # This is the one thing lpkg needs which the core does not already carry:
+    # readelf lives in binutils, and binutils pulls in gcc, which is 1.7 GB -
+    # more than twice the whole core - for a single command. So it is not
+    # required, and its absence is reported rather than silently producing a
+    # package which claims to provide and need nothing. A package with empty
+    # metadata resolves against nothing and would be quietly unusable as a
+    # dependency of anything else.
+    if [ -r /usr/lib/lpkg/pkg-elf.sh ] && command -v readelf > /dev/null; then
+        . /usr/lib/lpkg/pkg-elf.sh
+        pkg_scan_elf "$up" "$meta/provides" "$meta/requires"
+    else
+        : > "$meta/provides"; : > "$meta/requires"
+        if ! command -v readelf > /dev/null; then
+            warn "readelf is not installed, so $name records no provides or requires."
+            warn "Nothing will resolve against it. Install binutils, or run"
+            warn "'make packages-meta' on the build host after publishing it."
+        fi
+    fi
+
+    local out="$CACHE/pkg/$name-$ver-$rel.${ARCH:-x86_64}.lpkg"
+    tar czf "$out" -C "$up" .
+    echo "built $out ($(wc -l < "$WORK/built") files)"
+    echo "install it with: lpkg install --from $out"
+}
+
+# ------------------------------------------------------------------- commands
+
+# '@name' means every package in that group. A group is a named set someone
+# can ask for, not a dependency: firefox does not depend on an X server, and
+# pretending it did would put one on every headless machine that uses gtk.
+expand_groups() {
+    local a out=() g
+    for a in "$@"; do
+        case "$a" in
+            @*) g=${a#@}
+                mapfile -t found < <(awk -F'\t' -v g="$g" '{ n = split($1, s, " ")
+                        for (i = 1; i <= n; i++) if (s[i] == g) print $2 }' "$GROUPS_TAB" | sort -u)
+                [ ${#found[@]} -gt 0 ] || die "no group '$g' in the channel"
+                echo "group @$g: ${found[*]}" >&2
+                out+=("${found[@]}") ;;
+            *)  out+=("$a") ;;
+        esac
+    done
+    printf '%s\n' "${out[@]}"
+}
+
+cmd_install() {
+    # A package file rather than a name: what 'lpkg build' just produced, or
+    # one carried here by hand. Its dependencies are not resolved - it is a
+    # file, not a channel - so what it needs has to be installed already.
+    if [ -n "$FROM" ]; then
+        [ -f "$FROM" ] || die "no such package file: $FROM"
+        rm -rf "$WORK/fi"; mkdir -p "$WORK/fi"
+        tar xzf "$FROM" -C "$WORK/fi" ./.meta 2>/dev/null || true
+        local fname fver frel fcls
+        fname=$(sed -n 's/^name=//p'    "$WORK/fi/.meta/PKGINFO" 2>/dev/null)
+        fver=$(sed -n 's/^version=//p'  "$WORK/fi/.meta/PKGINFO" 2>/dev/null)
+        frel=$(sed -n 's/^release=//p'  "$WORK/fi/.meta/PKGINFO" 2>/dev/null)
+        fcls=$(sed -n 's/^class=//p'    "$WORK/fi/.meta/PKGINFO" 2>/dev/null)
+        [ -n "$fname" ] || die "$FROM carries no .meta/PKGINFO, so there is nothing to record it as"
+        if [ "$fcls" = core ] && [ "$ROOT" = / ]; then
+            die "$fname is a core package and cannot be installed into a running system"
+        fi
+        say "install $fname $fver-$frel (from $FROM)"
+        [ "$DRY_RUN" = 1 ] && return 0
+        install_one "$fname" "$FROM" "$fver" "$frel" "$fcls" "$(date +%Y%m%d%H%M%S)-$$"
+        rebuild_owners
+        return 0
+    fi
+
+    [ ${#ARGS[@]} -gt 0 ] || die "install what?"
+    load_index
+    mapfile -t ARGS < <(expand_groups "${ARGS[@]}")
+    resolve "${ARGS[@]}"
+
+    if [ -s "$WORK/unmet" ]; then
+        echo "cannot resolve:" >&2
+        sed 's/^/  /' "$WORK/unmet" >&2
+        [ "$FORCE" = 1 ] || exit 1
+    fi
+
+    local todo=() name line ver rel cls file size sha
+    while IFS= read -r name; do
+        line=$(idx "$name") || continue
+        [ -n "$line" ] || continue
+        ver=$(echo "$line" | cut -f2); rel=$(echo "$line" | cut -f3)
+        if [ "$REINSTALL" != 1 ] && is_installed "$name" \
+           && [ "$(installed_version "$name")" = "$ver-$rel" ]; then
+            continue
+        fi
+        todo+=("$name")
+    done < "$WORK/plan"
+
+    [ ${#todo[@]} -gt 0 ] || { echo "nothing to do"; return 0; }
+
+    # core is built and published like anything else and installed into a
+    # running system by nothing. Replacing the libc underneath the processes
+    # using it is not a transaction that can be rolled back.
+    local blocked=()
+    for name in "${todo[@]}"; do
+        cls=$(idx "$name" | cut -f4)
+        [ "$cls" = core ] && [ "$ROOT" = / ] && blocked+=("$name")
+    done
+    if [ ${#blocked[@]} -gt 0 ]; then
+        echo "these are core packages and cannot be installed into a running system:" >&2
+        printf '  %s\n' "${blocked[@]}" >&2
+        echo "install them into a new root with --root, and boot it." >&2
+        exit 1
+    fi
+
+    echo "install: ${todo[*]}"
+    if [ "$ASSUME_YES" != 1 ] && [ "$DRY_RUN" != 1 ]; then
+        printf 'proceed? [y/N] '; read -r a; case "$a" in y|Y) ;; *) exit 1 ;; esac
+    fi
+
+    local txid; txid=$(date +%Y%m%d%H%M%S)-$$
+    for name in "${todo[@]}"; do
+        line=$(idx "$name")
+        ver=$(echo "$line" | cut -f2);  rel=$(echo "$line" | cut -f3)
+        cls=$(echo "$line" | cut -f4);  file=$(echo "$line" | cut -f5)
+        size=$(echo "$line" | cut -f6); sha=$(echo "$line" | cut -f7)
+
+        local lp="$CACHE/pkg/$file"
+        if [ ! -f "$lp" ] || [ "$(sha256sum "$lp" | cut -d' ' -f1)" != "$sha" ]; then
+            say "fetch $file"
+            [ "$DRY_RUN" = 1 ] || fetch "$(system_abi)/${ARCH:-x86_64}/$file" "$lp"
+        fi
+        if [ "$DRY_RUN" != 1 ]; then
+            [ "$(stat -c%s "$lp")" = "$size" ] || die "$file is the wrong size"
+            [ "$(sha256sum "$lp" | cut -d' ' -f1)" = "$sha" ] || die "$file does not match its hash in the index"
+        fi
+        say "install $name $ver-$rel"
+        [ "$DRY_RUN" = 1 ] || install_one "$name" "$lp" "$ver" "$rel" "$cls" "$txid" \
+            "$(echo "$line" | cut -f8)" "$(echo "$line" | cut -f9)" "$(echo "$line" | cut -f10)"
+    done
+
+    [ "$DRY_RUN" = 1 ] || { rebuild_owners; echo "transaction $txid"; }
+}
+
+cmd_remove() {
+    [ ${#ARGS[@]} -gt 0 ] || die "remove what?"
+    local name p keep others
+    for name in "${ARGS[@]}"; do
+        is_installed "$name" || { warn "$name is not installed"; continue; }
+
+        # Something else may need a library only this provides.
+        if [ "$FORCE" != 1 ] && [ -f "$DB/db/$name/provides" ]; then
+            local needed=() so other od
+            cut -f1 "$DB/db/$name/provides" > "$WORK/mysonames"
+            while IFS= read -r so; do
+                [ -n "$so" ] || continue
+                for od in "$DB"/db/*/; do
+                    other=$(basename "$od")
+                    [ "$other" = "$name" ] && continue
+                    grep -qxF "$so" "$od/requires" 2>/dev/null && needed+=("$other needs $so")
+                done
+            done < "$WORK/mysonames"
+            if [ ${#needed[@]} -gt 0 ]; then
+                printf '%s\n' "${needed[@]}" | sort -u | sed 's/^/  /'
+                die "$name is still needed; --force to remove it anyway"
+            fi
+        fi
+
+        say "remove $name"
+        [ "$DRY_RUN" = 1 ] && continue
+
+        while IFS= read -r p; do
+            [ -n "$p" ] || continue
+            # A path another package also owns stays. This is the whole reason
+            # the owners index exists.
+            others=$(awk -F'\t' -v f="$p" -v me="$name" '$1 == f && $2 != me { print $2 }' "$OWNERS" | head -1)
+            [ -n "$others" ] && continue
+            rm -f "$(r "$p")"
+        done < "$DB/db/$name/files"
+
+        rm -rf "$DB/db/$name"
+    done
+    [ "$DRY_RUN" = 1 ] || rebuild_owners
+}
+
+cmd_upgrade() {
+    load_index
+    local name have line ver rel todo=() d
+    local candidates=()
+    if [ ${#ARGS[@]} -gt 0 ]; then candidates=("${ARGS[@]}")
+    else candidates=(); for d in "$DB"/db/*/; do [ -d "$d" ] && candidates+=("$(basename "$d")"); done; fi
+
+    for name in "${candidates[@]}"; do
+        is_installed "$name" || continue
+        line=$(idx "$name"); [ -n "$line" ] || continue
+        ver=$(echo "$line" | cut -f2); rel=$(echo "$line" | cut -f3)
+        have=$(installed_version "$name")
+        newer_than "$ver-$rel" "$have" && todo+=("$name")
+    done
+
+    [ ${#todo[@]} -gt 0 ] || { echo "nothing to upgrade"; return 0; }
+    ARGS=("${todo[@]}")
+    cmd_install
+}
+
+cmd_list() {
+    local upgradable=0 name have line ver rel d
+    for a in "${ARGS[@]:-}"; do [ "$a" = --upgradable ] && upgradable=1; done
+    [ "$upgradable" = 1 ] && load_index
+    for d in "$DB"/db/*/; do
+        [ -d "$d" ] || continue
+        name=$(basename "$d")
+        have=$(installed_version "$name")
+        if [ "$upgradable" = 1 ]; then
+            line=$(idx "$name"); [ -n "$line" ] || continue
+            ver=$(echo "$line" | cut -f2); rel=$(echo "$line" | cut -f3)
+            newer_than "$ver-$rel" "$have" && printf '%-28s %-16s -> %s\n' "$name" "$have" "$ver-$rel"
+        else
+            printf '%-28s %s\n' "$name" "$have"
+        fi
+    done
+}
+
+cmd_info() {
+    [ ${#ARGS[@]} -gt 0 ] || die "info about what?"
+    local name="${ARGS[0]}" line
+    if is_installed "$name"; then
+        echo "installed: $(installed_version "$name")"
+        sed 's/^/  /' "$DB/db/$name/PKGINFO"
+        echo "  files: $(wc -l < "$DB/db/$name/files")"
+    else
+        echo "not installed"
+    fi
+    if [ -f "$INDEX" ]; then
+        load_index
+        line=$(idx "$name")
+        [ -n "$line" ] && echo "channel:   $(echo "$line" | cut -f2)-$(echo "$line" | cut -f3) (class $(echo "$line" | cut -f4))"
+    fi
+}
+
+cmd_owns() {
+    [ ${#ARGS[@]} -gt 0 ] || die "owns what?"
+    local p="${ARGS[0]}" o
+    case "$p" in /*) ;; *) p="/$p" ;; esac
+    o=$(owner_of "$p")
+    if [ -n "$o" ]; then echo "$p is owned by $o"; else echo "$p is owned by no package"; exit 1; fi
+}
+
+cmd_verify() {
+    local names=() name p missing=0 changed=0 d
+    if [ ${#ARGS[@]} -gt 0 ]; then names=("${ARGS[@]}")
+    else names=(); for d in "$DB"/db/*/; do [ -d "$d" ] && names+=("$(basename "$d")"); done; fi
+    for name in "${names[@]}"; do
+        is_installed "$name" || { warn "$name is not installed"; continue; }
+        while IFS= read -r p; do
+            [ -n "$p" ] || continue
+            local dst; dst=$(r "$p")
+            if [ ! -e "$dst" ] && [ ! -L "$dst" ]; then
+                echo "missing: $p ($name)"; missing=$((missing + 1)); continue
+            fi
+            # Only configuration has a recorded hash; the rest is checked for
+            # being there at all. Hashing every installed file would mean
+            # recording one for every file, which is a bigger database than
+            # this needs to be.
+            if is_config "$p"; then
+                local was; was=$(recorded_hash "$p" "$name")
+                if [ -n "$was" ] && [ "$was" != "$(hash_of "$dst")" ]; then
+                    echo "edited:  $p ($name)"; changed=$((changed + 1))
+                fi
+            fi
+        done < "$DB/db/$name/files"
+    done
+    echo "$missing missing, $changed edited"
+    [ "$missing" -gt 0 ] && exit 1
+    return 0
+}
+
+case "$CMD" in
+    sync)    cmd_sync ;;
+    install) cmd_install ;;
+    remove)  cmd_remove ;;
+    upgrade) cmd_upgrade ;;
+    list)    cmd_list ;;
+    info)    cmd_info ;;
+    owns)    cmd_owns ;;
+    verify)  cmd_verify ;;
+    build)   cmd_build ;;
+    version) echo "lpkg $VERSION" ;;
+    *)       die "unknown command '$CMD'" ;;
+esac

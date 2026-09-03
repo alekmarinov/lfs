@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  clean
+# VERSION:  12.4
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Cleaning up.."
 

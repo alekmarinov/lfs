@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  m4
+# SOURCE:   m4-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building M4.."
 echo "Approximate build time: 0.6 SBU"

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  popt
+# SOURCE:   popt-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-popt.."
 echo "Approximate build time: 0.1 SBU"

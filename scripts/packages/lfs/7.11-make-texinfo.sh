@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  texinfo-bootstrap
+# SOURCE:   texinfo-*.tar.xz
+# RELEASE:  1
+# CLASS:    bootstrap
 set -e
 echo "Building texinfo.."
 echo "Approximate build time: 0.2 SBU"

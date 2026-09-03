@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  kbd
+# SOURCE:   kbd-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building kbd.."
 echo "Approximate build time: 0.1 SBU"

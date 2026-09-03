@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  acpid
+# SOURCE:   acpid-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building BLFS-acpid.."
 echo "Approximate build time: less than 0.1 SBU"

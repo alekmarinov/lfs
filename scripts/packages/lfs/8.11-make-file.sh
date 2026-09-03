@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  file
+# SOURCE:   file-*.tar.gz
+# RELEASE:  1
+# CLASS:    system
 set -e
 echo "Building file.."
 echo "Approximate build time: 0.1 SBU"

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  shadow
+# SOURCE:   shadow-*.tar.xz
+# RELEASE:  2
+# CLASS:    system
 set -e
 echo "Building BLFS-shadow.."
 echo "Approximate build time: 0.2 SBU"

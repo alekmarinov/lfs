@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  e2fsprogs
+# SOURCE:   e2fsprogs-*.tar.gz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building e2fsprogs.."
 echo "Approximate build time: 4.4 SBU on a spinning disk, 1.2 SBU on an SSD"

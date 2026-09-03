@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  which
+# SOURCE:   which-*.tar.gz
+# RELEASE:  1
+# CLASS:    system
 set -e
 echo "Building BLFS-which.."
 echo "Approximate build time: 0.1 SBU"

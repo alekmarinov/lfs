@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  intltool
+# SOURCE:   intltool-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building Intltool.."
 echo "Approximate build time: less than 0.1 SBU"

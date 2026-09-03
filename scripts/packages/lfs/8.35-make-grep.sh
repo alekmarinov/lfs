@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  grep
+# SOURCE:   grep-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building Grep.."
 echo "Approximate build time: 0.8 SBU"

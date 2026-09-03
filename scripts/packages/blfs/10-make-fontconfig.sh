@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  fontconfig
+# SOURCE:   fontconfig-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-Fontconfig.."
 echo "Approximate build time: 0.4 SBU"

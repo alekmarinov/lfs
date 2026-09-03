@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  openssl
+# SOURCE:   openssl-*.tar.gz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building OpenSSL.."
 echo "Approximate build time: 5.0 SBU"

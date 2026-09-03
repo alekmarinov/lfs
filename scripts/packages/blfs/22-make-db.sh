@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  db
+# SOURCE:   db-*.tar.gz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building BLFS-db.."
 echo "Approximate build time: 0.6 SBU"

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  wheel
+# SOURCE:   wheel-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building wheel.."
 echo "Approximate build time: 0.1 SBU"

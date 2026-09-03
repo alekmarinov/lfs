@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  make
+# SOURCE:   make-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building make.."
 echo "Approximate build time: 0.5 SBU"

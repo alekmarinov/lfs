@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  linux-firmware-iwlwifi
+# SOURCE:   iwlwifi-7265D-*.ucode
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Installing the iwlwifi firmware.."
 echo "Approximate build time: less than 0.1 SBU"

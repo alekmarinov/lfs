@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  coreutils
+# SOURCE:   coreutils-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building coreutils.."
 echo "Approximate build time: 2.8 SBU"

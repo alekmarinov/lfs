@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  udev
+# SOURCE:   systemd-*.tar.gz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building udev.."
 

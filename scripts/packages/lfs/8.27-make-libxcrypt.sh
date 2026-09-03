@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libxcrypt
+# SOURCE:   libxcrypt-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building libxcrypt.."
 

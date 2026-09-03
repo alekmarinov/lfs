@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  xml-parser
+# SOURCE:   XML-Parser-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building XML::Parser.."
 echo "Approximate build time: less than 0.1 SBU"

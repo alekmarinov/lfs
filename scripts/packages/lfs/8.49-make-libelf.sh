@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  elfutils
+# SOURCE:   elfutils-*.t*2
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building Libelf.."
 echo "Approximate build time: 0.9 SBU"

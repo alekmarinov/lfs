@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  acl
+# SOURCE:   acl-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building Acl.."
 echo "Approximate build time: 0.1 SBU"

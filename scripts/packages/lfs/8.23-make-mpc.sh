@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  mpc
+# SOURCE:   mpc-*.t*
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building MPC.."
 echo "Approximate build time: 0.3 SBU"

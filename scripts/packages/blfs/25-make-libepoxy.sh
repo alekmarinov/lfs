@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libepoxy
+# SOURCE:   libepoxy-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libepoxy.."
 echo "Approximate build time: 0.2 SBU"

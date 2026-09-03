@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  lz4
+# SOURCE:   lz4-*.tar.gz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building lz4.."
 

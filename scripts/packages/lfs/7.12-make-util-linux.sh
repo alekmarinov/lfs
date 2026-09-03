@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  util-linux-bootstrap
+# SOURCE:   util-linux-*.tar.xz
+# RELEASE:  1
+# CLASS:    bootstrap
 set -e
 echo "Building Util-linux.."
 echo "Approximate build time: 1.0 SBU"

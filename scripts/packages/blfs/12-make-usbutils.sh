@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  usbutils
+# SOURCE:   usbutils-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-USB Utils.."
 echo "Approximate build time: less than 0.1 SBU"

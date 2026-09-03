@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  automake
+# SOURCE:   automake-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building Automake.."
 echo "Approximate build time: less than 0.1 SBU (about 7.7 SBU with tests)"

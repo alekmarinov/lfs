@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  glibc
+# SOURCE:   glibc-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building glibc.."
 echo "Approximate build time: 24 SBU"

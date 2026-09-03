@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  alsa-lib
+# SOURCE:   alsa-lib-*.tar.bz2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-alsa-lib.."
 

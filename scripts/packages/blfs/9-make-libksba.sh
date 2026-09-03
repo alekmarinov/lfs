@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libksba
+# SOURCE:   libksba-*.tar.bz2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libksba.."
 echo "Approximate build time: 0.1 SBU"

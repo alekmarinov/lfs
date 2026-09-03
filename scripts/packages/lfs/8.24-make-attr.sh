@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  attr
+# SOURCE:   attr-*.tar.gz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building Attr.."
 echo "Approximate build time: less than 0.1 SBU"

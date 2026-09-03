@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  lvm2
+# SOURCE:   LVM2.*.tgz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-lvm2.."
 echo "Approximate build time: 0.2 SBU"

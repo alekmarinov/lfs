@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libpipeline
+# SOURCE:   libpipeline-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building libpipeline.."
 echo "Approximate build time: 0.1 SBU"

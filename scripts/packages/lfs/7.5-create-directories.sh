@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  directories
+# VERSION:  12.4
+# RELEASE:  1
+# CLASS:    core
 set -e
 
 # 7.5. Creating Directories

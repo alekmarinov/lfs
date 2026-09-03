@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  strip
+# SOURCE:   ncurses-*.t*
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Stripping ..."
 

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libtiff
+# SOURCE:   tiff-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libtiff.."
 

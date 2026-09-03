@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  pkgconf
+# SOURCE:   pkgconf-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building pkgconf.."
 

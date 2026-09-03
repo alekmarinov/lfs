@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  mpfr
+# SOURCE:   mpfr-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building MPFR.."
 echo "Approximate build time: 0.8 SBU"

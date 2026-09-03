@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libjpeg-turbo
+# SOURCE:   libjpeg-turbo-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libjpeg-turbo.."
 

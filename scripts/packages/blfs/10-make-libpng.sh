@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libpng
+# SOURCE:   libpng-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libpng.."
 echo "Approximate build time: 0.1 SBU"

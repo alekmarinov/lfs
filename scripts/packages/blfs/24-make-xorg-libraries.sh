@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  xorg-libraries
+# VERSION:  11.2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-Xorg libraries.."
 echo "Approximate build time: 3.5 SBU"

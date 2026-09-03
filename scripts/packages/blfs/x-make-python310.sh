@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  python310
+# SOURCE:   Python-3.10*.tar.xz
+# VERSION:  3.10.18
+# RELEASE:  1
+# CLASS:    bootstrap
 set -e
 echo "Building Python-3.10 (build-time only).."
 echo "Approximate build time: 1.5 SBU"

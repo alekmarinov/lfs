@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  bison
+# SOURCE:   bison-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building Bison.."
 echo "Approximate build time: 8.7 SBU"

@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  xinit
+# SOURCE:   xinit-*.tar.bz2
+# RELEASE:  1
+# GROUP:    xorg
+# CLASS:    extra
 set -e
 echo "Building BLFS-xinit.."
 

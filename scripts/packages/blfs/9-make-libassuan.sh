@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libassuan
+# SOURCE:   libassuan-*.tar.bz2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libassuan.."
 echo "Approximate build time: 0.1 SBU"

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  harfbuzz
+# SOURCE:   harfbuzz-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-harfbuzz.."
 echo "Approximate build time: 0.6 SBU"

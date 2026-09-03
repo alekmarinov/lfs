@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  setuptools
+# SOURCE:   setuptools-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building setuptools.."
 

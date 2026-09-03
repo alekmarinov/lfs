@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  p11-kit
+# SOURCE:   p11-kit-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-p11-kit.."
 echo "Approximate build time: 0.5 SBU"

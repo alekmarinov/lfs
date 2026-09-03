@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  perl-bootstrap
+# SOURCE:   perl-*.tar.xz
+# RELEASE:  1
+# CLASS:    bootstrap
 set -e
 echo "Building perl.."
 echo "Approximate build time: 1.6 SBU"

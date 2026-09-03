@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  the-end
+# VERSION:  12.4
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Finalize LFS configuration.."
 

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  xcb-proto
+# SOURCE:   xcb-proto-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-xcb-proto.."
 echo "Approximate build time: less than 0.1 SBU"

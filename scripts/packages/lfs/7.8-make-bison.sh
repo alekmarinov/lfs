@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  bison-bootstrap
+# SOURCE:   bison-*.tar.xz
+# RELEASE:  1
+# CLASS:    bootstrap
 set -e
 echo "Building Bison.."
 echo "Approximate build time: 0.3 SBU"

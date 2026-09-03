@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  dbus-glib
+# SOURCE:   dbus-glib-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-dbus-glib.."
 

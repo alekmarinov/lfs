@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  iproute2
+# SOURCE:   iproute2-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building IPRoute2.."
 echo "Approximate build time: 0.2 SBU"

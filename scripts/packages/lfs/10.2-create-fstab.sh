@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  fstab
+# VERSION:  12.4
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Creating fstab.."
 

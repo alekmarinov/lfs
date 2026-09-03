@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  diffutils
+# SOURCE:   diffutils-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building diffutils.."
 echo "Approximate build time: 0.6 SBU"

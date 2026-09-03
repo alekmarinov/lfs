@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  dejavu-fonts
+# SOURCE:   dejavu-fonts-ttf-*.tar.bz2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Installing BLFS-DejaVu fonts.."
 echo "Required disk space: 10 MB"

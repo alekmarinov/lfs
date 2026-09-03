@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libxml2
+# SOURCE:   libxml2-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libxml2.."
 echo "Approximate build time: 0.4 SBU"

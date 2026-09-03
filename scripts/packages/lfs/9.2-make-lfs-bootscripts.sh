@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  lfs-bootscripts
+# SOURCE:   lfs-bootscripts-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building LFS-Bootscripts.."
 echo "Approximate build time: less than 0.1 SBU"

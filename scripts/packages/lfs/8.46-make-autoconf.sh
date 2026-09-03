@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  autoconf
+# SOURCE:   autoconf-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building Autoconf.."
 echo "Approximate build time: less than 0.1 SBU (about 6.7 SBU with tests)"

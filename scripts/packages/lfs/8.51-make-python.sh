@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  python
+# SOURCE:   Python-3.13*.tar.xz
+# VERSION:  3.13.7
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building Python.."
 echo "Approximate build time: 3.4 SBU"

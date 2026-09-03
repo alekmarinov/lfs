@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  pciutils
+# SOURCE:   pciutils-*.tar.xz
+# RELEASE:  1
+# CLASS:    system
 set -e
 echo "Building BLFS-PCI Utils.."
 echo "Approximate build time: less than 0.1 SBU"

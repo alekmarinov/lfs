@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  unzip
+# SOURCE:   unzip60.tar.gz
+# VERSION:  6.0
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-unzip.."
 echo "Approximate build time: 0.1 SBU"

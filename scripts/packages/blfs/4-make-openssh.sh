@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  openssh
+# SOURCE:   openssh-*.tar.gz
+# RELEASE:  1
+# CLASS:    system
 set -e
 echo "Building BLFS-OpenSSH.."
 echo "Approximate build time: 0.6 SBU"

@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  linux-pam
+# SOURCE:   Linux-PAM-[0-9]*[0-9].tar.xz
+# VERSION:  1.5.2
+# RELEASE:  1
+# CLASS:    system
 set -e
 echo "Building BLFS-Linux-PAM.."
 echo "Approximate build time: 0.4 SBU"

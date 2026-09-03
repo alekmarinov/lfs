@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  fluxbox
+# SOURCE:   fluxbox-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-Fluxbox.."
 echo "Approximate build time: 0.5 SBU"

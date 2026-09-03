@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libtirpc
+# SOURCE:   libtirpc-*.tar.bz2
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building BLFS-libtirpc.."
 echo "Approximate build time: 0.1 SBU"

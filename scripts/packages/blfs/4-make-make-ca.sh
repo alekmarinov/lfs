@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  make-ca
+# SOURCE:   make-ca-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-make-ca.."
 echo "Approximate build time: 0.1 SBU"

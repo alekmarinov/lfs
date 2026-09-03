@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  lzo
+# SOURCE:   lzo-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-lzo.."
 echo "Approximate build time: 0.3 SBU"

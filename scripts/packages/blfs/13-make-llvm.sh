@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  llvm
+# SOURCE:   llvm-*.src.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-llvm.."
 echo "Approximate build time: 33 SBU"

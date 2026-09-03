@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  perl
+# SOURCE:   perl-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building perl.."
 echo "Approximate build time: 9.4 SBU"

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  xcursor-themes
+# SOURCE:   xcursor-themes-*.tar.bz2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-xcursor-themes.."
 

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  mako
+# SOURCE:   Mako-*.tar.gz
+# RELEASE:  1
+# CLASS:    bootstrap
 set -e
 echo "Building BLFS-Mako.."
 echo "Approximate build time: less than 0.1 SBU"

@@ -124,11 +124,77 @@ install_packages() {
         # it changed. It describes the package, it is not part of the distro,
         # and without excluding it every package drops its lists into the
         # root of the image.
-        sudo tar xpf "packages/$package" -C "$ROOTFS_DIR" \
-            --exclude="./.meta" --exclude="./.meta/*" < /dev/null
+        # -v, so the list of what this package put into the tree is recorded
+        # as it goes. An assembled rootfs has to arrive with a package database
+        # or the first 'lpkg upgrade' on it sees a system where nothing is
+        # installed: it can upgrade none of it, and anything it does install
+        # claims files it does not own.
+        #
+        # Taken from the extraction rather than from .meta/created, because
+        # this is complete for every package regardless of age - the packages
+        # built before the file lists included symlinks have an incomplete
+        # .meta, and tar has no such gap.
+        sudo tar xpvf "packages/$package" -C "$ROOTFS_DIR" \
+            --exclude="./.meta" --exclude="./.meta/*" < /dev/null \
+            > "$MERGE_WORK/extracted" 2>/dev/null
+        seed_db_entry "$package" "$MERGE_WORK/extracted"
         apply_merges
         sudo rm -f "$MERGE_WORK"/*
     done
+}
+
+# ------------------------------------------------------------ package database
+#
+# One directory per installed package under /var/lib/lpkg/db, filled from the
+# metadata index which 'make packages-meta' already built, plus the list of
+# paths this extraction actually wrote. 'owners' is derived from all of them at
+# the end.
+LPKG_DB="$ROOTFS_DIR/var/lib/lpkg"
+
+seed_db_entry() {
+    local package="$1" extracted="$2"
+    local recipe="${package%.tar.gz}"
+    local meta="$BASE_DIR/packages/.meta-index/$recipe"
+    local name
+
+    if [ -f "$meta/PKGINFO" ]; then
+        name=$(sed -n 's/^name=//p' "$meta/PKGINFO")
+    else
+        # No identity for it - see 'make packages-meta'. Recorded under the
+        # recipe coordinate so the file is still owned by something, rather
+        # than left out of the database and looking unowned.
+        name="$recipe"
+    fi
+    [ -n "$name" ] || return 0
+
+    local d="$LPKG_DB/db/$name"
+    sudo mkdir -p "$d"
+    if [ -f "$meta/PKGINFO" ]; then
+        sudo cp "$meta/PKGINFO" "$d/PKGINFO"
+    else
+        printf 'name=%s\nversion=0\nrelease=0\nclass=extra\nrecipe=%s\n' \
+            "$name" "$recipe" | sudo tee "$d/PKGINFO" > /dev/null
+    fi
+    [ -f "$meta/provides" ] && sudo cp "$meta/provides" "$d/provides"
+    [ -f "$meta/requires" ] && sudo cp "$meta/requires" "$d/requires"
+
+    # tar -v prints './usr/bin/x' for files and 'a -> b' for the odd link; the
+    # leading './' becomes '/' and directories are dropped, so the list is the
+    # same shape lpkg records for a package it installs itself.
+    # /tmp is excluded: every package carries the log of its own build, and
+    # the assembly empties /tmp afterwards. Recording those made 'lpkg verify'
+    # report 88 missing files on a perfectly good image. lpkg's own installer
+    # skips /tmp for the same reason.
+    sed 's|^\./|/|; s| -> .*||' "$extracted" \
+        | grep -v '/$' | grep -v '^/tmp/' | sort -u | sudo tee "$d/files" > /dev/null
+
+    # /etc entries are configuration: their hash now is what lpkg compares
+    # against later to tell an edited file from an untouched one.
+    ( while IFS= read -r f; do
+        case "$f" in /etc/*) ;; *) continue ;; esac
+        [ -f "$ROOTFS_DIR$f" ] || continue
+        printf '%s\t%s\n' "$f" "$(sha256sum "$ROOTFS_DIR$f" | cut -d" " -f1)"
+      done < "$d/files" ) 2>/dev/null | sudo tee "$d/config" > /dev/null
 }
 
 sudo rm -rf "$ROOTFS_DIR"
@@ -370,13 +436,30 @@ sudo ln -sfn bash "$ROOTFS_DIR/usr/bin/sh"
 
 echo "Writing the identification files..."
 BUILD_ID=$(date +%Y%m%d%H%M%S)
+
+# The fingerprint of the core this rootfs was assembled from.
+#
+# BUILD_ID says which run produced the tree and changes every time; ABI_ID
+# says which world its binaries belong to and changes only when the core does.
+# It is what a package repository is keyed on, so a system can tell whether a
+# published package was compiled against the same glibc and openssl it has.
+#
+# Not fatal when it cannot be computed - a rootfs assembled without the
+# metadata index is still a rootfs, and saying nothing is better than stamping
+# an id which describes nothing.
+ABI_ID=$("$BASE_DIR/scripts/packages/abi-id.sh" 2>/dev/null || true)
+if [ -z "$ABI_ID" ]; then
+    echo "  no ABI id (run 'make packages-meta'); os-release will not carry one"
+fi
+
 sudo tee "$ROOTFS_DIR/etc/os-release" > /dev/null <<EOF
 NAME="$NAME"
 ID=$ID
 VERSION="$VERSION"
 VERSION_ID=$VERSION
 PRETTY_NAME="$PRETTY_NAME"
-BUILD_ID=$BUILD_ID
+BUILD_ID=$BUILD_ID${ABI_ID:+
+ABI_ID=$ABI_ID}
 HOME_URL="$HOME_URL"
 EOF
 
@@ -484,6 +567,119 @@ regen "glib schemas"            /usr/bin/glib-compile-schemas /usr/share/glib-2.
 regen "gdk-pixbuf loaders"      /usr/bin/gdk-pixbuf-query-loaders --update-cache
 regen "font cache"              /usr/bin/fc-cache -s
 regen "icon cache"              /usr/bin/gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor
+
+# ------------------------------------------------------------------ lpkg
+#
+# The assembled tree gets the package manager, the table it decides shared
+# files with, and the key it verifies a channel against.
+#
+# The database was written package by package as they were unpacked; 'owners'
+# is the index over all of it, and is what makes removing a package safe -
+# a path several packages ship must survive the removal of one of them.
+echo "Installing lpkg and the package database..."
+
+# lpkg itself, its soname scanner and its file-policy table arrive as the
+# x-make-lpkg package, which distros/core/packages.list installs like any
+# other - so it is owned, upgradable and able to replace itself. Only the two
+# files which are properties of this installation rather than of the package
+# are written here.
+if [ ! -x "$ROOTFS_DIR/usr/bin/lpkg" ]; then
+    echo "  WARNING: no /usr/bin/lpkg in the assembled tree."
+    echo "  x-make-lpkg.tar.gz is missing from the package list; the system will"
+    echo "  have a package database and nothing able to read it."
+fi
+
+# The trusted key is the one thing which cannot come from the repository: a
+# channel that supplies the key it is checked against is checking nothing. It
+# is baked in here, from whatever key this build publishes with, and a system
+# with no key installed says so on every sync rather than trusting silently.
+# The signing key is the publisher's, and this is usually run through sudo -
+# the tree is root owned - so $HOME is /root and the key is not there. Looking
+# in the invoking user's home as well is the difference between an image which
+# verifies its channel and one which silently does not.
+SIGNING_KEY=""
+for candidate in \
+    "${REPO_PUBKEY:-}" \
+    "$HOME/.config/lfs/repo-signing.key" \
+    "$(getent passwd "${SUDO_USER:-}" 2>/dev/null | cut -d: -f6)/.config/lfs/repo-signing.key"
+do
+    case "$candidate" in ""|"/.config/lfs/repo-signing.key") continue ;; esac
+    [ -f "$candidate" ] && { SIGNING_KEY="$candidate"; break; }
+done
+
+if [ -n "${REPO_PUBKEY:-}" ] && [ -f "$REPO_PUBKEY" ]; then
+    sudo install -Dm644 "$REPO_PUBKEY" "$ROOTFS_DIR/etc/lpkg/trusted.pub"
+    echo "  trusted key from $REPO_PUBKEY"
+elif [ -n "$SIGNING_KEY" ]; then
+    openssl pkey -in "$SIGNING_KEY" -pubout 2>/dev/null \
+        | sudo tee "$ROOTFS_DIR/etc/lpkg/trusted.pub" > /dev/null
+    echo "  trusted key derived from $SIGNING_KEY"
+else
+    echo "  no signing key found - this image will not verify a channel."
+    echo "  Publish with 'make repo' first, or set REPO_PUBKEY."
+fi
+
+if [ -n "${REPO_URL:-}" ]; then
+    printf 'REPO_URL=%s\n' "$REPO_URL" | sudo tee "$ROOTFS_DIR/etc/lpkg/lpkg.conf" > /dev/null
+    echo "  channel $REPO_URL"
+else
+    # Written empty rather than left out, so the file is there to edit and
+    # 'lpkg sync' says what is missing instead of what is malformed.
+    printf '# REPO_URL=https://example.org/repo\n' | sudo tee "$ROOTFS_DIR/etc/lpkg/lpkg.conf" > /dev/null
+    echo "  no REPO_URL set; /etc/lpkg/lpkg.conf is a stub to fill in"
+fi
+
+# The database is written package by package as they are unpacked, which is
+# the only moment the list of what each one brought is available. By the end
+# of assembly that list is no longer true of the tree:
+#
+#   file-policy 'drop' and 'regenerate' remove paths after they were recorded
+#   - /etc/passwd-, /var/log/lastlog, /etc/.pwd.lock and the rest
+#   merges rewrite /etc/passwd and friends, so the hash taken at extraction
+#   is not the hash of the file that ended up there
+#   the distro's own files/ and the identity files overwrite more of /etc
+#   caches are regenerated from the finished tree
+#
+# So it is reconciled here, against what is actually on disk. Without this a
+# freshly assembled image reported 19 files missing and 21 edited before
+# anybody had touched it, which is exactly the noise that makes 'lpkg verify'
+# worth ignoring.
+echo "  reconciling the database with the finished tree..."
+# Run as root in one shell: parts of the tree are not readable otherwise, and
+# a path wrongly judged absent would be dropped from the package that owns it.
+sudo bash -s "$LPKG_DB" "$ROOTFS_DIR" <<'RECONCILE'
+db="$1"; root="$2"
+for d in "$db"/db/*/; do
+    [ -d "$d" ] || continue
+    [ -f "$d/files" ] || continue
+    kept="$d/.files.kept"
+    : > "$kept"
+    while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        if [ -e "$root$f" ] || [ -L "$root$f" ]; then printf '%s\n' "$f" >> "$kept"; fi
+    done < "$d/files"
+    mv "$kept" "$d/files"
+
+    : > "$d/config"
+    while IFS= read -r f; do
+        case "$f" in /etc/*) ;; *) continue ;; esac
+        [ -f "$root$f" ] || continue
+        printf '%s\t%s\n' "$f" "$(sha256sum "$root$f" | cut -d' ' -f1)" >> "$d/config"
+    done < "$d/files"
+done
+RECONCILE
+
+if [ -d "$LPKG_DB/db" ]; then
+    ( for d in "$LPKG_DB"/db/*/; do
+        [ -d "$d" ] || continue
+        n=$(basename "$d")
+        [ -f "$d/files" ] || continue
+        while IFS= read -r f; do
+            [ -n "$f" ] && printf '%s\t%s\n' "$f" "$n"
+        done < "$d/files"
+      done ) | sort | sudo tee "$LPKG_DB/owners" > /dev/null
+    echo "  $(ls "$LPKG_DB/db" | wc -l) packages recorded, $(wc -l < "$LPKG_DB/owners") owned paths"
+fi
 
 
 

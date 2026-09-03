@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  zstd
+# SOURCE:   zstd-*.tar.gz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building Zstd.."
 echo "Approximate build time: 1.1 SBU"

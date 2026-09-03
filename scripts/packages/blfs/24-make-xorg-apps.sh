@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  xorg-apps
+# VERSION:  11.2
+# RELEASE:  1
+# GROUP:    xorg
+# CLASS:    extra
 set -e
 echo "Building BLFS-Xorg applications.."
 echo "Approximate build time: 0.6 SBU"

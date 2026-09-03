@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  linux-kernel
+# SOURCE:   linux-*.tar.xz
+# RELEASE:  1
+# CLASS:    system
 set -e
 echo "Building linux kernel.."
 echo "Approximate build time: 1.5 - 130.0 SBU (typically about 12 SBU)"

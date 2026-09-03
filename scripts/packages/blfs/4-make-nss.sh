@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  nss
+# SOURCE:   nss-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-nss.."
 echo "Approximate build time: 3.0 SBU"

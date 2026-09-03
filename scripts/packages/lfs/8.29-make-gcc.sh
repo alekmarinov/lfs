@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  gcc
+# SOURCE:   gcc-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building GCC.."
 echo "Approximate build time: 160 SBU (with tests)"

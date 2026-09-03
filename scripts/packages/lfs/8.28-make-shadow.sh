@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  shadow
+# SOURCE:   shadow-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building Shadow.."
 echo "Approximate build time: 0.2 SBU"

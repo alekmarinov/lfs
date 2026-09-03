@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libnl
+# SOURCE:   libnl-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libnl.."
 echo "Approximate build time: 0.1 SBU"

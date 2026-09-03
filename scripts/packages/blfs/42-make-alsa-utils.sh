@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  alsa-utils
+# SOURCE:   alsa-utils-*.tar.bz2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-alsa-utils.."
 echo "Approximate build time: less than 0.2 SBU"

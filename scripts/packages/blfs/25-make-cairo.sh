@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  cairo
+# SOURCE:   cairo-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-cairo.."
 

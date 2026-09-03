@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  nodejs
+# SOURCE:   node-v*.tar.xz
+# RELEASE:  1
+# CLASS:    bootstrap
 set -e
 echo "Building BLFS-nodejs.."
 

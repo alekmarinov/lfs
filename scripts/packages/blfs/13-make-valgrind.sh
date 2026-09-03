@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  valgrind
+# SOURCE:   valgrind-*.tar.bz2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-valgrind.."
 echo "Approximate build time: 0.5 SBU"

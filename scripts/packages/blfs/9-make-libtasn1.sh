@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libtasn1
+# SOURCE:   libtasn1-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libtasn1.."
 echo "Approximate build time: 0.2 SBU"

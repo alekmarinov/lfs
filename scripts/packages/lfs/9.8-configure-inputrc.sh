@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  inputrc
+# VERSION:  12.4
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Setup inputrc.."
 

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  vim
+# SOURCE:   vim-*.tar.gz
+# RELEASE:  1
+# CLASS:    system
 set -e
 echo "Building vim.."
 echo "Approximate build time: 2.5 SBU"

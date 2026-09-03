@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  dhcpcd
+# SOURCE:   dhcpcd-*.tar.*
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building BLFS-dhcpcd.."
 echo "Approximate build time: 0.1 SBU"

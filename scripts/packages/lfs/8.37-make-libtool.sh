@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libtool
+# SOURCE:   libtool-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building libtool.."
 echo "Approximate build time: 1.5 SBU"

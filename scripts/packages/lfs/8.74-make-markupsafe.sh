@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  markupsafe
+# SOURCE:   markupsafe-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building markupsafe.."
 

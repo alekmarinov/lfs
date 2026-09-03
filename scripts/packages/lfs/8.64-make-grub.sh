@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  grub
+# SOURCE:   grub-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building grub.."
 echo "Approximate build time: 0.7 SBU"

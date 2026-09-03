@@ -1,6 +1,5 @@
 #!/bin/bash
-# Derives the dependency graph of the built packages from the packages
-# themselves.
+# Derives the dependency graph of the built packages.
 #
 # Two kinds of dependency exist and only one of them can be derived:
 #
@@ -11,13 +10,20 @@
 #
 #   run time    what the built programs need in order to run. For shared
 #               libraries this is written in the binaries themselves, so it is
-#               computed here rather than declared, which is both exact and
-#               free to keep up to date.
+#               computed rather than declared, which is both exact and free to
+#               keep up to date.
 #
 # What this cannot see, and what '# RUNTIME_REQUIRES:' in the build script is
 # for: libraries opened with dlopen (pam modules, sudo plugins), programs run
 # by other programs (the boot scripts calling ip, hostname, openvt) and data
 # files (/etc/services, fonts, terminfo). Those leave no trace in an ELF header.
+#
+# This used to read the binaries itself, unpacking all 3.3 GB of packages on
+# every run. It no longer does: each package records its own provides and
+# requires - at build time now, and retrofitted by build-meta.sh for the ones
+# built before that - and this is the join over those records. What it reads
+# is a few hundred small text files, so it is worth running whenever anything
+# is rebuilt rather than once in a while.
 set -e
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -25,65 +31,56 @@ BASE_DIR=$( cd -- "$SCRIPT_DIR/../.." &> /dev/null && pwd )
 cd "$BASE_DIR"
 
 PACKAGES_DIR="${LFS_PACKAGES:-packages}"
+INDEX="$PACKAGES_DIR/.meta-index"
 OUT_DEPS="$PACKAGES_DIR/.deps"
 OUT_PROVIDES="$PACKAGES_DIR/.deps.provides"
 OUT_UNRESOLVED="$PACKAGES_DIR/.deps.unresolved"
 
 [ -d "$PACKAGES_DIR" ] || { echo "No '$PACKAGES_DIR' directory, run 'make packages' first"; exit 1; }
 
-WORK=$(mktemp -d)
-cleanup() { sudo rm -rf "$WORK"; }
-trap cleanup EXIT
+# The index is what this reads, so it is brought up to date first. Packages
+# which have not changed since they were last read cost nothing here.
+"$SCRIPT_DIR/build-meta.sh"
 
-echo "Reading the packages in '$PACKAGES_DIR'.."
+[ -d "$INDEX" ] || { echo "No metadata index at '$INDEX'"; exit 1; }
+
+WORK=$(mktemp -d)
+trap 'rm -rf "$WORK"' EXIT
 
 : > "$WORK/provides"
 : > "$WORK/basenames"
 : > "$WORK/needs"
 
 count=0
-for pkg in "$PACKAGES_DIR"/*.tar.gz; do
-    [ -e "$pkg" ] || continue
-    name=$(basename "$pkg" .tar.gz)
+for dir in "$INDEX"/*/; do
+    [ -d "$dir" ] || continue
+    name=$(basename "$dir")
     count=$((count + 1))
-    # the progress line rewrites itself, which only makes sense on a terminal
-    [ -t 2 ] && printf "\r  %-52s %3d" "$name" "$count" >&2
 
-    sudo rm -rf "$WORK/x"
-    mkdir -p "$WORK/x"
-    # only the directories that hold executables and libraries are unpacked,
-    # documentation and headers cannot carry an ELF dependency
-    sudo tar xzf "$pkg" -C "$WORK/x" --wildcards \
-        './usr/bin/*' './usr/sbin/*' './usr/libexec/*' './usr/lib/*' \
-        > /dev/null 2>&1 || true
-    [ -d "$WORK/x" ] || continue
+    # provides is 'soname<TAB>soname|fallback'. A fallback is the file name of
+    # a library which declares no SONAME of its own - libperl.so and
+    # libtcl8.6.so among them - and it resolves a reference only when no real
+    # SONAME matches, so the two are kept apart.
+    if [ -f "$dir/provides" ]; then
+        while IFS=$'\t' read -r soname kind; do
+            [ -n "$soname" ] || continue
+            case "$kind" in
+                fallback) echo "$soname	$name" >> "$WORK/basenames" ;;
+                *)        echo "$soname	$name" >> "$WORK/provides" ;;
+            esac
+        done < "$dir/provides"
+    fi
 
-    # an ELF file starts with \x7fELF, which is cheaper to test than running
-    # file(1) on every one of them
-    while IFS= read -r -d '' f; do
-        [ "$(head -c4 "$f" 2>/dev/null | od -An -tx1 | tr -d ' ')" = "7f454c46" ] || continue
-        # A few libraries carry no SONAME at all - libperl.so and libtcl8.6.so
-        # among them - so the file name is recorded as well and used when the
-        # SONAME lookup finds nothing. Without it their own package appears to
-        # depend on a library nothing provides.
-        readelf -d "$f" 2>/dev/null | awk -v p="$name" -v b="$(basename "$f")" '
-            /\(SONAME\)/  { gsub(/.*\[|\].*/, ""); print "P\t" $0 "\t" p }
-            /\(NEEDED\)/  { gsub(/.*\[|\].*/, ""); print "N\t" $0 "\t" p }
-            END           { if (b ~ /\.so/) print "B\t" b "\t" p }
-        '
-    done < <(sudo find "$WORK/x" -type f -print0 2>/dev/null) \
-        | sort -u \
-        | while IFS=$'\t' read -r kind soname owner; do
-              case "$kind" in
-                  P) echo "$soname	$owner" >> "$WORK/provides" ;;
-                  B) echo "$soname	$owner" >> "$WORK/basenames" ;;
-                  N) echo "$owner	$soname" >> "$WORK/needs" ;;
-              esac
-          done
+    if [ -f "$dir/requires" ]; then
+        while IFS= read -r soname; do
+            [ -n "$soname" ] || continue
+            echo "$name	$soname" >> "$WORK/needs"
+        done < "$dir/requires"
+    fi
 done
-[ -t 2 ] && printf "\r%-60s\r" "" >&2
-echo "  read $count packages"
+echo "  read $count packages from the index"
 
+# sudo, because $LFS_PACKAGES is written by the build and owned by root
 sort -u "$WORK/provides" | sudo tee "$OUT_PROVIDES" > /dev/null
 echo "  $(wc -l < "$OUT_PROVIDES") shared libraries provided"
 
@@ -94,6 +91,7 @@ BEGIN { while ((getline line < provides)  > 0) { split(line, a, "\t"); owner[a[1
         while ((getline line < basenames) > 0) { split(line, a, "\t"); if (!(a[1] in owner)) byname[a[1]] = a[2] } }
 {
     who = ($2 in owner) ? owner[$2] : (($2 in byname) ? byname[$2] : "")
+    # a package linking against its own library is not an edge
     if (who != "") { if (who != $1) edge[$1] = edge[$1] " " who }
     else           { print $1 "\t" $2 > "/dev/stderr" }
 }

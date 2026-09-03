@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  zip
+# SOURCE:   zip30.tar.gz
+# VERSION:  3.0
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-zip.."
 

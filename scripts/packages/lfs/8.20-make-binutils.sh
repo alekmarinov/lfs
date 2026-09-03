@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  binutils
+# SOURCE:   binutils-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building binutils.."
 echo "Approximate build time: 8.2 SBU"

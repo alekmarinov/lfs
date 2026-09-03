@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libinput
+# SOURCE:   libinput-*.tar.*
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libinput.."
 

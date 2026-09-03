@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  gdbm
+# SOURCE:   gdbm-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building GDBM.."
 echo "Approximate build time: 0.1 SBU"

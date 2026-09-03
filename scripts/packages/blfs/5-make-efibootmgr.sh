@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  efibootmgr
+# SOURCE:   efibootmgr-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-efibootmgr.."
 echo "Approximate build time: 0.1 SBU"

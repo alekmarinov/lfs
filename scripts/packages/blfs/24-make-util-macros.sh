@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  util-macros
+# SOURCE:   util-macros-*.tar.bz2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-util-macros.."
 echo "Approximate build time: less than 0.1 SBU"

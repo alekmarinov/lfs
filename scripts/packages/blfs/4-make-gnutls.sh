@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  gnutls
+# SOURCE:   gnutls-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-gnutls.."
 echo "Approximate build time: 0.9 SBU"

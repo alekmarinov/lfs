@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  gmp
+# SOURCE:   gmp-*.tar.xz
+# RELEASE:  1
+# CLASS:    system
 set -e
 echo "Building GMP.."
 echo "Approximate build time: 0.9 SBU"

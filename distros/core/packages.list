@@ -77,3 +77,48 @@
 # here would be installed alongside whatever the distro chose.
 12-make-cpio.tar.gz
 3-make-microcode.tar.gz
+
+# The package manager. It is in the core because it costs the core nothing:
+# every command it runs - bash, coreutils, grep, sed, gawk, findutils, tar,
+# util-linux and openssl - is already installed above for other reasons, so
+# this package is the 40 KB of shell itself. It brings /usr/bin/lpkg, the
+# soname scanner it shares with the build host, and the file-policy table it
+# resolves shared files with; the channel URL and the trusted key are written
+# by build-distro.sh, being properties of an installation rather than of a
+# package.
+#
+# curl, so lpkg can read a channel over http. Without it a REPO_URL has to be
+# a path or a file:// URL - removable media, an NFS mount - which works but is
+# not what most installations want. Its whole soname closure was already here,
+# so it costs 4 MB and pulls in nothing new.
+17-make-curl.tar.gz
+
+# binutils, for readelf: 'lpkg build' reads the sonames out of what it just
+# compiled, and without it a locally built package records that it provides
+# and needs nothing, which resolves against nothing.
+#
+# This is the expensive entry in the list. binutils links against libstdc++
+# and libgcc_s, which live in the gcc package, so gcc and flex come with it:
+# 398 MB stripped, on a core that was 681 MB. It buys one program.
+#
+# Two ways to make it cheaper, neither done here. Splitting libstdc++ and
+# libgcc_s out of gcc into a gcc-libs package - which is what other
+# distributions do - would bring this to about 57 MB, but the build has no way
+# to say "this recipe writes these files and does not ship them". Or lpkg
+# could run the scan inside the build chroot, where binutils is already part
+# of the build root, and cost nothing at all.
+# gmp, mpfr and mpc are here for two independent reasons, and missing one of
+# them broke the other for a long time. gcc needs all three. gawk needs libgmp
+# and libmpfr for its arbitrary precision arithmetic - which meant /usr/bin/awk
+# could not start in an image that left mpfr out, and nothing that runs awk
+# worked, lpkg included. 'make check' had been reporting it; deps-check had
+# not, because minimal's deps.ignore excluded mpfr for an unrelated reason.
+8.21-make-gmp.tar.gz
+8.22-make-mpfr.tar.gz
+8.23-make-mpc.tar.gz
+8.15-make-flex.tar.gz
+8.29-make-gcc.tar.gz
+8.20-make-binutils.tar.gz
+
+# Last, so that the file-policy.conf it ships is not overwritten by anything.
+x-make-lpkg.tar.gz

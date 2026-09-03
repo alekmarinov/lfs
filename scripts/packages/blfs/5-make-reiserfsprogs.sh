@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  reiserfsprogs
+# SOURCE:   reiserfsprogs-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-reiserfsprogs.."
 echo "Approximate build time: 0.2 SBU"

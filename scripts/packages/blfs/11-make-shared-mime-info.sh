@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  shared-mime-info
+# SOURCE:   shared-mime-info-*.tar.bz2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-shared-mime-info.."
 

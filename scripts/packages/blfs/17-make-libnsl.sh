@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libnsl
+# SOURCE:   libnsl-*.tar.xz
+# RELEASE:  1
+# CLASS:    system
 set -e
 echo "Building BLFS-libnsl.."
 echo "Approximate build time: less than 0.1 SBU"

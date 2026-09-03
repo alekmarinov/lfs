@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  rust
+# SOURCE:   rustc-*-src.tar.xz
+# RELEASE:  1
+# CLASS:    bootstrap
 set -e
 echo "Building BLFS-rust.."
 echo "Approximate build time: 5 SBU"

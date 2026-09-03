@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  xorg-server
+# SOURCE:   xorg-server-*.tar.xz
+# RELEASE:  1
+# GROUP:    xorg
+# CLASS:    extra
 set -e
 echo "Building BLFS-Xorg Server.."
 echo "Approximate build time: 1.5 SBU"
@@ -25,7 +30,12 @@ echo "Required disk space: 340 MB"
 # size, so the truncation it warns about is what the code intends.
 #
 # BUILD_REQUIRES: 24-make-mesa 25-make-libepoxy 24-make-libxcvt 10-make-pixman 24-make-xkeyboard-config 24-make-xorg-libraries 8.57-make-meson 8.56-make-ninja
-# RUNTIME_REQUIRES:
+# RUNTIME_REQUIRES: 24-make-xkeyboard-config 24-make-xorg-fonts
+#
+# Neither is linked by anything Xorg ships, and Xorg cannot start without
+# either. Without the XKB rule files it aborts with "Failed to activate
+# virtual core keyboard"; that is not a warning, the server exits. Found by
+# installing the X server on a machine that had neither and watching it die.
 #
 # NOTE the commands are written one per line rather than chained with &&: a
 # failing && chain does not trip 'set -e', so a chain followed by more commands

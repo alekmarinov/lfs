@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  nasm
+# SOURCE:   nasm-*.tar.xz
+# RELEASE:  1
+# CLASS:    bootstrap
 set -e
 echo "Building BLFS-nasm.."
 

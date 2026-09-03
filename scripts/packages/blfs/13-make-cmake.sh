@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  cmake
+# SOURCE:   cmake-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-cmake.."
 echo "Approximate build time: 2.3 SBU"

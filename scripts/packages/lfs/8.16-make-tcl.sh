@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  tcl
+# SOURCE:   tcl*-src.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building Tcl.."
 echo "Approximate build time: 3.2 SBU"

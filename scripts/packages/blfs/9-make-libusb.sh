@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libusb
+# SOURCE:   libusb-*.tar.bz2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libusb.."
 echo "Approximate build time: less than 0.1 SBU"

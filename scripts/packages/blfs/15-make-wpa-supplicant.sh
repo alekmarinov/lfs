@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  wpa-supplicant
+# SOURCE:   wpa_supplicant-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-wpa_supplicant.."
 echo "Approximate build time: 0.3 SBU"

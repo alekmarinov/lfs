@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  iana-etc
+# SOURCE:   iana-etc-*.tar.gz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building Iana-Etc.."
 echo "Approximate build time: less than 0.1 SBU"

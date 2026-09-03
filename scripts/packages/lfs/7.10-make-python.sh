@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  python-bootstrap
+# SOURCE:   Python-3.13*.tar.xz
+# VERSION:  3.13.7
+# RELEASE:  1
+# CLASS:    bootstrap
 set -e
 echo "Building Python.."
 echo "Approximate build time: 0.9 SBU"

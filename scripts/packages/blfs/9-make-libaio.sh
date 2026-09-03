@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libaio
+# SOURCE:   libaio-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libaio.."
 echo "Approximate build time: 0.1 SBU"

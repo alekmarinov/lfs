@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  grub
+# SOURCE:   grub-*.tar.xz
+# RELEASE:  2
+# CLASS:    system
 set -e
 echo "Building BLFS-grub.."
 echo "Approximate build time: 1 SBU"

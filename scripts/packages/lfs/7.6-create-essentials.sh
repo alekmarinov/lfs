@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  essentials
+# VERSION:  12.4
+# RELEASE:  1
+# CLASS:    core
 set -e
 
 # 7.6. Creating Essential Files and Symlinks

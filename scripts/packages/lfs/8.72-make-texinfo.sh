@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  texinfo
+# SOURCE:   texinfo-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building texinfo.."
 echo "Approximate build time: 0.6 SBU"

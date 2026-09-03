@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  packaging
+# SOURCE:   packaging-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building packaging.."
 

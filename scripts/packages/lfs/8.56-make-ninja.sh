@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  ninja
+# SOURCE:   ninja-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building Ninja.."
 echo "Approximate build time: 0.6 SBU"

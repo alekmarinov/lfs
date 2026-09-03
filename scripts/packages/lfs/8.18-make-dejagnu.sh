@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  dejagnu
+# SOURCE:   dejagnu-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building DejaGNU.."
 echo "Approximate build time: 0.1 SBU"

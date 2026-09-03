@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  bash
+# SOURCE:   bash-*.tar.gz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building bash"
 echo "Approximate build time: 1.4 SBU"

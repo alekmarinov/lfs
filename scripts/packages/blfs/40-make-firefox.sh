@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  firefox
+# SOURCE:   firefox-*.source.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-firefox.."
 echo "Approximate build time: 20 SBU"

@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  xkeyboard-config
+# SOURCE:   xkeyboard-config-*.tar.xz
+# RELEASE:  1
+# GROUP:    xorg
+# CLASS:    extra
 set -e
 echo "Building BLFS-xkeyboard-config.."
 

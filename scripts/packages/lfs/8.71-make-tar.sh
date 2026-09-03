@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  tar
+# SOURCE:   tar-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building tar.."
 echo "Approximate build time: 1.7 SBU"

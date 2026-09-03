@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  sgml-common
+# SOURCE:   sgml-common-*.tgz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-sgml-common.."
 echo "Approximate build time: 0.1 SBU"

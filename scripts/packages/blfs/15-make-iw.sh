@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  iw
+# SOURCE:   iw-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-iw.."
 echo "Approximate build time: less than 0.1 SBU"

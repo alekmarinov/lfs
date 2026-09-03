@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  blfs-bootscripts
+# SOURCE:   blfs-bootscripts-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-bootscripts.."
 

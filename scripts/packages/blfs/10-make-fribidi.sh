@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  fribidi
+# SOURCE:   fribidi-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-fribidi.."
 

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libgpg-error
+# SOURCE:   libgpg-error-*.tar.bz2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libgpg-error.."
 echo "Approximate build time: 0.1 SBU"

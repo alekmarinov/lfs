@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  xterm
+# SOURCE:   xterm-*.tgz
+# RELEASE:  1
+# GROUP:    xorg
+# CLASS:    extra
 set -e
 echo "Building BLFS-xterm.."
 echo "Approximate build time: 0.3 SBU"

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  sed
+# SOURCE:   sed-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building Sed.."
 echo "Approximate build time: 0.4 SBU"

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  psmisc
+# SOURCE:   psmisc-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building Psmisc.."
 echo "Approximate build time: less than 0.1 SBU"

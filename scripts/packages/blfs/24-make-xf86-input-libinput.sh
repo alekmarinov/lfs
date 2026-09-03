@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  xf86-input-libinput
+# SOURCE:   xf86-input-libinput-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-xf86-input-libinput.."
 

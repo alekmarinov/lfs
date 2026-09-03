@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libevdev
+# SOURCE:   libevdev-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libevdev.."
 

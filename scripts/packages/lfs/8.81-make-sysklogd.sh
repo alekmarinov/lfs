@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  sysklogd
+# SOURCE:   sysklogd-*.tar.gz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building sysklogd.."
 echo "Approximate build time: less than 0.1 SBU"

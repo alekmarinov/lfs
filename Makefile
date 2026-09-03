@@ -1,5 +1,6 @@
 .PHONY: all clean packages packages-continue distro check docker image qemu \
 	    distro-packages deps why closure deps-check deps-declared deps-order deps-verify file-index \
+	    packages-lint packages-meta abi repo repo-verify base-gap test test-boot \
 	    update-scripts build-package find-package-file install-package
 
 SHELL=/bin/bash
@@ -124,7 +125,59 @@ image:
 	EXPECT_DISTRO=$(if $(filter command line,$(origin DISTRO)),$(DISTRO)) \
 		./scripts/image/build-image.sh $(DISTRO)
 
+# Checks what every recipe declares about the package it builds
+#
+# Worth running before 'make packages': an unpinned source glob resolves to
+# two tarballs and fails hours into the build, and a missing version is not
+# visible until a package is published.
+packages-lint:
+	@./scripts/packages/lint-packages.sh
+
+# Collects what every built package says about itself into one index
+#
+# Packages built since build-package.sh started recording it carry their own
+# provides and requires; older ones are scanned once and cached. Nothing has
+# to be rebuilt for this.
+packages-meta:
+	./scripts/packages/build-meta.sh
+
+# The fingerprint of the core the packages were compiled against
+#
+# It keys the package repository and is stamped into /etc/os-release, so a
+# system can tell whether a published package matches the glibc it has.
+# 'make abi ARGS=-v' also lists what went into it.
+abi:
+	@./scripts/packages/abi-id.sh $(ARGS)
+
+# Publishes the built packages as a signed repository under repo/<abi>/<arch>
+#
+# Hardlinks the packages out of the cache, so it costs no disk when repo/ is
+# on the same filesystem. ARGS passes options through - --no-sign to skip
+# signing, --force-stale to publish a recipe whose text changed without a
+# RELEASE bump, -o to publish somewhere else.
+repo:
+	./scripts/packages/build-repo.sh $(ARGS)
+
+# Checks a published channel the way a system installing from it would
+#
+# Signature, then every package's size and hash, then whether every soname the
+# channel requires is provided within it. ARGS=--quick skips the hashes;
+# ARGS="--pub <key>" verifies against the key an image actually trusts.
+repo-verify:
+	@./scripts/packages/verify-repo.sh $(ARGS)
+
+# What is in the build base and in no package
+#
+# The tools build installs directly into the base, so those files belong to no
+# recipe. Assembly makes the few that matter by hand; anything reconstructing a
+# root out of packages alone - 'lpkg --root' and 'lpkg build' - does not.
+base-gap:
+	@./scripts/packages/base-gap.sh $(ARGS)
+
 # Derives the dependency graph from the built packages
+#
+# Reads the metadata index rather than the packages, so it is cheap enough to
+# run after anything is rebuilt. It refreshes the index first.
 deps:
 	./scripts/packages/build-deps.sh
 
@@ -155,6 +208,23 @@ deps-order:
 # Whether build-packages.sh already satisfies the declarations
 deps-verify:
 	@./scripts/packages/order-deps.sh verify
+
+# Exercises lpkg against the assembled rootfs, in a container
+#
+# The scratch trees lpkg is developed against are not a system - no /proc, no
+# /dev, no FHS symlinks - and every one of those gaps has hidden a real bug.
+# This runs it on what build-distro.sh actually produced. Needs 'make distro'
+# and 'make repo' first.
+test:
+	./scripts/test-lpkg.sh $(DISTRO)
+
+# Boots the image under qemu and checks lpkg on the running system
+#
+# The level above 'make test': same rootfs, but with firmware, a kernel, init
+# and a network. Works on a copy of the image and serves repo/ over http to
+# the guest, so it needs 'make image' and 'make repo' first.
+test-boot:
+	./scripts/test-boot.sh $(DISTRO)
 
 # Boots $(OUT)/image.img
 qemu:

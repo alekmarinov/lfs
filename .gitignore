@@ -13,3 +13,4 @@ rootfs/
 mnt/
 image.img
 *.nvram
+/repo

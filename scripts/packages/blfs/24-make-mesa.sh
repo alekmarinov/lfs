@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  mesa
+# SOURCE:   mesa-*.tar.xz
+# RELEASE:  1
+# GROUP:    xorg
+# CLASS:    extra
 set -e
 echo "Building BLFS-Mesa.."
 echo "Approximate build time: 1.5 SBU"

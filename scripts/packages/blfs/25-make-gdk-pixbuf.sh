@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  gdk-pixbuf
+# SOURCE:   gdk-pixbuf-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-gdk-pixbuf.."
 

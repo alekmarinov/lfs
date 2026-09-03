@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  bzip2
+# SOURCE:   bzip2-*.tar.gz
+# RELEASE:  1
+# CLASS:    system
 set -e
 echo "Building bzip2.."
 echo "Approximate build time: less than 0.1 SBU"

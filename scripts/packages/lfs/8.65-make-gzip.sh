@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  gzip
+# SOURCE:   gzip-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building Gzip.."
 echo "Approximate build time: 0.3 SBU"

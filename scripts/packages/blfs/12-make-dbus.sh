@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  dbus
+# SOURCE:   dbus-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-D-Bus.."
 echo "Approximate build time: 0.3 SBU"

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libffi
+# SOURCE:   libffi-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building Libffi.."
 echo "Approximate build time: 1.8 SBU"

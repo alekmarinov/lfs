@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  sysvinit
+# SOURCE:   sysvinit-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building sysvinit.."
 echo "Approximate build time: less than 0.1 SBU"

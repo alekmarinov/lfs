@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  less
+# SOURCE:   less-*.tar.gz
+# RELEASE:  1
+# CLASS:    system
 set -e
 echo "Building less.."
 echo "Approximate build time: 0.1 SBU"

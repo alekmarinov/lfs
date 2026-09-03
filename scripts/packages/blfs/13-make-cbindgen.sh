@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  cbindgen
+# SOURCE:   cbindgen-*.tar.gz
+# RELEASE:  1
+# CLASS:    bootstrap
 set -e
 echo "Building BLFS-cbindgen.."
 

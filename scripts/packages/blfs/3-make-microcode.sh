@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  microcode
+# SOURCE:   microcode-*.tar.gz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building BLFS-CPU microcode.."
 echo "Approximate build time: less than 0.1 SBU"

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libxcb
+# SOURCE:   libxcb-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libxcb.."
 echo "Approximate build time: 0.4 SBU"

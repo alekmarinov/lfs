@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  at-spi2-atk
+# SOURCE:   at-spi2-atk-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-at-spi2-atk.."
 

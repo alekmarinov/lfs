@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  gtk3
+# SOURCE:   gtk+-3*.tar.xz
+# VERSION:  3.24.34
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-gtk3.."
 

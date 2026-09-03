@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  gettext-bootstrap
+# SOURCE:   gettext-*.tar.xz
+# RELEASE:  1
+# CLASS:    bootstrap
 set -e
 echo "Building gettext.."
 echo "Approximate build time: 1.6 SBU"

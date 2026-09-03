@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  expat
+# SOURCE:   expat-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building Expat.."
 echo "Approximate build time: 0.1 SBU"

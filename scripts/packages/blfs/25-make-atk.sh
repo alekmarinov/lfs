@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  atk
+# SOURCE:   atk-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-atk.."
 

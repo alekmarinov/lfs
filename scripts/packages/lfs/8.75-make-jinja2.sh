@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  jinja2
+# SOURCE:   jinja2-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building jinja2.."
 

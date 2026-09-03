@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  pcre
+# SOURCE:   pcre-8*.tar.bz2
+# VERSION:  8.45
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-pcre.."
 

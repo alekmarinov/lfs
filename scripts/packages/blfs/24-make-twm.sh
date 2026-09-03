@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  twm
+# SOURCE:   twm-*.tar.xz
+# RELEASE:  1
+# GROUP:    xorg
+# CLASS:    extra
 set -e
 echo "Building BLFS-twm.."
 

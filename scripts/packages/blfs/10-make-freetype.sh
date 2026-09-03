@@ -1,4 +1,9 @@
 #!/bin/bash
+# PACKAGE:  freetype
+# SOURCE:   freetype-[0-9]*.tar.xz
+# VERSION:  2.12.1
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-freetype2.."
 echo "Approximate build time: 0.2 SBU"

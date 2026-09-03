@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  flit-core
+# SOURCE:   flit_core-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building flit-core.."
 

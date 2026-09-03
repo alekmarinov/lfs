@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  ncurses
+# SOURCE:   ncurses-*.t*
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building ncurses.."
 echo "Approximate build time: 0.4 SBU"

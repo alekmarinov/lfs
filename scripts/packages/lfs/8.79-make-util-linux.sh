@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  util-linux
+# SOURCE:   util-linux-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building Util-linux.."
 echo "Approximate build time: 1.0 SBU"

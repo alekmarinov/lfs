@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  findutils
+# SOURCE:   findutils-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building findutils.."
 echo "Approximate build time: 0.2 SBU"

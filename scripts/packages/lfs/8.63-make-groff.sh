@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  groff
+# SOURCE:   groff-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building groff.."
 echo "Approximate build time: 0.5 SBU"

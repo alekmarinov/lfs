@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  gdb
+# SOURCE:   gdb-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-gdb.."
 echo "Approximate build time: 1.8 SBU"

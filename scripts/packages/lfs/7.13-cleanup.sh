@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  cleanup
+# VERSION:  12.4
+# RELEASE:  1
+# CLASS:    bootstrap
 set -e
 echo "Cleaning up and Saving the Temporary System.."
 

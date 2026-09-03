@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  gnupg
+# SOURCE:   gnupg-*.tar.bz2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-gnupg.."
 echo "Approximate build time: 0.7 SBU"

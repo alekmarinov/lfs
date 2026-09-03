@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  zlib
+# SOURCE:   zlib-*.t*
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building zlib.."
 echo "Approximate build time: less than 0.1 SBU"

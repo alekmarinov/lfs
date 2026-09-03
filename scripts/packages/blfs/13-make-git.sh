@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  git
+# SOURCE:   git-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-git.."
 echo "Approximate build time: 0.3 SBU"

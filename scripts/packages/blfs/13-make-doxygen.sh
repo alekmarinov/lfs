@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  doxygen
+# SOURCE:   doxygen-*.src.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-doxygen.."
 echo "Approximate build time: 1.4 SBU"

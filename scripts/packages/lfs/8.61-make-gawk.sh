@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  gawk
+# SOURCE:   gawk-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building gawk.."
 echo "Approximate build time: 0.4 SBU"

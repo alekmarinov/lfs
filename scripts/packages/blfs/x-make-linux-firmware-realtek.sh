@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  linux-firmware-realtek
+# VERSION:  11.2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Installing the Realtek ethernet firmware.."
 echo "Approximate build time: less than 0.1 SBU"

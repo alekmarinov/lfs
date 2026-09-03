@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  readline
+# SOURCE:   readline-*.tar.gz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building readline.."
 echo "Approximate build time: 0.1 SBU"

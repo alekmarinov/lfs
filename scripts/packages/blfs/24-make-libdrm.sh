@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libdrm
+# SOURCE:   libdrm-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libdrm.."
 echo "Approximate build time: 0.2 SBU"

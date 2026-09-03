@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  sudo
+# SOURCE:   sudo-*.tar.gz
+# RELEASE:  1
+# CLASS:    system
 set -e
 echo "Building BLFS-Sudo.."
 echo "Approximate build time: 0.6 SBU"

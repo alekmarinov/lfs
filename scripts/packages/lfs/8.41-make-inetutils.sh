@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  inetutils
+# SOURCE:   inetutils-*.tar.xz
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building Inetutils.."
 echo "Approximate build time: 0.3 SBU"

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  gettext
+# SOURCE:   gettext-*.tar.xz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building gettext.."
 echo "Approximate build time: 2.7 SBU"

@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  cpio
+# SOURCE:   cpio-*.tar.bz2
+# RELEASE:  1
+# CLASS:    core
 set -e
 echo "Building BLFS-cpio.."
 echo "Approximate build time: 0.3 SBU"

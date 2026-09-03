@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  libgcrypt
+# SOURCE:   libgcrypt-*.tar.bz2
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-libgcrypt.."
 echo "Approximate build time: 0.4 SBU"

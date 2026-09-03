@@ -1,4 +1,8 @@
 #!/bin/bash
+# PACKAGE:  inih
+# SOURCE:   inih-*.tar.gz
+# RELEASE:  1
+# CLASS:    extra
 set -e
 echo "Building BLFS-inih.."
 echo "Approximate build time: 0.1 SBU"
