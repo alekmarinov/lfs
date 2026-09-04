@@ -570,6 +570,22 @@ regen() {
     fi
 }
 regen "shared library cache"    /usr/sbin/ldconfig
+
+# The module index udev matches PCI ids against.
+#
+# Without it a driver built as a module is never loaded, because nothing can
+# work out which module a given device wants. In qemu that goes unnoticed -
+# the e1000e and AHCI drivers are built into the kernel, so a virtual machine
+# has a disk and a network without loading anything. On real hardware it is
+# the difference between a working machine and one with no network at all: a
+# Realtek NIC needs r8169, which this kernel builds as a module.
+#
+# Nothing else generates these files. depmod is the only thing that does, and
+# it was never run, so /usr/lib/modules/<ver>/ held no modules.alias at all.
+for kver in $(ls "$ROOTFS_DIR/usr/lib/modules" 2>/dev/null); do
+    [ -d "$ROOTFS_DIR/usr/lib/modules/$kver" ] || continue
+    regen "module index for $kver" /usr/sbin/depmod -a "$kver"
+done
 regen "mime database"           /usr/bin/update-mime-database /usr/share/mime
 regen "glib schemas"            /usr/bin/glib-compile-schemas /usr/share/glib-2.0/schemas
 regen "gdk-pixbuf loaders"      /usr/bin/gdk-pixbuf-query-loaders --update-cache

@@ -16,3 +16,8 @@ image.img
 /repo
 /packages-debug
 
+# Generated output: the assembled rootfs, the mount point and the image. Every
+# distro's tree lives under here and none of it is source. It used to be caught
+# incidentally by '*.img' and 'rootfs/', which missed anything named otherwise -
+# a 7.2 GB image.img.wedged left by an interrupted build was staged for commit.
+/build
