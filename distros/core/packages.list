@@ -120,5 +120,13 @@
 8.29-make-gcc.tar.gz
 8.20-make-binutils.tar.gz
 
+# The CA trust store, because the channel is reached over https and curl will
+# not complete a handshake without one. lpkg does not depend on TLS for
+# trust - it verifies the index signature itself - but it does depend on the
+# fetch succeeding, and a system with no trust store cannot fetch at all.
+# Found by publishing the channel and noticing the image could not have
+# reached it.
+x-make-ca-certificates.tar.gz
+
 # Last, so that the file-policy.conf it ships is not overwritten by anything.
 x-make-lpkg.tar.gz

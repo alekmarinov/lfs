@@ -18,6 +18,7 @@
 #   --force        override a refusal that is there for a reason
 #   --reinstall    install again even at the version already installed
 #   --from <file>  install this .lpkg rather than one from the channel
+#   --no-sync      do not refresh the channel index first
 #
 # WHAT A PACKAGE IS
 #
@@ -42,7 +43,7 @@
 # looking for a library version that was never here.
 set -u
 
-VERSION=5
+VERSION=6
 
 # --------------------------------------------------------------------- setup
 
@@ -52,6 +53,7 @@ DRY_RUN=0
 FORCE=0
 REINSTALL=0
 FROM=""
+NO_SYNC=0
 
 die()  { echo "lpkg: $*" >&2; exit 1; }
 warn() { echo "lpkg: $*" >&2; }
@@ -71,6 +73,7 @@ while [ $# -gt 0 ]; do
         --force)   FORCE=1; shift ;;
         --reinstall) REINSTALL=1; shift ;;
         --from)    FROM="$2"; shift 2 ;;
+        --no-sync) NO_SYNC=1; shift ;;
         --upgradable) ARGS+=("$1"); shift ;;
         -h|--help) sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         -*)        die "unknown option $1" ;;
@@ -87,7 +90,16 @@ INDEX="$DB/channels/INDEX"
 OWNERS="$DB/owners"
 
 REPO_URL=""
-[ -f "$CONF" ] && REPO_URL=$(sed -n 's/^REPO_URL=//p' "$CONF" | tail -1)
+SYNC_MAX_AGE=""
+if [ -f "$CONF" ]; then
+    REPO_URL=$(sed -n 's/^REPO_URL=//p' "$CONF" | tail -1)
+    SYNC_MAX_AGE=$(sed -n 's/^SYNC_MAX_AGE=//p' "$CONF" | tail -1)
+fi
+# Seconds before the cached index is considered stale. A sync is two requests
+# and about 158 KB, so this is short by default: the cost of being out of date
+# is asking for a package the channel has moved on from, and the cost of
+# refreshing is half a second.
+SYNC_MAX_AGE="${SYNC_MAX_AGE:-86400}"
 
 mkdir -p "$DB/db" "$DB/channels" "$DB/journal" "$CACHE/pkg" 2>/dev/null || true
 
@@ -119,8 +131,37 @@ PROVIDERS="$WORK/providers.tab"
 # wherever that directory was not writable.
 GROUPS_TAB="$WORK/groups.tab"
 
+# Refresh the index when it is missing or old, before anything reads it.
+#
+# Keeping sync manual is a papercut rather than a safeguard: the first thing a
+# new system does is fail with "run lpkg sync first", and an index left alone
+# for a month resolves against packages the channel no longer has. Being
+# offline is not fatal here - a cached index still installs from the package
+# cache, and only a system with no index at all cannot proceed.
+maybe_sync() {
+    [ "$NO_SYNC" = 1 ] && return 0
+    local age=""
+    if [ -f "$INDEX" ]; then
+        age=$(( $(date +%s) - $(stat -c%Y "$INDEX" 2>/dev/null || echo 0) ))
+        [ "$age" -lt "$SYNC_MAX_AGE" ] && return 0
+    fi
+    [ -n "$REPO_URL" ] || return 0
+    if [ -z "$age" ]; then echo "no channel index yet, fetching it"
+    else echo "channel index is $(( age / 3600 ))h old, refreshing"; fi
+    # In a subshell, because a failure inside cmd_sync goes through die, and
+    # die exits. Called directly, an unreachable channel took the whole
+    # process down - so a laptop off the network could not install from its
+    # own package cache, which is the one case a cached index exists for.
+    # The subshell still writes the index; only the exit is contained.
+    if ! ( cmd_sync ); then
+        [ -f "$INDEX" ] || die "could not fetch the channel index and none is cached"
+        warn "could not refresh the index; using the cached one"
+    fi
+}
+
 load_index() {
-    [ -f "$INDEX" ] || die "no channel index; run 'lpkg sync' first"
+    maybe_sync
+    [ -f "$INDEX" ] || die "no channel index, and $REPO_URL could not be reached"
     awk '
         function flush(   i, n, s) {
             if (pkg == "") return
@@ -1227,7 +1268,7 @@ cmd_verify() {
 }
 
 case "$CMD" in
-    sync)    cmd_sync ;;
+    sync)    NO_SYNC=1; cmd_sync ;;
     install) cmd_install ;;
     remove)  cmd_remove ;;
     upgrade) cmd_upgrade ;;

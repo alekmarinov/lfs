@@ -1,0 +1,11 @@
+# State holds the account id and every resource attribute; it is not a secret
+# store but it is not something to publish either.
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+
+# .terraform.lock.hcl is deliberately NOT ignored: it pins the provider
+# versions and their hashes, so committing it is what makes 'terraform init'
+# reproducible for anyone else. It holds nothing secret.
+crash.log

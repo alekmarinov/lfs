@@ -16,7 +16,8 @@ The core (distros/core/packages.list) is what an LFS system needs to boot to a
 login prompt and is always installed.
 A distro is described by its own directory under distros/:
 
-    distros/minimal/distro.conf     identity - name, version, hostname, STRIP
+    distros/minimal/distro.conf     identity - name, version, hostname, STRIP,
+                                    and REPO_URL, the channel it installs from
     distros/minimal/packages.list   the packages added on top of the core
     distros/minimal/files/          files copied over the assembled rootfs
 
@@ -290,7 +291,9 @@ started from and the next invocation is the new one. Verified by having a
 running lpkg replace itself: the version changed and so did the inode.
 
 `build-distro.sh` adds the two files which are properties of an installation
-rather than of a package - `/etc/lpkg/lpkg.conf` and `/etc/lpkg/trusted.pub` -
+rather than of a package - `/etc/lpkg/lpkg.conf`, holding the `REPO_URL` from
+the distro's `distro.conf`, and `/etc/lpkg/trusted.pub`, derived from the
+signing key -
 and a package database recording everything the assembly put there, so a fresh
 image knows what is installed on it rather than starting out believing it is
 empty.

@@ -1,6 +1,7 @@
 .PHONY: all clean packages packages-continue distro check docker image qemu \
 	    distro-packages deps why closure deps-check deps-declared deps-order deps-verify file-index \
 	    packages-lint packages-meta abi repo repo-verify base-gap test test-boot \
+	    publish infra \
 	    update-scripts build-package find-package-file install-package
 
 SHELL=/bin/bash
@@ -157,6 +158,25 @@ abi:
 # RELEASE bump, -o to publish somewhere else.
 repo:
 	./scripts/packages/build-repo.sh $(ARGS)
+
+# Uploads the published channel to R2, behind lfs.intelibo.com
+#
+# Needs an R2 API token in AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY. Verifies
+# the channel locally before sending it, uploads packages before the index so
+# a sync caught mid-publish never sees an index naming absent files, and marks
+# the packages immutable while telling caches never to hold the index.
+publish:
+	./scripts/packages/publish-repo.sh $(ARGS)
+
+# Creates the bucket and lfs.intelibo.com. Needs CLOUDFLARE_API_TOKEN.
+# CLOUDFLARE_API_TOKEN comes from the environment, or from
+# ~/.config/lfs/cloudflare.env - beside the signing key, and outside this tree
+# because .env here is tracked and included above.
+infra:
+	@test -n "$$CLOUDFLARE_API_TOKEN" || test -f $$HOME/.config/lfs/cloudflare.env || { \
+		echo "No CLOUDFLARE_API_TOKEN, and no $$HOME/.config/lfs/cloudflare.env"; exit 1; }
+	set -a; [ -f $$HOME/.config/lfs/cloudflare.env ] && . $$HOME/.config/lfs/cloudflare.env; set +a; \
+	terraform -chdir=infra init -input=false && terraform -chdir=infra apply
 
 # Checks a published channel the way a system installing from it would
 #

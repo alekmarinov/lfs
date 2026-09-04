@@ -48,8 +48,16 @@ fi
 
 # identity of the distro, STRIP given on the command line wins over distro.conf
 strip_override=$STRIP
+# Which channel the assembled system reads. It belongs in distro.conf beside
+# IMAGE_SIZE and ROOT_PASSWORD for the same reason those moved there: it is a
+# property of the distro, not of the machine building it. Leaving it to the
+# environment meant every 'make distro' had to remember to pass it, and
+# forgetting produced an image whose lpkg had no channel at all - which is
+# only discovered on the booted system.
+repo_url_override=${REPO_URL:-}
 . "$DISTRO_DIR/distro.conf"
 STRIP=${strip_override:-${STRIP:-0}}
+REPO_URL=${repo_url_override:-${REPO_URL:-}}
 
 # ID names the distro everywhere it is written down: /etc/os-release, the
 # release file, the output directory. It used to be able to go missing - an
@@ -620,7 +628,12 @@ else
 fi
 
 if [ -n "${REPO_URL:-}" ]; then
-    printf 'REPO_URL=%s\n' "$REPO_URL" | sudo tee "$ROOTFS_DIR/etc/lpkg/lpkg.conf" > /dev/null
+    { printf 'REPO_URL=%s\n' "$REPO_URL"
+      echo "# Seconds before lpkg refreshes the channel index by itself. A sync is"
+      echo "# two requests and about 158 KB, so this is cheap; set it to a huge"
+      echo "# number to make syncing effectively manual."
+      echo "SYNC_MAX_AGE=86400"
+    } | sudo tee "$ROOTFS_DIR/etc/lpkg/lpkg.conf" > /dev/null
     echo "  channel $REPO_URL"
 else
     # Written empty rather than left out, so the file is there to edit and
