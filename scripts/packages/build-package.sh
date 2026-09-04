@@ -43,6 +43,7 @@ error_trap() {
     exit 1
 }
 
+
 trap 'error_trap $LINENO "$BASH_COMMAND"' ERR
 
 o_force=0
@@ -148,6 +149,41 @@ if [ $status -eq 0 ]; then
     # so the two are compared while both exist and the result is stored in the
     # package. build-distro.sh uses it to tell a package replacing a file it
     # owns from several packages each adding to a shared one.
+    # ---- debug symbols ---------------------------------------------------
+    #
+    # Stripped here, so a package is born the size it will be installed at.
+    #
+    # It used to happen only in build-distro.sh, at image assembly, which left
+    # two problems. The channel carried the symbols - gcc published at 724 MB
+    # against 347 MB stripped, and every install downloaded the difference.
+    # And a system built from an image had stripped binaries while the same
+    # package installed by lpkg did not, so the two diverged by how they were
+    # put together rather than by what was installed.
+    #
+    # Same rules build-distro.sh uses: a static library or a kernel module
+    # keeps the symbols it is linked or resolved against, everything else
+    # loses what is unneeded, and anything which is not ELF is left alone.
+    if [ "${STRIP_PACKAGES:-1}" = 1 ]; then
+        before=$(du -sk "$LFS_PACKAGE" | cut -f1)
+        while IFS= read -r -d '' f; do
+            [ "$(head -c4 "$f" 2>/dev/null | od -An -tx1 | tr -d ' ')" = "7f454c46" ] || continue
+            case "$f" in
+            # grub resolves its modules by symbol at load time, so stripping
+            # them leaves a boot loader that drops to the rescue shell with
+            # "no such partition". build-distro.sh has excluded this path for
+            # exactly that reason since before any of this existed; the rule
+            # was not carried over when the strip moved here, and the result
+            # was an unbootable image.
+            */usr/lib/grub/*) continue ;;
+                *.a|*.ko) strip --strip-debug    "$f" 2>/dev/null ;;
+                *)        strip --strip-unneeded "$f" 2>/dev/null ;;
+            esac
+        done < <(find "$LFS_PACKAGE" -type f -not -path "$LFS_PACKAGE/tmp/*" -print0 2>/dev/null)
+        after=$(du -sk "$LFS_PACKAGE" | cut -f1)
+        [ "$before" -gt "$after" ] && \
+            echo "       stripped $(( (before - after) / 1024 )) MB of debug symbols"
+    fi
+
     meta="$LFS_PACKAGE/.meta"
     rm -rf "$meta"; mkdir -p "$meta"
 
