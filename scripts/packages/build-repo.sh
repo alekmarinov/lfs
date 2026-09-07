@@ -221,7 +221,13 @@ for dir in "$INDEX_DIR"/*/; do
     # keyed on the coordinate and carries the name.
     rtnames=""
     for co in $rtreq; do
-        rn=$(sed -n 's/^name=//p' "$INDEX_DIR/$co/PKGINFO" 2>/dev/null)
+        # '|| true' is load bearing. sed exits non-zero when the file is
+        # not there, and under 'set -e' the assignment then aborts the whole
+        # publish - so the message below, which exists precisely to report a
+        # runtime dependency naming something unknown, could never be
+        # reached. A recipe with one typo in RUNTIME_REQUIRES killed the run
+        # with no output at all.
+        rn=$(sed -n 's/^name=//p' "$INDEX_DIR/$co/PKGINFO" 2>/dev/null || true)
         if [ -n "$rn" ]; then
             rtnames="$rtnames $rn"
         else
