@@ -1,6 +1,7 @@
 #!/bin/bash
 # PACKAGE:  glib
-# SOURCE:   glib-*.tar.xz
+# SOURCE:   glib-[0-9]*.tar.xz
+# VERSION:  2.84.4
 # RELEASE:  1
 # CLASS:    extra
 set -e
@@ -24,8 +25,8 @@ echo "Building BLFS-glib.."
 
 
 rm -rf /tmp/glib
-tar -xf /sources/glib-*.tar.xz -C /tmp/
-mv /tmp/glib-* /tmp/glib
+tar -xf /sources/glib-[0-9]*.tar.xz -C /tmp/
+mv /tmp/glib-[0-9]* /tmp/glib
 pushd /tmp/glib
 mkdir build
 pushd build

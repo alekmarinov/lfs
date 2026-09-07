@@ -267,6 +267,34 @@ $build /scripts/packages/blfs/24-make-twm.sh
 $build /scripts/packages/blfs/24-make-xclock.sh
 $build /scripts/packages/blfs/24-make-xterm.sh
 $build /scripts/packages/blfs/24-make-dejavu-fonts.sh
+
+# The WPE WebKit dependency set. Everything here is class extra, so none of
+# it touches the ABI id - an installed system can add these from the same
+# channel. wayland and wayland-protocols are built but installed by no
+# distro's packages.list: they are here so an image can be assembled either
+# with the X stack or with Wayland, without rebuilding the cache.
+$build /scripts/packages/blfs/13-make-unifdef.sh
+$build /scripts/packages/blfs/9-make-libyaml.sh
+$build /scripts/packages/blfs/13-make-ruby.sh
+$build /scripts/packages/blfs/9-make-lcms2.sh
+$build /scripts/packages/blfs/9-make-libwebp.sh
+$build /scripts/packages/blfs/9-make-openjpeg2.sh
+$build /scripts/packages/blfs/9-make-nghttp2.sh
+$build /scripts/packages/blfs/9-make-libpsl.sh
+$build /scripts/packages/blfs/9-make-glib-networking.sh
+$build /scripts/packages/blfs/9-make-libsoup3.sh
+$build /scripts/packages/blfs/9-make-libgudev.sh
+$build /scripts/packages/blfs/9-make-libsecret.sh
+# wayland before libxkbcommon: libxkbcommon defaults to enable-wayland=true
+# and needs wayland-scanner and the protocol XML to build its Wayland support.
+# Built the other way round it silently loses that support, or fails.
+$build /scripts/packages/blfs/24-make-wayland.sh
+$build /scripts/packages/blfs/24-make-wayland-protocols.sh
+$build /scripts/packages/blfs/24-make-libxkbcommon.sh
+$build /scripts/packages/blfs/43-make-gstreamer.sh
+$build /scripts/packages/blfs/43-make-gst-plugins-base.sh
+$build /scripts/packages/blfs/43-make-gst-plugins-bad.sh
+
 $build /scripts/packages/blfs/27-make-fluxbox.sh
 $build /scripts/packages/blfs/5-make-grub.sh
 
