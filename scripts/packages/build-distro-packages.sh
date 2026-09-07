@@ -34,6 +34,13 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 BASE_DIR=$( cd -- "$SCRIPT_DIR/../.." &> /dev/null && pwd )
 cd "$BASE_DIR"
 
+# Same idiom as build-repo.sh and build-meta.sh, so all three agree on where
+# the package cache and its metadata index are.
+PACKAGES_DIR="${LFS_PACKAGES:-packages}"
+# For pkg_recipe_sum: one definition of "the sum of a recipe", shared with
+# build-package.sh, which is what writes the value compared against below.
+. "$SCRIPT_DIR/pkg-header.sh"
+
 for var in LFS LFS_BASE LFS_PACKAGE; do
     if [ "${!var}" == "" ]; then
         echo "$(basename "$0"): $var is not defined - run this through 'make distro-packages'"
@@ -108,8 +115,8 @@ for recipe in $(cd "$STAGE" && ls *.sh 2>/dev/null | sort); do
         echo "resolver may place it before the compiler that builds it."
         exit 1
     fi
-    # Force a rebuild only when this recipe is older than the sources it would
-    # build from, which is what `make` has always meant.
+    # Rebuild when anything this recipe is built from has changed: the recipe
+    # itself, or the sources it globs. Skip otherwise.
     #
     # It used to force every time, for a good reason badly applied: the .ready
     # flag is keyed on the recipe name rather than on what it builds, so
@@ -119,30 +126,80 @@ for recipe in $(cd "$STAGE" && ls *.sh 2>/dev/null | sort); do
     # which the packages that had actually changed were still waiting their
     # turn.
     #
-    # Matched on the recipe's own name, not on every staged file. `avatari.sh`
+    # Then it went the other way: only the sources were tested, so editing a
+    # recipe — the change that most needs a rebuild — skipped it. The way out
+    # was to touch the tarball, which is a lie told to a timestamp. That is how
+    # avatari came to be built from a 0.5.0 tarball and labelled 0.4.0.
+    #
+    # So the recipe is compared by content against the recipe it was *built*
+    # from. Two places record that, and both are consulted:
+    #
+    #   tmp/<recipe>.recipesum  written here after a build passes. Always in
+    #                           step, because this is what does the building.
+    #   .meta-index/*/PKGINFO   recipesum=, written by build-package.sh into
+    #                           the package and indexed by build-meta.sh. The
+    #                           authority, but it only refreshes on
+    #                           'make packages-meta', so it can lag a build.
+    #
+    # The sidecar wins where it exists and PKGINFO seeds it where it does not,
+    # which is what makes the first run after this check appeared truthful
+    # rather than a guess: the answer had already been written down by the
+    # thing that did the building. Keying on PKGINFO alone would rebuild
+    # forever whenever a build ran without 'make packages-meta' after it.
+    #
+    # Content, not mtime, on either side of the comparison. The staged copy is
+    # made with `cp -R`, without -p, so its mtime is the time of this run and
+    # every recipe would look newer than its flag — the unconditional rebuild
+    # again. And the original churns on `git checkout`: switching branches and
+    # back would rebuild the world without a byte having changed.
+    #
+    # pkg_recipe_sum rather than sha256sum here, so that this and the sum
+    # stored in PKGINFO can never drift apart by being computed two ways.
+    #
+    # Sources stay on mtime. They are large, hashing them costs real time, and
+    # `find -newer` is what the staging step above is already arranged around.
+    # Matched on the recipe's own name, not on every staged file: `avatari.sh`
     # is rebuilt when `avatari-*.tar.xz` moves and `audi.sh` when
-    # `audi-models-*` does, which is what the naming already says.
-    #
-    # A recipe with no staged source of its own — the kernel, whose source is a
-    # config file — is never forced by somebody else's staging. That was the
-    # whole 38 minutes: one `make stage` invalidated every recipe, and the
-    # kernel is at the front of the queue.
-    #
-    # `find -newer` rather than comparing timestamps in shell: the sources are
-    # files and this is exactly the question find answers.
+    # `audi-models-*` does, which is what the naming already says. A recipe
+    # with no staged source of its own — the kernel, whose source is a config
+    # file — is never forced by somebody else's staging. That was the whole 38
+    # minutes: one `make stage` invalidated every recipe, and the kernel is at
+    # the front of the queue.
     flag="$BASE_DIR/tmp/${recipe%.sh}.ready"
+    sum_file="$BASE_DIR/tmp/${recipe%.sh}.recipesum"
+    pkginfo="$PACKAGES_DIR/.meta-index/${recipe%.sh}/PKGINFO"
+    sum=$(pkg_recipe_sum "$STAGE/$recipe")
+    built_sum=""
+    [ -f "$sum_file" ] && built_sum=$(cat "$sum_file")
+    if [ -z "$built_sum" ] && [ -f "$pkginfo" ]; then
+        built_sum=$(sed -n 's/^recipesum=//p' "$pkginfo")
+    fi
     force=""
+    why=""
     if [ ! -f "$flag" ]; then
-        force="-f"
+        force="-f"; why="not built yet"
+    elif [ -z "$built_sum" ]; then
+        # Neither record exists. Nothing says the recipe is unchanged, so
+        # rebuild rather than assume: an unnecessary build costs time, and a
+        # wrongly skipped one ships the wrong package under the right name.
+        force="-f"; why="no record of the recipe it was built from"
+    elif [ "$built_sum" != "$sum" ]; then
+        force="-f"; why="recipe changed since it was built"
     elif [ -n "$(find "$LFS_BASE/sources" -maxdepth 1 -newer "$flag" \
                       -name "${recipe%.sh}*.tar.*" -print -quit 2>/dev/null)" ]; then
-        force="-f"
+        force="-f"; why="source is newer than the last build"
     fi
     if [ -z "$force" ]; then
-        echo "$recipe is newer than every staged source; skipping"
+        echo "$recipe is unchanged since it was last built; skipping"
         continue
     fi
+    echo "$recipe: $why"
     ./scripts/packages/build-package.sh $force "/scripts/packages/$ID/$recipe"
+    # After the build, not before: build-package.sh touches the flag only when
+    # the build passed, and `set -e` takes us out of here when it did not. So a
+    # failed build leaves the old sum in place and the next run tries again,
+    # which is what a failure should mean.
+    [ -f "$flag" ] && printf '%s\n' "$sum" > "$sum_file"
     built=$((built + 1))
 done
 
