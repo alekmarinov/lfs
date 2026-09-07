@@ -5,21 +5,37 @@
 # CLASS:    extra
 set -e
 echo "Building BLFS-firefox.."
-echo "Approximate build time: 20 SBU"
-echo "Required disk space: 8 GB"
+echo "Approximate build time: 30 SBU"
+echo "Required disk space: 10 GB"
 
 # 27. firefox
 # The browser. Everything from Mesa upwards was built for this: gtk3 is its
 # only toolkit on linux, gtk3 needs libepoxy, and libepoxy needs OpenGL.
 #
-# https://www.linuxfromscratch.org/blfs/view/11.2/xsoft/firefox.html
+# https://www.linuxfromscratch.org/blfs/view/12.4/xsoft/firefox.html
 #
-# BUILD_REQUIRES: 25-make-gtk3 9-make-dbus-glib 13-make-rust 13-make-cbindgen 9-make-nodejs 13-make-nasm 12-make-zip 12-make-unzip 42-make-alsa-lib 13-make-llvm 9-make-icu 4-make-nss 9-make-nspr 22-make-sqlite
+# BUILD_REQUIRES: 25-make-gtk3 9-make-dbus-glib 13-make-rust 13-make-cbindgen 9-make-nodejs 13-make-nasm 12-make-zip 25-make-libnotify 25-make-startup-notification 42-make-alsa-lib 13-make-llvm 9-make-icu 4-make-nss 9-make-nspr 22-make-sqlite
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a
 # failing && chain does not trip 'set -e', so a chain followed by more commands
 # reports success even though the build failed.
+#
+# NOTE this is 140esr. Going from 102esr took the whole toolchain with it -
+# rust 1.89, llvm 20, nodejs 22, cbindgen 0.29 - and retired three workarounds
+# which were all about 102 being old:
+#
+#   the second python. 102's mach reached for imp, distutils and
+#   pkgutil.ImpImporter from its vendored pip, all removed in 3.13, so a
+#   python3.10 was built and kept solely to run this build. 140 wants exactly
+#   the 3.13 that LFS 12.4 installs, so that package is gone.
+#
+#   the arc4random_buf guard. 102 bundled a libevent old enough to define a
+#   function glibc 2.36 had started declaring itself. 140's copy is new enough
+#   to know about it.
+#
+#   the ROOT_CLIP_CHAIN cbindgen exclusion, which was a local workaround for a
+#   redefinition upstream did not see. It does not reproduce here on 140.
 
 . /etc/profile.d/xorg.sh
 
@@ -28,108 +44,106 @@ tar -xf /sources/firefox-*.source.tar.xz -C /tmp/
 mv /tmp/firefox-* /tmp/firefox
 pushd /tmp/firefox
 
-# Build under python3.10, installed alongside the system 3.13 for exactly this.
-# Firefox 102 predates the removal of distutils, pipes, imp and
-# pkgutil.ImpImporter, and reaches for all of them - from its vendored pip and
-# pkg_resources as much as from its own code. mach uses whichever interpreter
-# starts it, so naming that interpreter is the whole fix.
-PY=python3.10
-$PY --version
-
-# mach keeps its state and its python virtualenv here. Without it being set,
-# it writes to $HOME, which is /root in the chroot and works, but keeping it
-# under /tmp means the whole build disappears with the source tree.
+# mach keeps its state and its python virtualenv here. Without it being set it
+# writes to $HOME, which is /root in the chroot and works, but keeping it under
+# the source tree means the whole build disappears with it.
 export MOZBUILD_STATE_PATH=/tmp/mozbuild
 export SHELL=/bin/bash
 
-# glibc 2.36 added arc4random, arc4random_buf and arc4random_uniform to
-# stdlib.h. The copy of libevent bundled in ipc/chromium includes arc4random.c
-# with ARC4RANDOM_EXPORT defined as static, and while it disables arc4random
-# and arc4random_uniform through ARC4RANDOM_NORANDOM and NOUNIFORM, there is no
-# such switch for arc4random_buf - so it is compiled as a static definition of
-# a function glibc has already declared extern, and clang stops with "static
-# declaration follows non-static declaration".
-#
-# The definition is guarded out on a glibc which provides its own. Callers
-# inside libevent then use that one, which is a better source of randomness
-# than the RC4 implementation being skipped here.
-python3 - << "ENDPATCH"
-import io
-p = "ipc/chromium/src/third_party/libevent/arc4random.c"
-s = io.open(p, encoding="utf-8").read()
-head = "ARC4RANDOM_EXPORT void\narc4random_buf(void *buf_, size_t n)\n{"
-assert s.count(head) == 1, "arc4random_buf not found as expected"
-guard = "#if !defined(__GLIBC__) || __GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 36)\n"
-i = s.index(head)
-s = s[:i] + guard + s[i:]
-end = "\tARC4_UNLOCK_();\n}\n"
-j = s.index(end, i) + len(end)
-s = s[:j] + "#endif\n" + s[j:]
-io.open(p, "w", encoding="utf-8").write(s)
-print("  arc4random_buf guarded for glibc >= 2.36")
-ENDPATCH
+# The build has no network. Left to itself mach downloads its own python
+# packages into the virtualenv on first run and fails; this tells it to use
+# what is already installed.
+export MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=none
 
-# webrender_ffi.h defines ROOT_CLIP_CHAIN by hand, and cbindgen.toml asks for
-# constants to be exported from the rust crates it parses - which include the
-# same constant. The generated header and the hand written one then both define
-# it and every file including both fails to compile with "redefinition of
-# 'ROOT_CLIP_CHAIN'". Telling cbindgen to leave that one alone keeps the hand
-# written definition, which is the one the C++ side has always used.
+# NOTE MOZ_NOSPAM. Without it mach tries to pop up a desktop notification when
+# a build or install finishes, by running notify-send. There is no notification
+# daemon in a chroot, and what happens is worse than a failure: notify-send
+# exits, mach's ProcessReaderStdout thread dies with
+#   ValueError: I/O operation on closed file
+# and the main thread then waits on it forever. 'mach install' hangs after
+# printing "Install complete", with the install already correctly on disk, and
+# nothing ever exits. It sat like that for 16 hours here.
 #
-# NOTE this is a local workaround. Upstream builds this combination without
-# complaint and I have not established what differs here.
-sed -i 's/^include = \["POLYGON_CLIP_VERTEX_MAX"\]$/include = ["POLYGON_CLIP_VERTEX_MAX"]\nexclude = ["ROOT_CLIP_CHAIN"]/' \
-    gfx/webrender_bindings/cbindgen.toml
-grep -q 'exclude = \["ROOT_CLIP_CHAIN"\]' gfx/webrender_bindings/cbindgen.toml
+# mozbuild checks for this variable before notifying at all (base.py), so
+# setting it removes the call rather than papering over the deadlock.
+export MOZ_NOSPAM=1
+
+# The python configure step uses POSIX semaphores, which need a real /dev/shm.
+# Without it the failure is a traceback inside multiprocessing/synchronize.py
+# rather than anything naming the mount.
+mountpoint -q /dev/shm || mount -t tmpfs devshm /dev/shm
 
 cat > mozconfig << "ENDCONFIG"
 ac_add_options --prefix=/usr
 ac_add_options --enable-application=browser
 ac_add_options --enable-official-branding
-ac_add_options --enable-optimize
-ac_add_options --disable-debug
-ac_add_options --disable-debug-symbols
-ac_add_options --disable-tests
-
-# nothing here can act on a crash report or apply an update
 ac_add_options --disable-crashreporter
 ac_add_options --disable-updater
+ac_add_options --disable-tests
+ac_add_options --disable-debug-symbols
 
-# alsa is the audio backend the kernel already provides, which avoids
-# pulseaudio and the daemon that comes with it
+# no wireless-tools here, so the wifi scan backend has nothing to talk to
+ac_add_options --disable-necko-wifi
+
+# alsa is what the kernel already provides; pulseaudio would bring a daemon
 ac_add_options --enable-audio-backends=alsa
 
-# the libraries which are already built here are used instead of the copies
-# bundled in the firefox source. png is deliberately not among them: firefox
-# wants libpng with the APNG patch applied and ours is the plain upstream one,
-# so its bundled copy is used for that one.
+# System copies of what is already built here. libevent, libvpx and webp are
+# deliberately absent from this list - BLFS recommends them and they are not
+# packaged here, so firefox uses its bundled copies of those three.
+ac_add_options --with-system-icu
 ac_add_options --with-system-nspr
 ac_add_options --with-system-nss
-ac_add_options --with-system-icu
 ac_add_options --with-system-jpeg
+ac_add_options --with-system-png
 ac_add_options --with-system-zlib
+ac_add_options --enable-system-ffi
+ac_add_options --enable-system-pixman
 
-# webrtc is a large part of the build and nothing here uses video calls. It can
-# be turned back on at the cost of build time.
-ac_add_options --disable-webrtc
+# --with-system-png needs libpng built with the APNG patch, which the libpng
+# package here applies. On 102 this was left bundled for exactly that reason.
+
+# SIMD in the shipped encoding_rs crate
+ac_add_options --enable-rust-simd
+
+# Moved out of mozilla automation into all builds; it wants extra llvm pieces
+# and slows the build considerably.
+ac_add_options --without-wasm-sandboxed-libraries
+
+# webrtc is deliberately LEFT ENABLED, which is a change from the 102 recipe.
+#
+# That one passed --disable-webrtc, on the grounds that it is a large part of
+# the build and nothing here used video calls. It is wanted now: without it
+# Firefox cannot do video conferencing at all - no Meet, no Jitsi, no getUserMedia
+# - and for a desktop image that is a real hole rather than a saving.
+#
+# The cost is build time and package size. If it is ever traded away again,
+# put --disable-webrtc back here rather than deleting this note, so the next
+# reader knows which way the decision went and why.
 
 # lld is not built by our llvm package, so the GNU linker is used. Linking
 # libxul with it wants several gigabytes of memory.
 ac_add_options --enable-linker=bfd
 
-ac_add_options --without-wasm-sandboxed-libraries
-
-# Rect.h and others reach for std::int32_t without including <cstdint>. That
-# used to arrive through some other header and no longer does, so it is forced
-# into every translation unit instead of patching each site.
-export CXXFLAGS="-include cstdint"
+unset MOZ_TELEMETRY_REPORTING
 
 mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/objdir
 mk_add_options AUTOCLOBBER=1
+
+# without this the window class is firefox-default and the icon does not match
+MOZ_APP_REMOTINGNAME=firefox
 ENDCONFIG
 
-$PY ./mach build
-$PY ./mach install
+./mach build
+./mach install
+
+# Proof the install actually landed, rather than trusting mach's exit status.
+# mach has been seen to finish its work and then fail to exit; the inverse -
+# exiting 0 having installed nothing - would be worse and silent.
+[ -x /usr/lib/firefox/firefox ] || {
+    echo "mach install exited but /usr/lib/firefox/firefox is not there."
+    exit 1
+}
 
 popd
 rm -rf /tmp/firefox /tmp/mozbuild

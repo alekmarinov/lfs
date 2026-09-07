@@ -1,6 +1,7 @@
 #!/bin/bash
 # PACKAGE:  nasm
-# SOURCE:   nasm-*.tar.xz
+# SOURCE:   nasm-[0-9]*[0-9].tar.xz
+# VERSION:  2.16.03
 # RELEASE:  1
 # CLASS:    bootstrap
 set -e
@@ -20,7 +21,7 @@ echo "Building BLFS-nasm.."
 
 
 rm -rf /tmp/nasm
-tar -xf /sources/nasm-*.tar.xz -C /tmp/
+tar -xf /sources/nasm-[0-9]*[0-9].tar.xz -C /tmp/
 mv /tmp/nasm-* /tmp/nasm
 pushd /tmp/nasm
 ./configure --prefix=/usr

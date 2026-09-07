@@ -1,6 +1,6 @@
 #!/bin/bash
 # PACKAGE:  libXdmcp
-# SOURCE:   libXdmcp-*.tar.bz2
+# SOURCE:   libXdmcp-*.tar.xz
 # RELEASE:  1
 # CLASS:    extra
 set -e
@@ -13,8 +13,8 @@ echo "Approximate build time: less than 0.1 SBU"
 
 . /etc/profile.d/xorg.sh
 
-VER=$(ls /sources/libXdmcp-*.tar.bz2 | sed 's/^[^-]*-//' | sed 's/\.tar\.bz2$//')
-tar -xf /sources/libXdmcp-*.tar.bz2 -C /tmp/ \
+VER=$(ls /sources/libXdmcp-*.tar.xz | sed 's/^[^-]*-//' | sed 's/\.tar\.bz2$//')
+tar -xf /sources/libXdmcp-*.tar.xz -C /tmp/ \
     && mv /tmp/libXdmcp-* /tmp/libXdmcp \
     && pushd /tmp/libXdmcp \
     && ./configure $XORG_CONFIG --docdir=$XORG_PREFIX/share/doc/libXdmcp-$VER \

@@ -1,6 +1,6 @@
 #!/bin/bash
 # PACKAGE:  shared-mime-info
-# SOURCE:   shared-mime-info-*.tar.bz2
+# SOURCE:   shared-mime-info-*.tar.gz
 # RELEASE:  1
 # CLASS:    extra
 set -e
@@ -19,7 +19,7 @@ echo "Building BLFS-shared-mime-info.."
 # reports success even though the build failed.
 
 rm -rf /tmp/shared-mime-info
-tar -xf /sources/shared-mime-info-*.tar.bz2 -C /tmp/
+tar -xf /sources/shared-mime-info-*.tar.gz -C /tmp/
 mv /tmp/shared-mime-info-* /tmp/shared-mime-info
 pushd /tmp/shared-mime-info
 mkdir build

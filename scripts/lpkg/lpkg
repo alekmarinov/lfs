@@ -43,7 +43,7 @@
 # looking for a library version that was never here.
 set -u
 
-VERSION=6
+VERSION=10
 
 # --------------------------------------------------------------------- setup
 
@@ -327,6 +327,79 @@ fetch() {
     esac
 }
 
+# The same, for a file which is allowed not to be there: returns non-zero
+# instead of stopping.
+#
+# NOTE this is not something 'fetch ... || true' could do. fetch reports a
+# miss through die, and die exits - so it takes the whole program with it and
+# the '||' never runs. Written that way, and with stderr sent to /dev/null as
+# the optional fetches did, a channel published with --no-sign made lpkg quit
+# during sync without printing anything at all.
+fetch_soft() {
+    local rel="$1" dest="$2" url
+    case "$REPO_URL" in
+        "") return 1 ;;
+        http://*|https://*)
+            url="$REPO_URL/$rel"
+            command -v curl > /dev/null || return 1
+            curl -fsS -o "$dest" "$url" 2>/dev/null || return 1 ;;
+        file://*) cp "${REPO_URL#file://}/$rel" "$dest" 2>/dev/null || return 1 ;;
+        *)        cp "$REPO_URL/$rel" "$dest" 2>/dev/null || return 1 ;;
+    esac
+}
+
+# ------------------------------------------------------- channel succession
+#
+# A channel whose core has been replaced does not disappear. It stays where it
+# is, still signed, still internally consistent, and stops receiving anything -
+# so 'upgrade' on a system reading it reports nothing to do, truthfully,
+# forever. Nothing inside the channel can say otherwise, because the channel
+# is the thing that stopped moving.
+#
+# The directory at the repository root is what says so. It is read after a
+# successful sync and its absence is not an error: a repository published
+# before this existed has no such file, and an old lpkg reading a new
+# repository ignores it.
+channel_status() {
+    local abi="$1" line name succ succ_abi status
+    fetch_soft "channels" "$WORK/channels" || return 0
+    [ -s "$WORK/channels" ] || return 0
+
+    # Signed with the same key as the index. A directory that can be forged is
+    # a redirect that can be forged: the ABI check still stops an incompatible
+    # install, but it would not stop being pointed at an older channel with
+    # the same ABI and whatever was vulnerable in it.
+    if [ -f "$TRUSTED" ]; then
+        fetch_soft "channels.sig" "$WORK/channels.sig" || {
+            warn "the channel directory is unsigned; ignoring it"; return 0; }
+        openssl pkeyutl -verify -rawin -pubin -inkey "$TRUSTED" \
+            -sigfile "$WORK/channels.sig" -in "$WORK/channels" > /dev/null 2>&1 || {
+            warn "the channel directory is not signed by the key in $TRUSTED; ignoring it"
+            return 0; }
+    fi
+
+    # the stanza for this system's own ABI
+    name=$(awk -v A="$abi" '
+        /^Channel: /{n=substr($0,10)}
+        $0=="ABI: "A{print n; exit}' "$WORK/channels")
+    [ -n "$name" ] || return 0
+    status=$(awk -v A="$abi" '
+        $0=="ABI: "A{f=1} f&&/^Status: /{sub(/^Status: /,"");print;exit}' "$WORK/channels")
+    echo "channel $name ($abi), $status"
+    [ "$status" = superseded ] || return 0
+
+    succ=$(awk -v A="$abi" '
+        $0=="ABI: "A{f=1} f&&/^Successor: /{sub(/^Successor: /,"");print;exit}' "$WORK/channels")
+    [ -n "$succ" ] || return 0
+    succ_abi=$(awk -v N="$succ" '
+        $0=="Channel: "N{f=1} f&&/^ABI: /{sub(/^ABI: /,"");print;exit}' "$WORK/channels")
+    warn ""
+    warn "This channel has been replaced by $succ${succ_abi:+ (ABI $succ_abi)}."
+    warn "It will not receive further updates. This system cannot switch to it"
+    warn "by itself - the ABI is part of the core, so it needs a reinstall from"
+    warn "an image built against $succ."
+}
+
 # ---------------------------------------------------------------------- sync
 
 cmd_sync() {
@@ -338,7 +411,7 @@ cmd_sync() {
     # one built for its own core.
     local base="$abi/$arch"
     fetch "$base/INDEX"     "$WORK/INDEX"
-    fetch "$base/INDEX.sig" "$WORK/INDEX.sig" 2>/dev/null || true
+    fetch_soft "$base/INDEX.sig" "$WORK/INDEX.sig" || true
 
     if [ -f "$TRUSTED" ]; then
         [ -f "$WORK/INDEX.sig" ] || die "channel is unsigned and $TRUSTED says to require a signature"
@@ -360,6 +433,7 @@ cmd_sync() {
     cp "$WORK/INDEX" "$INDEX"
     [ -f "$WORK/INDEX.sig" ] && cp "$WORK/INDEX.sig" "$DB/channels/INDEX.sig"
     echo "$(grep -c '^Package: ' "$INDEX") packages in channel $abi/$arch"
+    channel_status "$abi"
 }
 
 # ------------------------------------------------------------------- ownership
@@ -1049,14 +1123,43 @@ cmd_install() {
         [ -f "$FROM" ] || die "no such package file: $FROM"
         rm -rf "$WORK/fi"; mkdir -p "$WORK/fi"
         tar xzf "$FROM" -C "$WORK/fi" ./.meta 2>/dev/null || true
-        local fname fver frel fcls
+        local fname fver frel fcls fabi sabi
         fname=$(sed -n 's/^name=//p'    "$WORK/fi/.meta/PKGINFO" 2>/dev/null)
         fver=$(sed -n 's/^version=//p'  "$WORK/fi/.meta/PKGINFO" 2>/dev/null)
         frel=$(sed -n 's/^release=//p'  "$WORK/fi/.meta/PKGINFO" 2>/dev/null)
         fcls=$(sed -n 's/^class=//p'    "$WORK/fi/.meta/PKGINFO" 2>/dev/null)
+        fabi=$(sed -n 's/^abi=//p'      "$WORK/fi/.meta/PKGINFO" 2>/dev/null)
         [ -n "$fname" ] || die "$FROM carries no .meta/PKGINFO, so there is nothing to record it as"
         if [ "$fcls" = core ] && [ "$ROOT" = / ]; then
             die "$fname is a core package and cannot be installed into a running system"
+        fi
+
+        # Everything reached through the channel is known to fit this system,
+        # because the ABI is the path it was fetched from and load_index
+        # refuses an index whose own ABI is not ours. A file is the one way in
+        # that skips all of that, so the check has to be made here instead.
+        #
+        # It matters more than it looks. The sonames in .meta/requires cannot
+        # express it: a binary built against a newer glibc needs libc.so.6,
+        # this system has libc.so.6, the dependency is satisfied, and the
+        # program dies with "version `GLIBC_2.38' not found" the first time
+        # anybody runs it. The ABI id is what stands in for the symbol
+        # versions nothing here reads.
+        sabi=$(system_abi)
+        if [ -n "$fabi" ] && [ -n "$sabi" ] && [ "$fabi" != "$sabi" ]; then
+            echo "lpkg: $fname was compiled against core $fabi" >&2
+            echo "lpkg: $(r /) is core $sabi" >&2
+            echo "lpkg: its libraries are a different vintage than this system's." >&2
+            echo "lpkg: it may install cleanly and fail on first run." >&2
+            [ "$FORCE" = 1 ] || die "refusing; --force to install it anyway"
+            echo "lpkg: --force given, installing anyway" >&2
+        elif [ -z "$fabi" ] && [ "$fcls" != core ]; then
+            warn "$fname carries no abi=, so there is no way to tell whether it"
+            warn "was built for this system; it predates the stamp, or was built"
+            warn "in a tree with no metadata index."
+        elif [ -z "$sabi" ]; then
+            warn "this system has no ABI_ID in $(r /etc/os-release), so $fname"
+            warn "cannot be matched against the core it was built for."
         fi
         say "install $fname $fver-$frel (from $FROM)"
         [ "$DRY_RUN" = 1 ] && return 0
@@ -1226,7 +1329,26 @@ cmd_info() {
     if [ -f "$INDEX" ]; then
         load_index
         line=$(idx "$name")
-        [ -n "$line" ] && echo "channel:   $(echo "$line" | cut -f2)-$(echo "$line" | cut -f3) (class $(echo "$line" | cut -f4))"
+        if [ -n "$line" ]; then
+            # 'available', not 'channel'. This line says what the channel
+            # offers, and labelling it 'channel:' made it read as the name of
+            # the channel - which is a separate thing, and one that now has a
+            # real name of its own to be confused with.
+            local cname cabi iv av
+            cname=$(sed -n 's/^Channel: //p' "$INDEX" | head -1)
+            cabi=$(sed -n 's/^ABI: //p' "$INDEX" | head -1)
+            [ -n "$cname$cabi" ] && echo "channel:   ${cname:-unnamed}${cabi:+ ($cabi)}"
+            av="$(echo "$line" | cut -f2)-$(echo "$line" | cut -f3)"
+            echo "available: $av (class $(echo "$line" | cut -f4))"
+            if is_installed "$name"; then
+                iv=$(installed_version "$name")
+                if [ "$iv" = "$av" ]; then
+                    echo "           up to date"
+                else
+                    echo "           an upgrade from $iv"
+                fi
+            fi
+        fi
     fi
 }
 

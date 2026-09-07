@@ -19,7 +19,7 @@ echo "Required disk space: 700 MB"
 # required: mako, libdrm, the xorg libraries, llvm
 # https://www.linuxfromscratch.org/blfs/view/11.2/x/mesa.html
 #
-# BUILD_REQUIRES: x-make-mako 24-make-libdrm 24-make-xorg-libraries 13-make-llvm 8.40-make-expat 8.6-make-zlib 8.10-make-zstd 8.57-make-meson 8.56-make-ninja
+# BUILD_REQUIRES: 13-make-spirv-llvm-translator 13-make-libclc x-make-pyyaml x-make-mako 24-make-libdrm 24-make-xorg-libraries 13-make-llvm 8.40-make-expat 8.6-make-zlib 8.10-make-zstd 8.57-make-meson 8.56-make-ninja
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a
@@ -39,6 +39,13 @@ echo "Required disk space: 700 MB"
 # distro - 235 MB of clang, 99 binaries and static archives - to get at one
 # 84 MB library. Linked statically, only the part llvmpipe uses ends up in the
 # driver and llvm stays a build dependency, which is what it should be.
+# NOTE swrast is gone in mesa 25: the single software-rasteriser name was
+# split into its two real implementations, llvmpipe (fast, needs llvm - which
+# is why -Dllvm=enabled is below) and softpipe (the reference one). Both are
+# named here so that a machine with no supported GPU still gets a working GL,
+# which is what swrast used to cover. The other ten options on this invocation
+# were checked against mesa 25's meson.options and are unchanged.
+#
 # The gallium drivers are the ones for the hardware this is tested on: nouveau
 # for the nvidia cards, iris and crocus for intel graphics, and swrast, which
 # is llvmpipe and the fallback wherever there is no driver. Vulkan is left out,
@@ -53,7 +60,7 @@ mkdir build
 pushd build
 meson --prefix=$XORG_PREFIX \
       --buildtype=release \
-      -Dgallium-drivers=nouveau,iris,crocus,swrast \
+      -Dgallium-drivers=nouveau,iris,crocus,llvmpipe,softpipe \
       -Dvulkan-drivers= \
       -Dplatforms=x11 \
       -Dglx=dri \

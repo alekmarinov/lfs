@@ -23,10 +23,17 @@ mv /tmp/libdrm-* /tmp/libdrm
 pushd /tmp/libdrm
 mkdir build
 pushd build
-meson --prefix=$XORG_PREFIX \
+# NOTE valgrind=disabled, not false. libdrm turned this into a meson 'feature'
+# option, which takes enabled/disabled/auto and rejects a boolean outright:
+# ERROR: Value "false" (of type "string") for option "valgrind" is not one of
+# the choices. udev stays a plain boolean, so it keeps true.
+#
+# 'meson setup' rather than bare 'meson', which meson now warns is ambiguous
+# and deprecated.
+meson setup --prefix=$XORG_PREFIX \
       --buildtype=release \
-      -Dudev=true \
-      -Dvalgrind=false \
+      -D udev=true \
+      -D valgrind=disabled \
       ..
 ninja
 ninja install

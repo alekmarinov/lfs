@@ -1,6 +1,6 @@
 #!/bin/bash
 # PACKAGE:  xinit
-# SOURCE:   xinit-*.tar.bz2
+# SOURCE:   xinit-*.tar.xz
 # RELEASE:  1
 # GROUP:    xorg
 # CLASS:    extra
@@ -12,7 +12,7 @@ echo "Building BLFS-xinit.."
 
 . /etc/profile.d/xorg.sh
 
-tar -xf /sources/xinit-*.tar.bz2 -C /tmp/ \
+tar -xf /sources/xinit-*.tar.xz -C /tmp/ \
     && mv /tmp/xinit-* /tmp/xinit \
     && pushd /tmp/xinit \
     && ./configure $XORG_CONFIG --with-xinitdir=/etc/X11/app-defaults \

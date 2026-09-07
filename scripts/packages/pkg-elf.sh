@@ -74,6 +74,30 @@ pkg_scan_elf() {
               esac
           done
 
+    # A symlink named like a library provides that name as well.
+    #
+    # sqlite 3.50 is what forced this. Upstream ships the real file as
+    # libsqlite3.so.3.50.4 with no SONAME at all and puts libsqlite3.so.0
+    # beside it as a symlink. The loader resolves a DT_NEEDED of
+    # libsqlite3.so.0 through that link without trouble, but the scan above
+    # walks -type f only, so nothing recorded the name - and gnupg, nss and
+    # python then appeared to need a library no package provided. The channel
+    # failed its closure check while being perfectly installable.
+    #
+    # Only links whose target is a regular file inside the same tree, so a
+    # dangling link cannot invent a provide.
+    # NOTE root is resolved first. readlink -f returns an absolute path, and
+    # build-package.sh passes $LFS_PACKAGE as a relative one, so comparing the
+    # two directly rejected every symlink and this pass silently did nothing.
+    local l t root_abs
+    root_abs=$(readlink -f "$root" 2>/dev/null) || root_abs="$root"
+    while IFS= read -r -d '' l; do
+        t=$(readlink -f "$l" 2>/dev/null) || continue
+        [ -f "$t" ] || continue
+        case "$t" in "$root_abs"/*) ;; *) continue ;; esac
+        echo "${l##*/}	fallback" >> "$provides"
+    done < <(find "${dirs[@]}" -type l -name '*.so*' -print0 2>/dev/null)
+
     # A basename fallback must not displace a real SONAME from the same
     # package - and a library which does declare one lands in both lists.
     if [ -s "$provides" ]; then

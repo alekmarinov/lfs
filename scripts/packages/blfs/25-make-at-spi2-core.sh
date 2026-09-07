@@ -23,7 +23,26 @@ mv /tmp/at-spi2-core-* /tmp/at-spi2-core
 pushd /tmp/at-spi2-core
 mkdir build
 pushd build
-meson --prefix=/usr --buildtype=release -Dintrospection=no ..
+# NOTE introspection=disabled, not 'no'. This is a meson 'feature' option and
+# takes enabled/disabled/auto only:
+#   ERROR: Value "no" (of type "string") for option "introspection" is not one
+#   of the choices.
+# 'disabled' rather than the book's implicit 'auto' because there is no
+# gobject-introspection here for auto to find.
+#
+# NOTE gtk2_atk_adaptor=false, which the book also passes. It is a boolean
+# defaulting to true, and it builds a module loaded by GTK2 - which this tree
+# does not have at all.
+#
+# NOTE systemd_user_dir=/tmp keeps the systemd user service out of the
+# package. There is no systemd here, and without this it installs into a
+# directory nothing reads.
+meson setup --prefix=/usr \
+    --buildtype=release \
+    -D introspection=disabled \
+    -D gtk2_atk_adaptor=false \
+    -D systemd_user_dir=/tmp \
+    ..
 ninja
 ninja install
 popd

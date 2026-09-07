@@ -87,11 +87,16 @@ echo "owns      \$(lpkg owns /usr/bin/bash)"
 echo "verify    \$(lpkg verify 2>&1 | tail -1)"
 lpkg sync 2>&1 | sed 's/^/sync      /'
 echo "guard     \$(lpkg --yes --reinstall install glibc 2>&1 | head -1)"
-lpkg --yes install unzip 2>&1 | sed 's/^/install   /'
-echo "runs      \$(unzip -v 2>/dev/null | head -1 | cut -c1-40)"
-echo "owned     \$(lpkg owns /usr/bin/unzip)"
-lpkg --yes remove unzip 2>&1 | sed 's/^/remove    /'
-echo "gone      \$([ -e /usr/bin/unzip ] && echo no || echo yes)"
+# NOTE bc, not unzip. The test used to install unzip, which BLFS 12.4 dropped
+# and this tree with it - so the check failed for want of the package rather
+# than for anything wrong with the image. bc is small, in the channel, and
+# deliberately not part of the minimal distro, which is what this needs: a
+# package that has to come over the wire.
+lpkg --yes install bc 2>&1 | sed 's/^/install   /'
+echo "runs      \$(bc --version 2>/dev/null | head -1 | cut -c1-40)"
+echo "owned     \$(lpkg owns /usr/bin/bc)"
+lpkg --yes remove bc 2>&1 | sed 's/^/remove    /'
+echo "gone      \$([ -e /usr/bin/bc ] && echo no || echo yes)"
 echo "=====BOOTTEST-END====="
 sleep 2
 /sbin/poweroff -f
@@ -140,8 +145,8 @@ want "awk works"                       '^awk *ok'
 want "the database survived the image" 'packages recorded'
 want "the channel verifies over http"  'signature ok'
 want "core refuses a live install"     'cannot be installed into a running system'
-want "a package installs from http"    '^owned .*owned by unzip'
-want "and the program runs"            '^runs *UnZip'
+want "a package installs from http"    '^owned .*owned by bc'
+want "and the program runs"            '^runs *bc'
 want "and removal takes it away"       '^gone *yes'
 want "it powered off cleanly"          'BOOTTEST-END'
 echo

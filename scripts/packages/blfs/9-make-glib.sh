@@ -15,7 +15,7 @@ echo "Building BLFS-glib.."
 # the stack do have such an option, and it is turned off there, so nothing
 # pulls gobject-introspection in.
 #
-# BUILD_REQUIRES: 9-make-pcre 8.50-make-libffi 7.10-make-python 8.57-make-meson 8.56-make-ninja
+# BUILD_REQUIRES: 9-make-pcre2 8.50-make-libffi 7.10-make-python 8.57-make-meson 8.56-make-ninja
 # RUNTIME_REQUIRES:
 #
 # NOTE the commands are written one per line rather than chained with &&: a

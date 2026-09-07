@@ -1,6 +1,6 @@
 #!/bin/bash
 # PACKAGE:  pciutils
-# SOURCE:   pciutils-*.tar.xz
+# SOURCE:   pciutils-*.tar.gz
 # RELEASE:  1
 # CLASS:    system
 set -e
@@ -16,7 +16,7 @@ echo "Required disk space: 8.5 MB"
 # NOTE update-pciids refreshes /usr/share/hwdata/pci.ids from the network,
 # the pci.ids shipped in the tarball is installed instead.
 
-tar -xf /sources/pciutils-*.tar.xz -C /tmp/ \
+tar -xf /sources/pciutils-*.tar.gz -C /tmp/ \
     && mv /tmp/pciutils-* /tmp/pciutils \
     && pushd /tmp/pciutils \
     && make PREFIX=/usr SHAREDIR=/usr/share/hwdata SHARED=yes \

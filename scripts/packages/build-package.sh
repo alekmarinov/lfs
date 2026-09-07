@@ -291,6 +291,34 @@ if [ $status -eq 0 ]; then
             echo "$__NAME__: cannot read $recipe_file to record what this package is."
             echo "Run 'make update-scripts' so the build base has the current recipes."
         elif pkg_read_headers "$recipe_file" && pkg_validate "$LFS_BASE/sources"; then
+            # The core this package was compiled against.
+            #
+            # Sonames do not carry it. A binary needing GLIBC_2.38 asks the
+            # loader for libc.so.6 - which is what every glibc since 1997 has
+            # called itself - so the dependency resolves cleanly against a
+            # libc six years too old, and the program dies on its first exec
+            # instead of failing to install. Symbol versions live in
+            # .gnu.version_r and nothing here reads that section, so the
+            # dependency graph cannot see this class of breakage at all.
+            #
+            # The channel path is the guard: a system can only fetch from the
+            # ABI it is. But a package handed over on a USB stick has left its
+            # channel behind, and 'lpkg install --from' had nothing to check
+            # beyond the class. This is what it now checks.
+            #
+            # Not stamped on core packages. They are what the id is computed
+            # from, so the value here would name the core they replace rather
+            # than the one they belong to. They are also already refused on a
+            # running system, which is the case this protects.
+            #
+            # Soft on failure: a tree whose metadata index is incomplete still
+            # builds packages, it just builds them without this. A missing or
+            # stale stamp is caught at publish time by build-repo.sh, which
+            # knows the real ABI of the channel it is writing.
+            pkg_abi=""
+            if [ "$PKG_CLASS" != core ] && [ -x "$SCRIPT_DIR/abi-id.sh" ]; then
+                pkg_abi=$("$SCRIPT_DIR/abi-id.sh" 2>/dev/null) || pkg_abi=""
+            fi
             {
                 echo "name=$PKG_NAME"
                 echo "version=$PKG_VERSION"
@@ -301,6 +329,7 @@ if [ $status -eq 0 ]; then
                 # so a forgotten '# RELEASE:' bump is detectable at publish
                 echo "recipesum=$(pkg_recipe_sum "$recipe_file")"
                 echo "source=${PKG_TARBALL:-}"
+                if [ -n "$pkg_abi" ]; then echo "abi=$pkg_abi"; fi
                 echo "builddate=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
             } > "$meta/PKGINFO"
         else

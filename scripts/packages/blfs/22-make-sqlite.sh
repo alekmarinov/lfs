@@ -18,7 +18,7 @@ VER=${VER_PACK:0:1}.${VER_PACK:1:2}.$(echo ${VER_PACK:3:2} | bc)
 tar -xf /sources/sqlite-*.tar.gz -C /tmp/ \
     && mv /tmp/sqlite-* /tmp/sqlite \
     && pushd /tmp/sqlite \
-    && if [ $LFS_DOCS -eq 1 ]; then unzip -q /sources/sqlite-doc-$VER_PACK.zip; fi \
+    && if [ $LFS_DOCS -eq 1 ]; then bsdtar -xf /sources/sqlite-doc-$VER_PACK.zip; fi \
     && ./configure \
         --prefix=/usr \
         --disable-static \

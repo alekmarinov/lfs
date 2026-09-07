@@ -80,7 +80,8 @@ ENDPOINT="https://$ACCOUNT.r2.cloudflarestorage.com"
 
 ABI=$("$SCRIPT_DIR/abi-id.sh")
 ARCH="${PKG_ARCH:-x86_64}"
-CHANNEL="repo/$ABI/$ARCH"
+REPO_ROOT="repo"
+CHANNEL="$REPO_ROOT/$ABI/$ARCH"
 [ -d "$CHANNEL" ] || { echo "No channel at $CHANNEL - run 'make repo' first"; exit 1; }
 
 # Refusing to publish a channel that does not check out locally. It costs
@@ -110,6 +111,20 @@ s3 cp "$CHANNEL/INDEX"     "s3://$BUCKET/$ABI/$ARCH/INDEX"     $dry \
     --cache-control 'no-cache, must-revalidate' --content-type 'text/plain'
 [ -f "$CHANNEL/INDEX.sig" ] && s3 cp "$CHANNEL/INDEX.sig" "s3://$BUCKET/$ABI/$ARCH/INDEX.sig" $dry \
     --cache-control 'no-cache, must-revalidate' --content-type 'application/octet-stream'
+
+# 3. and the channel directory at the bucket root, also never stale.
+#
+# At the root, not inside the channel: the system that most needs it is one
+# whose own channel has been superseded, and it has no reason to look inside a
+# channel it can no longer use.
+if [ -f "$REPO_ROOT/channels" ]; then
+    s3 cp "$REPO_ROOT/channels" "s3://$BUCKET/channels" $dry \
+        --cache-control 'no-cache, must-revalidate' --content-type 'text/plain'
+    [ -f "$REPO_ROOT/channels.sig" ] && s3 cp "$REPO_ROOT/channels.sig" "s3://$BUCKET/channels.sig" $dry \
+        --cache-control 'no-cache, must-revalidate' --content-type 'application/octet-stream'
+else
+    echo "  no channel directory to publish - run 'make channels'"
+fi
 
 echo
 echo "Published. On a target:"

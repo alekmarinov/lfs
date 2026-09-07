@@ -25,7 +25,16 @@ pushd /tmp/libtiff
 # name, so mkdir fails.
 mkdir libtiff-build
 pushd libtiff-build
+# NOTE -DCMAKE_POLICY_VERSION_MINIMUM=3.5, which the book passes here too.
+#
+# cmake 4 removed compatibility with cmake_minimum_required(VERSION <3.5) and
+# refuses to configure at all:
+#   Compatibility with CMake < 3.5 has been removed from CMake.
+# This project still declares an old minimum, so the flag tells cmake to apply
+# 3.5-era policies rather than reject it. It is the upstream-suggested escape
+# and what BLFS 12.4 uses - 16 of its packages need it against cmake 4.1.
 cmake -DCMAKE_INSTALL_PREFIX=/usr \
+      -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
       -DCMAKE_BUILD_TYPE=Release \
       -Dtiff-tests=OFF \
       ..

@@ -1,7 +1,7 @@
 #!/bin/bash
 # PACKAGE:  gtk3
-# SOURCE:   gtk+-3*.tar.xz
-# VERSION:  3.24.34
+# SOURCE:   gtk-3*.tar.xz
+# VERSION:  3.24.50
 # RELEASE:  1
 # CLASS:    extra
 set -e
@@ -16,7 +16,7 @@ echo "Building BLFS-gtk3.."
 # compositor - and introspection is off so gobject-introspection is not needed.
 # https://www.linuxfromscratch.org/blfs/view/11.2/x/gtk3.html
 #
-# BUILD_REQUIRES: 25-make-gdk-pixbuf 25-make-pango 25-make-at-spi2-atk 25-make-libepoxy 25-make-cairo 9-make-glib 24-make-xorg-libraries 8.57-make-meson 8.56-make-ninja
+# BUILD_REQUIRES: 25-make-gdk-pixbuf 25-make-pango 25-make-at-spi2-core 25-make-libepoxy 25-make-cairo 9-make-glib 24-make-xorg-libraries 8.57-make-meson 8.56-make-ninja
 # RUNTIME_REQUIRES:
 #
 # NOTE the C args. GTK 3 passes subclass pointers where the declared parameter
@@ -32,8 +32,8 @@ echo "Building BLFS-gtk3.."
 . /etc/profile.d/xorg.sh
 
 rm -rf /tmp/gtk3
-tar -xf /sources/gtk+-3*.tar.xz -C /tmp/
-mv /tmp/gtk+-3* /tmp/gtk3
+tar -xf /sources/gtk-3*.tar.xz -C /tmp/
+mv /tmp/gtk-3* /tmp/gtk3
 pushd /tmp/gtk3
 mkdir build
 pushd build

@@ -19,7 +19,7 @@ VER=$(ls /sources/nss-*.tar.gz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/nss-*.tar.gz -C /tmp/ \
     && mv /tmp/nss-* /tmp/nss \
     && pushd /tmp/nss \
-    && patch -Np1 -i /sources/nss-$VER-standalone-1.patch \
+    && patch -Np1 -i /sources/nss-standalone-1.patch \
     && cd nss \
     && make \
         BUILD_OPT=1 \

@@ -78,6 +78,23 @@ done
 "$SCRIPT_DIR/build-meta.sh"
 
 ABI=$("$SCRIPT_DIR/abi-id.sh")
+
+# The human name for this channel, beside the id.
+#
+# The id is derived and cannot lie about compatibility, which is why it is the
+# path. A name is asserted and can, so it is a label only - nothing resolves
+# by it without checking the id underneath.
+#
+# It names both books deliberately. Keying on the LFS version alone is already
+# ambiguous here: the channel this replaces was LFS 12.4 with BLFS 11.2, and
+# this one is LFS 12.4 with BLFS 12.4. Calling either of them "12.4" would
+# describe both.
+if [ -z "${LFS_VER:-}" ] && [ -f .env ]; then
+    LFS_VER=$(sed -n 's/^LFS_VER=//p' .env | tail -1)
+    BLFS_VER=$(sed -n 's/^BLFS_VER=//p' .env | tail -1)
+fi
+: "${BLFS_VER:=$LFS_VER}"
+CHANNEL_NAME="lfs${LFS_VER}-blfs${BLFS_VER}"
 CHANNEL="$OUT/$ABI/$ARCH"
 echo
 echo "Publishing into $CHANNEL"
@@ -113,7 +130,7 @@ if [ -f "$PREV" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-published=0; skipped_bootstrap=0; skipped_noid=0; copied=0; stale=()
+published=0; skipped_bootstrap=0; skipped_noid=0; copied=0; stale=(); wrong_abi=(); unstamped=0
 noid=()
 
 : > "$WORK/stanzas"
@@ -165,6 +182,27 @@ for dir in "$INDEX_DIR"/*/; do
     was=${prev_sum[$name-$version-$release]:-}
     if [ -n "$was" ] && [ -n "$recipesum" ] && [ "$was" != "$recipesum" ]; then
         stale+=("$name-$version-$release ($recipe_name)")
+    fi
+
+    # The package says which core it was compiled against; this channel is
+    # that core. They disagree when a package was built, then a core library
+    # was rebuilt underneath it without rebuilding it - which is precisely the
+    # situation the stamp exists to catch, and it is worth catching here
+    # rather than on a machine in somebody else's house.
+    #
+    # Reported, not fatal. Publishing a mismatched package is wrong but
+    # publishing nothing is worse, and the stamp is only consulted by
+    # 'lpkg install --from': a package fetched from this channel is already
+    # known to belong to it by the path it came down.
+    if [ "$class" != core ]; then
+        if [ -s "$dir/abi" ]; then
+            stamped=$(cat "$dir/abi")
+            if [ "$stamped" != "$ABI" ]; then
+                wrong_abi+=("$name-$version-$release built against $stamped")
+            fi
+        else
+            unstamped=$((unstamped + 1))
+        fi
     fi
 
     # Hardlinked when the repository is on the same filesystem as the cache,
@@ -301,6 +339,9 @@ done < <(find "$CHANNEL" -maxdepth 1 -name '*.lpkg' -print 2>/dev/null)
 {
     echo "# lfs package index"
     echo "ABI: $ABI"
+    echo "Channel: $CHANNEL_NAME"
+    echo "LFS: $LFS_VER"
+    echo "BLFS: $BLFS_VER"
     echo "Arch: $ARCH"
     echo "Packages: $published"
     echo "Created: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -341,6 +382,19 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+if [ ${#wrong_abi[@]} -gt 0 ]; then
+    echo
+    echo "  ${#wrong_abi[@]} package(s) were compiled against a core that is not $ABI:"
+    printf '    %s\n' "${wrong_abi[@]}"
+    echo "  Rebuild them, or 'lpkg install --from' will refuse them on a system"
+    echo "  running this channel. Installing them from the channel is unaffected."
+fi
+if [ "$unstamped" -gt 0 ]; then
+    echo
+    echo "  $unstamped package(s) carry no abi= and cannot be checked by"
+    echo "  'lpkg install --from'; they were built before it was recorded."
+fi
+
 echo
 echo "  $published packages published"
 if [ "$copied" -gt 0 ]; then

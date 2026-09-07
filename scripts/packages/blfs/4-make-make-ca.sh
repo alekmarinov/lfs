@@ -1,6 +1,6 @@
 #!/bin/bash
 # PACKAGE:  make-ca
-# SOURCE:   make-ca-*.tar.xz
+# SOURCE:   make-ca-*.tar.gz
 # RELEASE:  1
 # CLASS:    extra
 set -e
@@ -19,8 +19,8 @@ echo "Required disk space: 6.6 MB"
 # optional: nss
 # https://www.linuxfromscratch.org/blfs/view/stable/postlfs/make-ca.html
 
-VER=$(ls /sources/make-ca-*.tar.xz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
-tar -xf /sources/make-ca-*.tar.xz -C /tmp/ \
+VER=$(ls /sources/make-ca-*.tar.gz | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
+tar -xf /sources/make-ca-*.tar.gz -C /tmp/ \
     && mv /tmp/make-ca-* /tmp/make-ca \
     && pushd /tmp/make-ca \
     && make install \

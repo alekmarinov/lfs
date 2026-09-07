@@ -159,6 +159,12 @@ abi:
 repo:
 	./scripts/packages/build-repo.sh $(ARGS)
 
+# The channel directory: names, book versions, and which channel superseded
+# which. Written at the repository root rather than inside a channel, because
+# a system whose own channel is dead has to be able to read it.
+channels:
+	./scripts/packages/build-channels.sh $(ARGS)
+
 # Uploads the published channel to R2, behind lfs.intelibo.com
 #
 # Needs an R2 API token in AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY. Verifies

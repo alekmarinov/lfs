@@ -14,7 +14,22 @@ echo "Required disk space: 145 MB"
 # SFTP, TFTP, TELNET, DICT, LDAP, LDAPS and FILE.
 # recommended: make-ca
 # optional: brotli,c-ares,gnutls,libidn2,libpsl,libssh2,krb5,nghttp2,openldap,samba,gsasl,impacket,libmetalink,librtmp,ngtcp2,quiche,spnego
-# https://www.linuxfromscratch.org/blfs/view/stable/basicnet/curl.html
+# https://www.linuxfromscratch.org/blfs/view/12.4/basicnet/curl.html
+#
+# NOTE --without-libpsl, which is a deliberate deviation from the book.
+#
+# Since 8.x curl treats a missing libpsl as a hard configure error rather than
+# building without it, so this has to be answered one way or the other. The
+# book answers it by installing libpsl, and that is the wrong answer here:
+# curl is a core package, so libpsl would be one too, and libpsl.so would join
+# the core's soname set - which changes the ABI id, mints a new channel, and
+# strands every installed machine. Berkeley DB was kept in the core
+# specifically to avoid that, and this would undo it for a library nothing
+# here uses.
+#
+# What is given up is the Public Suffix List check on cookie domains. The only
+# caller of curl in this system is lpkg, which fetches with
+# 'curl -fsS -o <dest> <url>' and never sends or stores a cookie.
 
 VER=$(ls /sources/curl-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 tar -xf /sources/curl-*.tar.xz -C /tmp/ \
@@ -26,6 +41,7 @@ tar -xf /sources/curl-*.tar.xz -C /tmp/ \
         --with-openssl \
         --enable-threaded-resolver \
         --with-ca-path=/etc/ssl/certs \
+        --without-libpsl \
     && make \
     && if [ $LFS_TEST -eq 1 ]; then make test || true; fi \
     && make install \

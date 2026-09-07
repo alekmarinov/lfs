@@ -12,20 +12,20 @@ echo "Required disk space: 8 MB"
 # 24. Xorg Fonts
 # The book builds these as one page. font-util is the one the Xorg server
 # requires, the rest are the fonts the default configuration expects.
-# https://www.linuxfromscratch.org/blfs/view/11.2/x/x7font.html
+# https://www.linuxfromscratch.org/blfs/view/12.4/x/x7font.html
 
 . /etc/profile.d/xorg.sh
 
 PACKAGES="
-font-util-1.3.3.tar.xz
-encodings-1.0.6.tar.xz
-font-alias-1.0.4.tar.bz2
-font-adobe-utopia-type1-1.0.4.tar.bz2
-font-bh-ttf-1.0.3.tar.bz2
-font-bh-type1-1.0.3.tar.bz2
-font-ibm-type1-1.0.3.tar.bz2
-font-misc-ethiopic-1.0.4.tar.bz2
-font-xfree86-type1-1.0.4.tar.bz2
+font-util-1.4.1.tar.xz
+encodings-1.1.0.tar.xz
+font-alias-1.0.5.tar.xz
+font-adobe-utopia-type1-1.0.5.tar.xz
+font-bh-ttf-1.0.4.tar.xz
+font-bh-type1-1.0.4.tar.xz
+font-ibm-type1-1.0.4.tar.xz
+font-misc-ethiopic-1.0.5.tar.xz
+font-xfree86-type1-1.0.5.tar.xz
 "
 
 # The X sources are old C: they name variables 'true' and use the empty

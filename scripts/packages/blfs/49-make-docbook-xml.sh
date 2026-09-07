@@ -11,12 +11,12 @@ echo "Required disk space: 1.2 MB"
 # 49. docbook-xml
 # The DocBook-4.5 XML DTD-4.5 package contains document type definitions for
 # verification of XML data files against the DocBook rule set.
-# required: libxml2,sgml-common,unzip
+# required: libxml2,sgml-common,libarchive
 # https://www.linuxfromscratch.org/blfs/view/stable/pst/docbook.html
 
 VER=$(ls /sources/docbook-xml-*.zip | sed 's/[^0-9]*//' | sed 's/[^0-9]*$//')
 mkdir /tmp/docbook \
-    && unzip /sources/docbook-xml-*.zip -d /tmp/docbook \
+    && bsdtar -xf /sources/docbook-xml-*.zip -C /tmp/docbook \
     && pushd /tmp/docbook \
     && install -v -d -m755 /usr/share/xml/docbook/xml-dtd-$VER \
     && install -v -d -m755 /etc/xml \

@@ -171,6 +171,25 @@ EOF
         './.meta/*' './usr/bin/*' './usr/sbin/*' './usr/libexec/*' './usr/lib/*' \
         > /dev/null 2>&1 || true
 
+    # The core the package was compiled against, taken out of the package and
+    # not derived here. Deriving it would produce the ABI of the tree as it is
+    # now, which is the one thing it must not be: the point of the stamp is to
+    # say what this binary was linked against, so that a stamp left behind by
+    # a glibc bump shows up as a mismatch at publish time rather than as a
+    # crash on somebody's machine.
+    #
+    # Its own file rather than a line appended to PKGINFO, because PKGINFO is
+    # rewritten from the recipe on every run and the recipe does not know
+    # this. Cached with provides and requires, against the same tarball
+    # timestamp, for the same reason: reading it means decompressing.
+    sudo rm -f "$dir/abi"
+    if [ -f "$WORK/x/.meta/PKGINFO" ]; then
+        carried_abi=$(sed -n 's/^abi=//p' "$WORK/x/.meta/PKGINFO")
+        if [ -n "$carried_abi" ]; then
+            printf '%s\n' "$carried_abi" | sudo tee "$dir/abi" > /dev/null
+        fi
+    fi
+
     if [ -f "$WORK/x/.meta/provides" ]; then
         sudo cp "$WORK/x/.meta/provides" "$dir/provides"
         sudo cp "$WORK/x/.meta/requires" "$dir/requires"

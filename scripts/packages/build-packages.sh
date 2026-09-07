@@ -119,14 +119,12 @@ $build /scripts/packages/lfs/10.3-make-linux-kernel.sh
 $build /scripts/packages/lfs/11.1-the-end.sh
 
 # build blfs packages
-$build /scripts/packages/blfs/2-blfs-bootscripts.sh
 $build /scripts/packages/blfs/5-make-dosfstools.sh
 $build /scripts/packages/blfs/5-make-mkinitramfs.sh
 $build /scripts/packages/blfs/12-make-cpio.sh
 $build /scripts/packages/blfs/3-make-microcode.sh # needs cpio
 $build /scripts/packages/blfs/9-make-libaio.sh
 $build /scripts/packages/blfs/5-make-mdadm.sh
-$build /scripts/packages/blfs/5-make-reiserfsprogs.sh
 $build /scripts/packages/blfs/13-make-valgrind.sh
 $build /scripts/packages/blfs/12-make-which.sh
 $build /scripts/packages/blfs/9-make-inih.sh
@@ -181,16 +179,13 @@ $build /scripts/packages/blfs/14-make-dhcpcd.sh
 # wireless. libnl first, both iw and wpa_supplicant link against it.
 $build /scripts/packages/blfs/17-make-libnl.sh
 $build /scripts/packages/blfs/15-make-iw.sh
-$build /scripts/packages/blfs/x-make-wireless-regdb.sh
 $build /scripts/packages/blfs/x-make-linux-firmware-iwlwifi.sh
 $build /scripts/packages/blfs/x-make-linux-firmware-realtek.sh
 $build /scripts/packages/blfs/15-make-wpa-supplicant.sh
 $build /scripts/packages/blfs/48-make-sgml-common.sh
-$build /scripts/packages/blfs/12-make-unzip.sh
 $build /scripts/packages/blfs/49-make-docbook-xml.sh
 $build /scripts/packages/blfs/9-make-libxslt.sh
 $build /scripts/packages/blfs/9-make-popt.sh
-$build /scripts/packages/blfs/11-make-mandoc.sh
 $build /scripts/packages/blfs/5-make-efivar.sh
 $build /scripts/packages/blfs/5-make-efibootmgr.sh
 $build /scripts/packages/blfs/13-make-doxygen.sh
@@ -233,22 +228,27 @@ $build /scripts/packages/blfs/x-make-mako.sh
 # The gtk3 chain, which is what a browser needs. nasm is only an assembler for
 # libjpeg-turbo's SIMD code and for Firefox later.
 $build /scripts/packages/blfs/13-make-nasm.sh
-$build /scripts/packages/blfs/9-make-pcre.sh
+$build /scripts/packages/blfs/9-make-pcre2.sh
 $build /scripts/packages/blfs/9-make-glib.sh
 $build /scripts/packages/blfs/10-make-fribidi.sh
 $build /scripts/packages/blfs/11-make-shared-mime-info.sh
 $build /scripts/packages/blfs/10-make-libjpeg-turbo.sh
 $build /scripts/packages/blfs/10-make-libtiff.sh
 $build /scripts/packages/blfs/25-make-gdk-pixbuf.sh
-$build /scripts/packages/blfs/25-make-atk.sh
 $build /scripts/packages/blfs/25-make-at-spi2-core.sh
-$build /scripts/packages/blfs/25-make-at-spi2-atk.sh
+$build /scripts/packages/blfs/13-make-spirv-headers.sh
+$build /scripts/packages/blfs/13-make-spirv-tools.sh
+$build /scripts/packages/blfs/13-make-spirv-llvm-translator.sh
+$build /scripts/packages/blfs/x-make-pyyaml.sh
+$build /scripts/packages/blfs/13-make-libclc.sh
 $build /scripts/packages/blfs/24-make-mesa.sh
 $build /scripts/packages/blfs/25-make-libepoxy.sh
 $build /scripts/packages/blfs/25-make-glu.sh
-$build /scripts/packages/blfs/24-make-mesa-demos.sh
 $build /scripts/packages/blfs/25-make-cairo.sh
 $build /scripts/packages/blfs/25-make-pango.sh
+$build /scripts/packages/blfs/24-make-xcb-util.sh
+$build /scripts/packages/blfs/25-make-startup-notification.sh
+$build /scripts/packages/blfs/25-make-libnotify.sh
 $build /scripts/packages/blfs/25-make-gtk3.sh
 
 # the firefox tier. rust is a build tool and is in no distro.
@@ -259,7 +259,6 @@ $build /scripts/packages/blfs/13-make-rust.sh
 $build /scripts/packages/blfs/9-make-nodejs.sh
 $build /scripts/packages/blfs/13-make-cbindgen.sh
 $build /scripts/packages/blfs/9-make-dbus-glib.sh
-$build /scripts/packages/blfs/x-make-python310.sh # firefox needs a pre-3.12 python
 $build /scripts/packages/blfs/40-make-firefox.sh
 $build /scripts/packages/blfs/24-make-xorg-server.sh
 $build /scripts/packages/blfs/24-make-xf86-input-libinput.sh

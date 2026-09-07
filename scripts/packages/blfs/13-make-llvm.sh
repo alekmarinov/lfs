@@ -1,6 +1,7 @@
 #!/bin/bash
 # PACKAGE:  llvm
-# SOURCE:   llvm-*.src.tar.xz
+# SOURCE:   llvm-[0-9]*.src.tar.xz
+# VERSION:  20.1.8
 # RELEASE:  1
 # CLASS:    extra
 set -e
@@ -18,31 +19,41 @@ echo "Required disk space: 3.1 GB"
 # requires: cmake
 # optional: doxygen,git,graphviz,libxml2,pygments,rsync(for tests),
 #           texlive/install-tl-unx,valgrind,pyyaml,zip
-# https://www.linuxfromscratch.org/blfs/view/stable/general/llvm.html
+# https://www.linuxfromscratch.org/blfs/view/12.4/general/llvm.html
 #
-# NOTE compiler-rt is not built. It is the sanitizer runtime, and nothing here
-# uses it: rust wants llvm-config and firefox wants clang. Version 14 of it
-# does not compile against glibc 2.42 - it measures the 'struct termio' that
-# glibc removed, and its own -ffreestanding build flag leaves stdlib.h
-# declaring nothing, so dfsan loses malloc and strtol. Those are its flags to
-# choose, not something a caller can correct from outside.
+# NOTE compiler-rt is not built. It is the sanitizer runtime and nothing here
+# uses it: rust wants llvm-config and firefox wants clang. It was excluded on
+# llvm 14 because that version would not compile against glibc 2.42; the
+# exclusion is kept because the reason to include it never existed.
 #
-# NOTE -include cstdint. LLVM 14 reaches uint64_t through headers that
-# libstdc++ used to pull in for free and no longer does, so SmallVector.h fails
-# with 'uint64_t was not declared'. Forcing that one header into every
-# translation unit fixes every such site at once.
+# NOTE llvm 20 is split across three tarballs. What used to be one archive is
+# now llvm-<v>.src plus llvm-cmake-<v>.src and llvm-third-party-<v>.src, and
+# the build looks for those two at ../cmake and ../third-party - paths which
+# only exist in a full monorepo checkout. They are unpacked inside the source
+# tree instead and the two references are pointed at where they landed, which
+# is what the book does.
+#
+# The globs are pinned to [0-9] and to $VER for the same reason: 'llvm-*' also
+# matches llvm-cmake- and llvm-third-party-, and tar takes the first match as
+# the archive and the rest as member names to extract from it - which is what
+# "Not found in archive" meant.
 
-VER=$(ls /sources/llvm-*.src.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
-tar -xf /sources/llvm-*.tar.xz -C /tmp/ \
-    && mv /tmp/llvm-* /tmp/llvm \
+VER=$(ls /sources/llvm-[0-9]*.src.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
+rm -rf /tmp/llvm
+tar -xf /sources/llvm-[0-9]*.src.tar.xz -C /tmp/ \
+    && mv /tmp/llvm-[0-9]* /tmp/llvm \
     && pushd /tmp/llvm \
-    && tar -xf /sources/clang-*.tar.xz -C tools \
-    && mv tools/clang-* tools/clang \
+    && tar -xf /sources/llvm-cmake-$VER.src.tar.xz \
+    && tar -xf /sources/llvm-third-party-$VER.src.tar.xz \
+    && sed "/LLVM_COMMON_CMAKE_UTILS/s@../cmake@cmake-$VER.src@" -i CMakeLists.txt \
+    && sed "/LLVM_THIRD_PARTY_DIR/s@../third-party@third-party-$VER.src@" \
+           -i cmake/modules/HandleLLVMOptions.cmake \
+    && tar -xf /sources/clang-$VER.src.tar.xz -C tools \
+    && mv tools/clang-$VER.src tools/clang \
     && grep -rl '#!.*python' | xargs sed -i '1s/python$/python3/' \
     && mkdir -v build \
     && cd build \
     && CC=gcc CXX=g++ cmake \
-        -DCMAKE_CXX_FLAGS="-include cstdint" \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DLLVM_ENABLE_FFI=ON \
         -DCMAKE_BUILD_TYPE=Release \

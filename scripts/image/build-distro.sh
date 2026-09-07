@@ -460,6 +460,16 @@ if [ -z "$ABI_ID" ]; then
     echo "  no ABI id (run 'make packages-meta'); os-release will not carry one"
 fi
 
+# The channel's human name, for display only. Everything that has to be right
+# resolves by ABI_ID; this is what a person reads to know which of two channels
+# with the same LFS version they are on.
+if [ -z "${LFS_VER:-}" ] && [ -f "$BASE_DIR/.env" ]; then
+    LFS_VER=$(sed -n 's/^LFS_VER=//p' "$BASE_DIR/.env" | tail -1)
+    BLFS_VER=$(sed -n 's/^BLFS_VER=//p' "$BASE_DIR/.env" | tail -1)
+fi
+: "${BLFS_VER:=$LFS_VER}"
+CHANNEL_NAME="${LFS_VER:+lfs${LFS_VER}-blfs${BLFS_VER}}"
+
 sudo tee "$ROOTFS_DIR/etc/os-release" > /dev/null <<EOF
 NAME="$NAME"
 ID=$ID
@@ -467,7 +477,8 @@ VERSION="$VERSION"
 VERSION_ID=$VERSION
 PRETTY_NAME="$PRETTY_NAME"
 BUILD_ID=$BUILD_ID${ABI_ID:+
-ABI_ID=$ABI_ID}
+ABI_ID=$ABI_ID}${CHANNEL_NAME:+
+CHANNEL=$CHANNEL_NAME}
 HOME_URL="$HOME_URL"
 EOF
 

@@ -1,6 +1,7 @@
 #!/bin/bash
 # PACKAGE:  libnl
-# SOURCE:   libnl-*.tar.gz
+# SOURCE:   libnl-[0-9]*.tar.gz
+# VERSION:  3.11.0
 # RELEASE:  1
 # CLASS:    extra
 set -e
@@ -17,7 +18,7 @@ echo "Required disk space: 15 MB"
 # BUILD_REQUIRES:
 # RUNTIME_REQUIRES:
 
-tar -xf /sources/libnl-*.tar.gz -C /tmp/ \
+tar -xf /sources/libnl-[0-9]*.tar.gz -C /tmp/ \
     && mv /tmp/libnl-* /tmp/libnl \
     && pushd /tmp/libnl \
     && ./configure \

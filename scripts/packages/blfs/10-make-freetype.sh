@@ -1,7 +1,7 @@
 #!/bin/bash
 # PACKAGE:  freetype
 # SOURCE:   freetype-[0-9]*.tar.xz
-# VERSION:  2.12.1
+# VERSION:  2.13.3
 # RELEASE:  1
 # CLASS:    extra
 set -e

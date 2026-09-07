@@ -18,25 +18,44 @@ echo "Required disk space: 30 MB"
 #
 # NOTE the remaining applications of the page - xdriinfo among them - need
 # Mesa, which is not installed yet.
-# https://www.linuxfromscratch.org/blfs/view/11.2/x/x7app.html
+# https://www.linuxfromscratch.org/blfs/view/12.4/x/x7app.html
 
 . /etc/profile.d/xorg.sh
 
 PACKAGES="
-iceauth-1.0.9.tar.xz
-mkfontscale-1.2.2.tar.xz
-setxkbmap-1.3.3.tar.xz
-xauth-1.1.2.tar.xz
-xcursorgen-1.0.7.tar.bz2
-xdpyinfo-1.3.3.tar.xz
-xev-1.2.5.tar.xz
-xkbcomp-1.4.5.tar.bz2
+iceauth-1.0.10.tar.xz
+mkfontscale-1.2.3.tar.xz
+sessreg-1.1.4.tar.xz
+setxkbmap-1.3.4.tar.xz
+smproxy-1.0.8.tar.xz
+xauth-1.1.4.tar.xz
+xcmsdb-1.0.7.tar.xz
+xcursorgen-1.0.9.tar.xz
+xdpyinfo-1.4.0.tar.xz
+xdriinfo-1.0.8.tar.xz
+xev-1.2.6.tar.xz
+xgamma-1.0.8.tar.xz
+xhost-1.0.10.tar.xz
+xinput-1.6.4.tar.xz
+xkbcomp-1.4.7.tar.xz
+xkbevd-1.1.6.tar.xz
+xkbutils-1.0.6.tar.xz
+xkill-1.0.6.tar.xz
+xlsatoms-1.1.4.tar.xz
+xlsclients-1.1.5.tar.xz
+xmessage-1.0.7.tar.xz
 xmodmap-1.0.11.tar.xz
-xprop-1.2.5.tar.bz2
-xrandr-1.5.1.tar.xz
-xrdb-1.2.1.tar.bz2
-xset-1.2.4.tar.bz2
-xsetroot-1.1.2.tar.bz2
+xpr-1.2.0.tar.xz
+xprop-1.2.8.tar.xz
+xrandr-1.5.3.tar.xz
+xrdb-1.2.2.tar.xz
+xrefresh-1.1.0.tar.xz
+xset-1.2.5.tar.xz
+xsetroot-1.1.3.tar.xz
+xvinfo-1.1.5.tar.xz
+xwd-1.0.9.tar.xz
+xwininfo-1.1.6.tar.xz
+xwud-1.0.7.tar.xz
 "
 
 # The X sources are old C: they name variables 'true' and use the empty

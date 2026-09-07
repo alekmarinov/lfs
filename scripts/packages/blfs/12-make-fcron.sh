@@ -30,9 +30,16 @@ cron.* -/var/log/cron.log
 EOF
 
 /etc/rc.d/init.d/sysklogd reload
-groupadd -g 22 fcron \
-    && useradd -d /dev/null -c "Fcron User" -g fcron -s /bin/false -u 22 fcron \
-    || exit 1
+# The account fcron runs jobs as.
+#
+# Guarded, the way dbus, sshd and dhcpcd already guard theirs. The build base
+# is cumulative, so on any rebuild the group is already there and an unguarded
+# groupadd exits 3 - which took the whole recipe down through the '|| exit 1'
+# below. It could only ever have failed on the second build of this package,
+# which is why it survived the first one.
+groupadd -g 22 fcron 2>/dev/null || true
+useradd -d /dev/null -c "Fcron User" -g fcron -s /bin/false -u 22 fcron 2>/dev/null || true
+id -u fcron > /dev/null 2>&1 || { echo "fcron user was not created"; exit 1; }
 
 find doc -type f -exec sed -i 's:/usr/local::g' {} \;
 

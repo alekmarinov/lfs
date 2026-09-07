@@ -1,6 +1,6 @@
 #!/bin/bash
 # PACKAGE:  xbitmaps
-# SOURCE:   xbitmaps-*.tar.bz2
+# SOURCE:   xbitmaps-*.tar.xz
 # RELEASE:  1
 # CLASS:    extra
 set -e
@@ -11,7 +11,7 @@ echo "Building BLFS-xbitmaps.."
 
 . /etc/profile.d/xorg.sh
 
-tar -xf /sources/xbitmaps-*.tar.bz2 -C /tmp/ \
+tar -xf /sources/xbitmaps-*.tar.xz -C /tmp/ \
     && mv /tmp/xbitmaps-* /tmp/xbitmaps \
     && pushd /tmp/xbitmaps \
     && ./configure $XORG_CONFIG  \

@@ -9,10 +9,18 @@ echo "Building BLFS-cairo.."
 # cairo
 # The 2D drawing library everything above it renders through: pango draws text
 # with it, gtk draws widgets with it.
-# https://www.linuxfromscratch.org/blfs/view/11.2/x/cairo.html
+# https://www.linuxfromscratch.org/blfs/view/12.4/x/cairo.html
 #
-# NOTE -std=gnu17. cairo's pdiff helper typedefs its own 'bool', which C23
-# turned into a keyword.
+# NOTE cairo 1.18 builds with meson; the autotools build was removed upstream.
+# That retires a long-standing problem here rather than porting it: the old
+# recipe passed --enable-trace=no, --enable-interpreter=no and
+# --enable-symbol-lookup=no, and then deleted cairo-sphinx afterwards, because
+# those three debugging tools linked libbfd and lzo and so made binutils a
+# runtime dependency of anything that draws. The meson build does not build
+# them at all, so the flags and the cleanup are both gone.
+#
+# NOTE the -std=gnu17 workaround is also gone with them - it was for the pdiff
+# helper, part of the same removed test tooling, which typedefed its own bool.
 #
 # BUILD_REQUIRES: 9-make-glib 10-make-fontconfig 10-make-freetype 10-make-libpng 10-make-pixman 24-make-xorg-libraries 24-make-mesa
 # RUNTIME_REQUIRES:
@@ -27,34 +35,11 @@ rm -rf /tmp/cairo
 tar -xf /sources/cairo-*.tar.xz -C /tmp/
 mv /tmp/cairo-* /tmp/cairo
 pushd /tmp/cairo
-
-# NOTE --enable-trace=no. cairo-trace is a debugging tool which records the
-# drawing calls a program makes. It links libbfd to turn addresses back into
-# symbol names, which makes the whole of binutils a runtime dependency of
-# anything that installs cairo - and it drags lzo in behind it. It also does
-# not compile any more: it casts through PTR, a typedef binutils dropped from
-# bfd.h in 2.34. Nothing here uses it, so it is left out rather than patched.
-#
-# --enable-interpreter=no for the same reason: the script interpreter and
-# cairo-sphinx are debugging tools and they link lzo, which would otherwise
-# have to be installed in every image that draws anything.
-#
-# --enable-symbol-lookup=no stops cairo-sphinx being built, the last of the
-# three and the other half of the lzo dependency.
-CC='gcc -std=gnu17' ./configure --prefix=/usr \
-    --disable-static \
-    --enable-tee \
-    --enable-trace=no \
-    --enable-interpreter=no \
-    --enable-symbol-lookup=no
-make
-make install
-
-# cairo-sphinx is a benchmarking harness. --enable-symbol-lookup=no does not
-# stop it being built, and it is the last thing linking lzo, so it is removed
-# after the install rather than dragging lzo into every image which draws.
-rm -fv /usr/bin/cairo-sphinx
-rm -fv /usr/lib/cairo/cairo-sphinx.*
-
+mkdir build
+cd build
+meson setup --prefix=/usr --buildtype=release ..
+ninja
+if [ $LFS_TEST -eq 1 ]; then ninja test || true; fi
+ninja install
 popd
 rm -rf /tmp/cairo

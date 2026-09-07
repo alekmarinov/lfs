@@ -1,6 +1,7 @@
 #!/bin/bash
 # PACKAGE:  make
-# SOURCE:   make-*.tar.gz
+# SOURCE:   make-[0-9]*.tar.gz
+# VERSION:  4.4.1
 # RELEASE:  1
 # CLASS:    extra
 set -e
@@ -12,7 +13,7 @@ echo "Required disk space: 14 MB"
 # The Make package contains a program for controlling the generation of executables and other non-source files of a package from source files.
 # https://www.linuxfromscratch.org/lfs/view/11.2/chapter08/make.html
 
-tar -xf /sources/make-*.tar.gz -C /tmp/ \
+tar -xf /sources/make-[0-9]*.tar.gz -C /tmp/ \
     && mv /tmp/make-* /tmp/make \
     && pushd /tmp/make \
     && ./configure \

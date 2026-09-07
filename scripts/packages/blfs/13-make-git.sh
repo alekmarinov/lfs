@@ -1,6 +1,7 @@
 #!/bin/bash
 # PACKAGE:  git
-# SOURCE:   git-*.tar.xz
+# SOURCE:   git-[0-9]*.tar.xz
+# VERSION:  2.50.1
 # RELEASE:  1
 # CLASS:    extra
 set -e
@@ -18,10 +19,10 @@ echo "Required disk space: 245 MB"
 # NOTE -std=gnu17. C23 added an unreachable() macro to stddef.h, and git has
 # its own unreachable of a different shape.
 
-VER=$(ls /sources/git-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
+VER=$(ls /sources/git-[0-9]*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 PERL5_VER=$(ls /sources/perl-*.tar.xz | sed 's/^[^-]*-//' | sed 's/[^0-9]*$//')
 PERL5_VER=${PERL5_VER%.*}
-tar -xf /sources/git-*.tar.xz -C /tmp/ \
+tar -xf /sources/git-[0-9]*.tar.xz -C /tmp/ \
     && mv /tmp/git-* /tmp/git \
     && pushd /tmp/git \
     && CC='gcc -std=gnu17' ./configure \

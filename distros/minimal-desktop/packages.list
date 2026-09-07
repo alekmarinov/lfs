@@ -78,24 +78,21 @@
 25-make-glu.tar.gz
 # glxinfo says whether GL is running on the gpu or on the cpu, which
 # nothing else in the image can tell you
-24-make-mesa-demos.tar.gz
 
 # the gtk3 stack. nasm is not here: it only assembles libjpeg-turbo's SIMD
-# code at build time. glib links the original pcre, not pcre2.
+# code at build time. glib links pcre2 since 2.74; BLFS 12.4 dropped pcre 8.
 # libffi is what glib needs for its closures, libxml2 what shared-mime-info
 # parses its database with
 8.50-make-libffi.tar.gz
 9-make-libxml2.tar.gz
-9-make-pcre.tar.gz
+9-make-pcre2.tar.gz
 9-make-glib.tar.gz
 10-make-fribidi.tar.gz
 11-make-shared-mime-info.tar.gz
 10-make-libjpeg-turbo.tar.gz
 10-make-libtiff.tar.gz
 25-make-gdk-pixbuf.tar.gz
-25-make-atk.tar.gz
 25-make-at-spi2-core.tar.gz
-25-make-at-spi2-atk.tar.gz
 25-make-cairo.tar.gz
 25-make-pango.tar.gz
 25-make-gtk3.tar.gz
@@ -126,7 +123,6 @@
 # wireless
 17-make-libnl.tar.gz
 15-make-iw.tar.gz
-x-make-wireless-regdb.tar.gz
 x-make-linux-firmware-iwlwifi.tar.gz
 x-make-linux-firmware-realtek.tar.gz
 15-make-wpa-supplicant.tar.gz

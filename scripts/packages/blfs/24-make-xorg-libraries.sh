@@ -15,43 +15,43 @@ echo "Required disk space: 240 MB"
 # the order of the lib-7.md5 file of the book and must not be sorted.
 #
 # required: fontconfig, libxcb
-# https://www.linuxfromscratch.org/blfs/view/11.2/x/x7lib.html
+# https://www.linuxfromscratch.org/blfs/view/12.4/x/x7lib.html
 
 . /etc/profile.d/xorg.sh
 
 PACKAGES="
-xtrans-1.4.0.tar.bz2
-libX11-1.8.1.tar.xz
-libXext-1.3.4.tar.bz2
-libFS-1.0.8.tar.bz2
-libICE-1.0.10.tar.bz2
-libSM-1.2.3.tar.bz2
-libXScrnSaver-1.2.3.tar.bz2
-libXt-1.2.1.tar.bz2
-libXmu-1.1.3.tar.bz2
-libXpm-3.5.13.tar.bz2
-libXaw-1.0.14.tar.bz2
-libXfixes-6.0.0.tar.bz2
-libXcomposite-0.4.5.tar.bz2
-libXrender-0.9.10.tar.bz2
-libXcursor-1.2.1.tar.xz
-libXdamage-1.1.5.tar.bz2
-libfontenc-1.1.4.tar.bz2
-libXfont2-2.0.5.tar.bz2
-libXft-2.3.4.tar.bz2
-libXi-1.8.tar.bz2
-libXinerama-1.1.4.tar.bz2
-libXrandr-1.5.2.tar.bz2
-libXres-1.2.1.tar.bz2
-libXtst-1.2.3.tar.bz2
-libXv-1.0.11.tar.bz2
-libXvMC-1.0.13.tar.xz
-libXxf86dga-1.1.5.tar.bz2
-libXxf86vm-1.1.4.tar.bz2
-libdmx-1.1.4.tar.bz2
-libpciaccess-0.16.tar.bz2
-libxkbfile-1.1.0.tar.bz2
-libxshmfence-1.3.tar.bz2
+xtrans-1.6.0.tar.xz
+libX11-1.8.12.tar.xz
+libXext-1.3.6.tar.xz
+libFS-1.0.10.tar.xz
+libICE-1.1.2.tar.xz
+libSM-1.2.6.tar.xz
+libXScrnSaver-1.2.4.tar.xz
+libXt-1.3.1.tar.xz
+libXmu-1.2.1.tar.xz
+libXpm-3.5.17.tar.xz
+libXaw-1.0.16.tar.xz
+libXfixes-6.0.1.tar.xz
+libXcomposite-0.4.6.tar.xz
+libXrender-0.9.12.tar.xz
+libXcursor-1.2.3.tar.xz
+libXdamage-1.1.6.tar.xz
+libfontenc-1.1.8.tar.xz
+libXfont2-2.0.7.tar.xz
+libXft-2.3.9.tar.xz
+libXi-1.8.2.tar.xz
+libXinerama-1.1.5.tar.xz
+libXrandr-1.5.4.tar.xz
+libXres-1.2.2.tar.xz
+libXtst-1.2.5.tar.xz
+libXv-1.0.13.tar.xz
+libXvMC-1.0.14.tar.xz
+libXxf86dga-1.1.6.tar.xz
+libXxf86vm-1.1.6.tar.xz
+libpciaccess-0.18.1.tar.xz
+libxkbfile-1.1.3.tar.xz
+libxshmfence-1.3.3.tar.xz
+libXpresent-1.0.1.tar.xz
 "
 
 pushd /tmp
@@ -70,8 +70,30 @@ for package in $PACKAGES; do
 
     docdir="--docdir=$XORG_PREFIX/share/doc/$packagedir"
     case $packagedir in
+        # libpciaccess dropped autotools at 0.18: there is no configure in the
+        # tarball at all, so the default branch below fails with
+        # './configure: No such file or directory'. It is the only one of the
+        # 32 which has moved; the rest are still autotools, and the apps and
+        # fonts lists have none.
+        libpciaccess-[0-9]* )
+            mkdir build
+            cd build
+            meson setup --prefix=$XORG_PREFIX --buildtype=release ..
+            ninja
+            ninja install
+            popd
+            rm -rf "/tmp/$packagedir"
+            /sbin/ldconfig
+            continue
+        ;;
         libXfont2-[0-9]* )
             ./configure $XORG_CONFIG $docdir --disable-devel-docs
+        ;;
+        # the book carries this; without it libXpm reads compressed pixmaps by
+        # shelling out, which makes gzip a runtime dependency of anything
+        # drawing an XPM
+        libXpm-[0-9]* )
+            ./configure $XORG_CONFIG $docdir --disable-open-zfile
         ;;
         libXt-[0-9]* )
             ./configure $XORG_CONFIG $docdir \

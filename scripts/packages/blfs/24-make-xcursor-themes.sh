@@ -1,6 +1,6 @@
 #!/bin/bash
 # PACKAGE:  xcursor-themes
-# SOURCE:   xcursor-themes-*.tar.bz2
+# SOURCE:   xcursor-themes-*.tar.xz
 # RELEASE:  1
 # CLASS:    extra
 set -e
@@ -11,7 +11,7 @@ echo "Building BLFS-xcursor-themes.."
 
 . /etc/profile.d/xorg.sh
 
-tar -xf /sources/xcursor-themes-*.tar.bz2 -C /tmp/ \
+tar -xf /sources/xcursor-themes-*.tar.xz -C /tmp/ \
     && mv /tmp/xcursor-themes-* /tmp/xcursor-themes \
     && pushd /tmp/xcursor-themes \
     && ./configure $XORG_CONFIG  \

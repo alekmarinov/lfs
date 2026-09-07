@@ -1,6 +1,6 @@
 #!/bin/bash
 # PACKAGE:  util-macros
-# SOURCE:   util-macros-*.tar.bz2
+# SOURCE:   util-macros-*.tar.xz
 # RELEASE:  1
 # CLASS:    extra
 set -e
@@ -26,7 +26,7 @@ export XORG_PREFIX XORG_CONFIG
 EOF2
 chmod 644 /etc/profile.d/xorg.sh
 
-tar -xf /sources/util-macros-*.tar.bz2 -C /tmp/ \
+tar -xf /sources/util-macros-*.tar.xz -C /tmp/ \
     && mv /tmp/util-macros-* /tmp/util-macros \
     && pushd /tmp/util-macros \
     && ./configure $XORG_CONFIG \

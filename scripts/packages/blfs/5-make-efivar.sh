@@ -1,6 +1,6 @@
 #!/bin/bash
 # PACKAGE:  efivar
-# SOURCE:   efivar-*.tar.bz2
+# SOURCE:   efivar-*.tar.gz
 # RELEASE:  1
 # CLASS:    extra
 set -e
@@ -18,13 +18,13 @@ echo "Required disk space: 18 MB"
 # own flags after the caller's, so -Werror would come last and win. The sed
 # puts the exemption at the very end of its CFLAGS instead.
 
-tar -xf /sources/efivar-*.tar.bz2 -C /tmp/ \
+tar -xf /sources/efivar-*.tar.gz -C /tmp/ \
     && mv /tmp/efivar-* /tmp/efivar \
     && pushd /tmp/efivar \
     && sed '/prep :/a\\ttouch prep' -i src/Makefile \
     && sed '/sys\/mount\.h/d' -i src/util.h \
     && sed '/unistd\.h/a#include <sys/mount.h>' -i src/gpt.c src/linux.c \
-    && [ $(getconf LONG_BIT) = 64 ] || patch -Np1 -i /sources/efivar-38-i686-1.patch \
+    && : "no i686 patch: BLFS 12.4 dropped it, and efivar is 39 not 38" \
     && sed -i 's|$(call pkg-config-cflags)|$(call pkg-config-cflags) -Wno-error=enum-int-mismatch|' \
         src/include/defaults.mk \
     && make \
