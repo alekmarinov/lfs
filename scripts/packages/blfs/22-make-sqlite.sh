@@ -1,7 +1,7 @@
 #!/bin/bash
 # PACKAGE:  sqlite
 # SOURCE:   sqlite-autoconf-*.tar.gz
-# RELEASE:  1
+# RELEASE:  2
 # CLASS:    extra
 set -e
 echo "Building BLFS-sqlite.."
@@ -22,6 +22,7 @@ tar -xf /sources/sqlite-*.tar.gz -C /tmp/ \
     && ./configure \
         --prefix=/usr \
         --disable-static \
+        --soname=legacy \
         --enable-fts5 \
         CPPFLAGS="-DSQLITE_ENABLE_FTS3=1 \
                 -DSQLITE_ENABLE_FTS4=1 \
