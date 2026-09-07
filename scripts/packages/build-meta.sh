@@ -59,8 +59,32 @@ sudo mkdir -p "$INDEX"
 # no requires, because one run deleted the directory the other was filling.
 #
 # flock releases the lock when this process exits, however it exits.
-LOCK="${TMPDIR:-/tmp}/lfs-build-meta.lock"
-exec 9>"$LOCK"
+# The lock lives beside this tree, not in /tmp.
+#
+# /tmp is sticky and world-writable, and with fs.protected_regular set the
+# kernel refuses to open a regular file there for writing unless the caller
+# owns it - root included, capabilities notwithstanding. These scripts do not
+# all run as the same user: build-package.sh runs under sudo, while
+# build-meta.sh and build-repo.sh run as the invoking user and elevate per
+# command. So whoever created the lock first became the only user who could
+# ever take it again, and every later run died with
+#   /tmp/lfs-packages.lock: Permission denied
+# with deleting the file by hand as the only way out.
+#
+# The repository root is owned by the user, is not sticky, and root writes
+# there regardless - so both callers can always open the lock. $LFS_PACKAGES
+# would not do: it is root-owned, which fixes the sudo case and breaks the
+# other two.
+#
+# Opened for READING, not writing. flock(2) locks a descriptor and does not
+# care how it was opened, but open(2) for write does care: root creating the
+# file leaves it mode 644, and the next non-root run then cannot open it at
+# all. Reading needs only the read bit, which 644 grants everyone, so either
+# user can take the lock whichever of them created the file.
+
+LOCK="$BASE_DIR/.lfs-build-meta.lock"
+[ -e "$LOCK" ] || : > "$LOCK" 2>/dev/null || true
+exec 9<"$LOCK"
 if ! flock -n 9; then
     echo "another build-meta.sh is running (lock: $LOCK); waiting for it"
     flock 9

@@ -1,5 +1,6 @@
 #!/bin/bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+BASE_DIR=$( cd -- "$SCRIPT_DIR/../.." &> /dev/null && pwd )
 __NAME__=$(basename "$0")
 
 for var in LFS LFS_BASE LFS_PACKAGE LFS_PACKAGES; do
@@ -342,8 +343,49 @@ if [ $status -eq 0 ]; then
     fi
 
     # Archive package
+    #
+    # Written under the package-cache lock, because a tarball being created is
+    # a file that grows: anything reading it meanwhile sees a valid gzip
+    # stream of the wrong length. build-repo.sh hardlinks from this directory
+    # and records a size and a SHA256 for each package, and it did exactly
+    # that to a kernel mid-write - publishing Size 17385428 for a file which
+    # settled at 18044817, so the channel verified wrong rather than failing.
+    #
+# The lock lives beside this tree, not in /tmp.
+#
+# /tmp is sticky and world-writable, and with fs.protected_regular set the
+# kernel refuses to open a regular file there for writing unless the caller
+# owns it - root included, capabilities notwithstanding. These scripts do not
+# all run as the same user: build-package.sh runs under sudo, while
+# build-meta.sh and build-repo.sh run as the invoking user and elevate per
+# command. So whoever created the lock first became the only user who could
+# ever take it again, and every later run died with
+#   /tmp/lfs-packages.lock: Permission denied
+# with deleting the file by hand as the only way out.
+#
+# The repository root is owned by the user, is not sticky, and root writes
+# there regardless - so both callers can always open the lock. $LFS_PACKAGES
+# would not do: it is root-owned, which fixes the sudo case and breaks the
+# other two.
+#
+# Opened for READING, not writing. flock(2) locks a descriptor and does not
+# care how it was opened, but open(2) for write does care: root creating the
+# file leaves it mode 644, and the next non-root run then cannot open it at
+# all. Reading needs only the read bit, which 644 grants everyone, so either
+# user can take the lock whichever of them created the file.
+
+    #
+    # The lock is separate from build-meta.sh's. That one guards the metadata
+    # index against two of its own runs; this one guards the cache itself, and
+    # build-repo.sh calls build-meta.sh as a child - sharing one lock between
+    # them would deadlock the parent against its own child.
     package_name="$LFS_PACKAGES/${script_name%.*}.tar.gz"
-    tar cfz "$package_name" -C "$LFS_PACKAGE" .
+    CACHE_LOCK="$BASE_DIR/.lfs-packages.lock"
+    [ -e "$CACHE_LOCK" ] || : > "$CACHE_LOCK" 2>/dev/null || true
+    (
+        flock 8
+        tar cfz "$package_name" -C "$LFS_PACKAGE" .
+    ) 8<"$CACHE_LOCK"
     # Copy all but delete special files/dirs from destination
     "$SCRIPT_DIR/copy-or-del.sh" "$LFS_PACKAGE" "$LFS_BASE"
     # Clean package directory

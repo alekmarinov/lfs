@@ -21,3 +21,4 @@ image.img
 # incidentally by '*.img' and 'rootfs/', which missed anything named otherwise -
 # a 7.2 GB image.img.wedged left by an interrupted build was staged for commit.
 /build
+.lfs-*.lock

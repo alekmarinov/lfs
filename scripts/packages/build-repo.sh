@@ -77,6 +77,51 @@ done
 # The index is what this reads, so it is brought up to date first.
 "$SCRIPT_DIR/build-meta.sh"
 
+# Nothing may be writing the package cache while this runs.
+#
+# Everything below hardlinks out of $PACKAGES_DIR and records a size and a
+# SHA256 for each file. A package still being written by build-package.sh is
+# a file that grows, so those two numbers describe a prefix of it - and the
+# channel then verifies wrong, which is worse than failing, because the index
+# is signed and looks authoritative.
+#
+# Taken after build-meta.sh rather than before: build-meta is a child process
+# and takes a lock of its own, so holding this one across the call would be
+# fine, but holding *its* lock would deadlock. Keeping the two separate keeps
+# that impossible rather than merely avoided.
+#
+# flock releases on exit however this exits.
+# The lock lives beside this tree, not in /tmp.
+#
+# /tmp is sticky and world-writable, and with fs.protected_regular set the
+# kernel refuses to open a regular file there for writing unless the caller
+# owns it - root included, capabilities notwithstanding. These scripts do not
+# all run as the same user: build-package.sh runs under sudo, while
+# build-meta.sh and build-repo.sh run as the invoking user and elevate per
+# command. So whoever created the lock first became the only user who could
+# ever take it again, and every later run died with
+#   /tmp/lfs-packages.lock: Permission denied
+# with deleting the file by hand as the only way out.
+#
+# The repository root is owned by the user, is not sticky, and root writes
+# there regardless - so both callers can always open the lock. $LFS_PACKAGES
+# would not do: it is root-owned, which fixes the sudo case and breaks the
+# other two.
+#
+# Opened for READING, not writing. flock(2) locks a descriptor and does not
+# care how it was opened, but open(2) for write does care: root creating the
+# file leaves it mode 644, and the next non-root run then cannot open it at
+# all. Reading needs only the read bit, which 644 grants everyone, so either
+# user can take the lock whichever of them created the file.
+
+CACHE_LOCK="$BASE_DIR/.lfs-packages.lock"
+[ -e "$CACHE_LOCK" ] || : > "$CACHE_LOCK" 2>/dev/null || true
+exec 8<"$CACHE_LOCK"
+if ! flock -n 8; then
+    echo "a package build is writing the cache (lock: $CACHE_LOCK); waiting for it"
+    flock 8
+fi
+
 ABI=$("$SCRIPT_DIR/abi-id.sh")
 
 # The human name for this channel, beside the id.
