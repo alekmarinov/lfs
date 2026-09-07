@@ -55,7 +55,22 @@ find_recipe() {
 # The signing key never lives in the repository. .env is committed and already
 # carries a root password; a private key must not follow it in. Override with
 # REPO_KEY or --key.
-KEY="${REPO_KEY:-$HOME/.config/lfs/repo-signing.key}"
+#
+# Under sudo $HOME is /root, so the invoking user's home is tried too - the
+# same fallback publish-repo.sh uses for its credentials. Without it, a
+# 'sudo make repo' finds no key where it looked, generates a fresh one below,
+# and signs the channel with a key nothing in the field trusts. That failure
+# is silent at the point it happens and only shows up as every installed
+# system rejecting the next update.
+KEY="${REPO_KEY:-}"
+if [ -z "$KEY" ]; then
+    KEY="$HOME/.config/lfs/repo-signing.key"
+    if [ ! -f "$KEY" ] && [ -n "${SUDO_USER:-}" ]; then
+        user_home=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+        [ -n "$user_home" ] && [ -f "$user_home/.config/lfs/repo-signing.key" ] \
+            && KEY="$user_home/.config/lfs/repo-signing.key"
+    fi
+fi
 OUT="repo"
 sign=1
 force_stale=0
@@ -400,6 +415,21 @@ done < <(find "$CHANNEL" -maxdepth 1 -name '*.lpkg' -print 2>/dev/null)
 # hash. Per package signatures would cost more and buy nothing while there is
 # one publisher.
 if [ $sign -eq 1 ]; then
+    if [ ! -f "$KEY" ] && [ -f "$CHANNEL/INDEX.pub" ]; then
+        # A channel that already carries a public key has been published, and
+        # systems in the field trust that key. Generating a replacement here
+        # would sign an update none of them will accept, so this stops rather
+        # than guesses which key was meant.
+        echo
+        echo "No signing key at $KEY, but $CHANNEL/INDEX.pub exists -"
+        echo "this channel has already been published under some key. Signing"
+        echo "it with a new one makes every system which trusts the old one"
+        echo "reject the update."
+        echo
+        echo "Point at the right key with --key <file> or REPO_KEY, or pass"
+        echo "--no-sign to build the channel without signing it."
+        exit 1
+    fi
     if [ ! -f "$KEY" ]; then
         echo
         echo "No signing key at $KEY - generating one."
