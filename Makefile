@@ -116,6 +116,15 @@ docker:
 	EXPECT_DISTRO=$(if $(filter command line,$(origin DISTRO)),$(DISTRO)) \
 		./scripts/image/build-docker.sh $(DISTRO) $(TAG)
 
+# Archives the BUILD BASE as a docker image - an SDK, not a distro.
+#
+# 'make docker' images an assembled rootfs, which is what a machine runs.
+# This images $(LFS_BASE), which is what a package is compiled against, so a
+# project outside this tree can build its own packages without waiting for
+# the single $(LFS) mount point to be free.
+sdk-docker:
+	./scripts/image/build-sdk-docker.sh $(TAG)
+
 # Turns $(OUT)/rootfs into the bootable $(OUT)/image.img
 #
 # It takes the same DISTRO as 'make distro', because that is what says which
