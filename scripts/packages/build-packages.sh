@@ -295,6 +295,18 @@ $build /scripts/packages/blfs/43-make-gstreamer.sh
 $build /scripts/packages/blfs/43-make-gst-plugins-base.sh
 $build /scripts/packages/blfs/43-make-gst-plugins-bad.sh
 
+# WPE WebKit itself. libwpe is the interface, wpebackend-fdo the Wayland
+# implementation of it, wpewebkit the engine, and cog the launcher that makes
+# the three of them a browser.
+#
+# After gstreamer, because WebKit plays media through it rather than through
+# anything of its own, and after mesa, because the backend renders through
+# EGL. wpewebkit is the longest build in this file - longer than Firefox.
+$build /scripts/packages/blfs/44-make-libwpe.sh
+$build /scripts/packages/blfs/44-make-wpebackend-fdo.sh
+$build /scripts/packages/blfs/44-make-wpewebkit.sh
+$build /scripts/packages/blfs/44-make-cog.sh
+
 $build /scripts/packages/blfs/27-make-fluxbox.sh
 $build /scripts/packages/blfs/5-make-grub.sh
 
