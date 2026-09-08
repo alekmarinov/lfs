@@ -23,6 +23,13 @@ echo "Required disk space: 15 MB"
 #
 # NOTE the shared library is not built by default; BUILD_SHARED_LIBS is what
 # gives libwoff2dec.so, which is what WebKit looks for.
+#
+# NOTE CMAKE_POLICY_VERSION_MINIMUM. woff2 1.0.2 is from 2017 and asks for
+# cmake_minimum_required(VERSION 3.0); CMake 4 removed compatibility below
+# 3.5 and refuses to configure at all. This tells it to proceed under 3.5
+# policies, which is what the error message itself suggests. The alternative
+# is patching the upstream CMakeLists, which is a change to carry forever for
+# a project that has not been released since.
 
 rm -rf /tmp/woff2
 tar -xf /sources/woff2-*.tar.gz -C /tmp/
@@ -34,6 +41,7 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/usr \
       -DCMAKE_INSTALL_LIBDIR=/usr/lib \
       -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
       -G Ninja \
       ..
 ninja
