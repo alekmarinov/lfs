@@ -58,6 +58,14 @@ echo "Required disk space: 12 GB"
 # fonts - visibly wrong rather than subtly degraded. brotli and woff2 are
 # built for it.
 #
+# NOTE -G Ninja because the build below runs ninja. Without it cmake writes
+# Makefiles, configure reports success, and ninja then fails on a build.ninja
+# that was never generated.
+#
+# NOTE USE_SOUP2 and USE_SYSTEMD are not passed: 2.52.6 knows neither, and
+# cmake reports unused variables rather than failing on them, so they would
+# sit here looking meaningful forever. libsoup 3 is the only option now.
+#
 # NOTE USE_SYSTEM_SYSPROF_CAPTURE=NO uses the copy of libsysprof-capture that
 # WebKit already carries, rather than requiring one on the system. sysprof is
 # a profiler's data capture library; nothing here profiles WebKit, and the
@@ -79,7 +87,8 @@ mv /tmp/wpewebkit-[0-9]* /tmp/wpewebkit
 pushd /tmp/wpewebkit
 mkdir build
 cd build
-cmake -DPORT=WPE \
+cmake -G Ninja \
+      -DPORT=WPE \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/usr \
       -DCMAKE_SKIP_INSTALL_RPATH=ON \
@@ -87,8 +96,6 @@ cmake -DPORT=WPE \
       -DENABLE_INTROSPECTION=OFF \
       -DENABLE_JOURNALD_LOG=OFF \
       -DENABLE_WEB_RTC=ON \
-      -DUSE_SOUP2=OFF \
-      -DUSE_SYSTEMD=OFF \
       -DENABLE_MINIBROWSER=OFF \
       -DENABLE_SPEECH_SYNTHESIS=OFF \
       -DENABLE_BUBBLEWRAP_SANDBOX=OFF \
