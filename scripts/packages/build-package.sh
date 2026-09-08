@@ -94,6 +94,46 @@ flag_file="tmp/${script_name%.*}.ready"
 log_file="${script_name%.*}.log"
 echo -ne "...... $script_path -> $log_file"
 if [[ ! -f "$flag_file" || $o_force -eq 1 ]]; then
+    # One build at a time, across every project that builds into this tree.
+    #
+    # $LFS and $LFS_PACKAGE are one overlay and one upper layer, shared by
+    # 'make packages' here and 'make distro-packages' from a distro kept in
+    # another repository. Two builds in them at once destroy each other's work,
+    # and they do it quietly.
+    #
+    # Twice, measured. On 6 September a ruby build and an audi build overlapped
+    # and ruby's package came out holding 5166 audi files and no ruby at all -
+    # a plausible looking 223 MB tarball whose only symptom appeared two days
+    # later as 'Ruby 2.5 or higher is required' in the middle of WebKit's
+    # configure. On 8 September the rebuild of that same package was wiped
+    # mid-copy by an inteliboy-adapters build clearing $LFS_PACKAGE, and
+    # copy-or-del.sh reported a ruby documentation file it had just listed as
+    # 'No such file or directory'.
+    #
+    # The overlay check below is not enough on its own. It only sees a build
+    # that still has $LFS mounted, and the damage happens after the unmount:
+    # stripping, tarring, copying into the base and clearing the upper layer
+    # all run with nothing mounted and nothing held.
+    #
+    # Taken here rather than at the top of the script, so that the ~250 recipes
+    # a run skips do not queue behind a build they will not perform. Held to
+    # the end of the script, which is where the upper layer is cleared, and
+    # released by the shell closing the descriptor however this exits.
+    BUILD_LOCK="$BASE_DIR/.lfs-build.lock"
+    [ -e "$BUILD_LOCK" ] || : > "$BUILD_LOCK" 2>/dev/null || true
+    # Read-only: flock(2) locks the descriptor whatever it was opened for, and
+    # these scripts do not all run as the same user - build-package.sh under
+    # sudo, build-repo.sh as the invoking user. Opening for write is what makes
+    # the file's ownership decide who may ever take the lock again.
+    if exec 7<"$BUILD_LOCK" 2>/dev/null; then
+        if ! flock -n 7; then
+            echo -ne "\r\n$__NAME__: another build holds $BUILD_LOCK; waiting for it\n"
+            flock 7
+        fi
+    else
+        echo "$__NAME__: cannot open $BUILD_LOCK; building without a lock"
+    fi
+
     # An overlay already on $LFS means a previous build did not unmount it -
     # it was interrupted, or its unmount failed. Mounting again stacks a second
     # overlay on top of the first, and nothing says so: the mounts pile up, a
