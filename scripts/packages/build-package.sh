@@ -384,7 +384,15 @@ if [ $status -eq 0 ]; then
     [ -e "$CACHE_LOCK" ] || : > "$CACHE_LOCK" 2>/dev/null || true
     (
         flock 8
-        tar cfz "$package_name" -C "$LFS_PACKAGE" .
+        # ./tmp/* and not ./tmp: the directory entry is real content -
+        # 7.5-create-directories.sh ships /tmp as drwxrwxrwt, and dropping it
+        # would lose the sticky bit. What is inside it is not. Every recipe
+        # writes its build log to /tmp/<recipe>.log, so every package was
+        # carrying one, glibc and firefox included, and make-ca carried two
+        # mktemp directories besides. The log is still written and still left
+        # in $LFS_PACKAGE/tmp, which is where the failure path reads it from
+        # after $LFS is unmounted - it is just no longer shipped.
+        tar cfz "$package_name" --exclude='./tmp/*' -C "$LFS_PACKAGE" .
     ) 8<"$CACHE_LOCK"
     # Copy all but delete special files/dirs from destination
     "$SCRIPT_DIR/copy-or-del.sh" "$LFS_PACKAGE" "$LFS_BASE"
