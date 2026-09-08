@@ -392,7 +392,23 @@ if [ $status -eq 0 ]; then
         # mktemp directories besides. The log is still written and still left
         # in $LFS_PACKAGE/tmp, which is where the failure path reads it from
         # after $LFS is unmounted - it is just no longer shipped.
-        tar cfz "$package_name" --exclude='./tmp/*' -C "$LFS_PACKAGE" .
+        #
+        # Written beside the target and renamed onto it, never written in
+        # place. build-repo.sh hardlinks the channel's copy to this very
+        # inode, so writing straight onto $package_name rewrites whatever the
+        # channel already published under its own name - the bytes change
+        # while the name, which the index promises is immutable, does not.
+        #
+        # Measured: rebuilding lpkg left lpkg-10-1.x86_64.lpkg in the channel
+        # holding lpkg 11, flock and all. rename(2) replaces the directory
+        # entry and leaves the old inode alone, so a published file keeps the
+        # bytes it was published with and 'make repo' decides deliberately
+        # whether a new name is warranted.
+        #
+        # It also makes the cache file atomic: nothing ever reads a tarball
+        # that is still being written.
+        tar cfz "$package_name.new" --exclude='./tmp/*' -C "$LFS_PACKAGE" .
+        mv -f "$package_name.new" "$package_name"
     ) 8<"$CACHE_LOCK"
     # Copy all but delete special files/dirs from destination
     "$SCRIPT_DIR/copy-or-del.sh" "$LFS_PACKAGE" "$LFS_BASE"

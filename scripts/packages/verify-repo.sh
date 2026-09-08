@@ -137,47 +137,53 @@ else
 fi
 
 # ---- 4. the channel file is the package its stanza names --------------------
-# Checks 1 to 3 cannot see this one. A channel file is a hardlink out of the
-# package cache, and the index is built from whatever that link points at - so
-# a file linked to the wrong package hashes exactly to what the index says
-# about it and passes every check above. Self-consistent, and wrong.
+# Checks 1 to 3 cannot see this one. The index is built from whatever file sits
+# under each name, so a file carrying the wrong package hashes exactly to what
+# the index says about it and passes everything above. Self-consistent, and
+# wrong.
 #
 # Measured: linux-kernel-6.16.1-1.x86_64.lpkg was linked to the InteliBoy
-# kernel and carried vmlinuz-6.16.1-inteliboy. build-repo.sh leaves an
-# existing name alone, because a package file never changes under its name,
-# and --prune keeps it because the index references it. Publishing it would
-# have shipped an appliance kernel to every desktop distro. 'Channel is good'
-# is what this script said at the time.
+# kernel and carried vmlinuz-6.16.1-inteliboy. build-repo.sh leaves an existing
+# name alone, because a package file never changes under its name, and --prune
+# keeps it because the index references it. Publishing it would have shipped an
+# appliance kernel to every desktop distro. 'Channel is good' is what this
+# script said at the time.
 #
-# Not part of "the way a system installing would see it": a client has no
-# cache to compare against. It is the publisher's check, and it is skipped
-# with a word rather than silently when the cache is not there - verifying a
-# channel downloaded from R2 is a perfectly ordinary thing to do.
-PACKAGES_DIR="${LFS_PACKAGES:-packages}"
-if [ -d "$PACKAGES_DIR" ]; then
-    mismatched=0; comparable=0
-    while IFS=$'\t' read -r file size sha name recipe; do
-        [ -n "$recipe" ] || continue
-        cache="$PACKAGES_DIR/$recipe.tar.gz"
-        [ -f "$cache" ] && [ -f "$CHANNEL/$file" ] || continue
-        comparable=$((comparable + 1))
-        if [ "$(stat -c%i "$cache")" != "$(stat -c%i "$CHANNEL/$file")" ]; then
-            echo "  $file is not $recipe's package:"
-            echo "    $cache is $(stat -c%s "$cache") bytes"
-            echo "    the channel file is $(stat -c%s "$CHANNEL/$file") bytes"
-            mismatched=$((mismatched + 1))
-        fi
-    done < "$WORK/files"
-    if [ "$mismatched" -gt 0 ]; then
-        echo "  $mismatched file(s) do not come from the recipe the index names."
-        echo "  Delete them from the channel and run 'make repo' again."
-        faults=$((faults + 1))
-    else
-        echo "  $comparable package(s) come from the recipe the index names"
+# Asked of the package's own .meta/PKGINFO rather than of the cache. An earlier
+# version compared inodes against $LFS_PACKAGES, which broke the moment
+# build-package.sh started writing through a temporary - a rebuilt package is a
+# new inode, and the channel legitimately keeps the bytes it published. PKGINFO
+# is what the package says it is, so this needs no cache and works just as well
+# on a channel downloaded from R2.
+#
+# --occurrence=1 stops tar at the first match. Without it this decompresses
+# every archive in full: 1.96s for firefox against 0.003s with it.
+mismatched=0; unreadable=0; checked4=0
+while IFS=$'\t' read -r file size sha name recipe; do
+    [ -f "$CHANNEL/$file" ] || continue
+    info=$(tar xzOf "$CHANNEL/$file" --occurrence=1 ./.meta/PKGINFO 2>/dev/null) || true
+    if [ -z "$info" ]; then
+        unreadable=$((unreadable + 1)); continue
     fi
+    checked4=$((checked4 + 1))
+    got_recipe=$(printf '%s\n' "$info" | sed -n 's/^recipe=//p')
+    got_id=$(printf '%s\n' "$info" | sed -n 's/^name=//p')
+    if [ -n "$recipe" ] && [ -n "$got_recipe" ] && [ "$got_recipe" != "$recipe" ]; then
+        echo "  $file says it was built by '$got_recipe', the index says '$recipe'"
+        mismatched=$((mismatched + 1))
+    elif [ -n "$got_id" ] && [ "$got_id" != "$name" ]; then
+        echo "  $file contains '$got_id', the index calls it '$name'"
+        mismatched=$((mismatched + 1))
+    fi
+done < "$WORK/files"
+if [ "$mismatched" -gt 0 ]; then
+    echo "  $mismatched file(s) are not the package the index names."
+    echo "  Delete them from the channel and run 'make repo' again."
+    faults=$((faults + 1))
 else
-    echo "  no package cache here, so which recipe built each file is unchecked"
+    echo "  $checked4 package(s) agree with the index about what they are"
 fi
+[ "$unreadable" -gt 0 ] && echo "  ($unreadable carried no readable .meta/PKGINFO)"
 
 echo
 if [ "$faults" -gt 0 ]; then
