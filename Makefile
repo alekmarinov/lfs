@@ -140,6 +140,12 @@ image:
 # Worth running before 'make packages': an unpinned source glob resolves to
 # two tarballs and fails hours into the build, and a missing version is not
 # visible until a package is published.
+#
+# DISTRO adds that distro's own recipes, and for a distro kept in another
+# repository it is the only way they are seen at all. Two recipes claiming one
+# name-version-release is the fault this catches, and it is the fault an
+# external distro is most likely to introduce, because it cannot see what the
+# book already builds.
 packages-lint:
 	@./scripts/packages/lint-packages.sh
 

@@ -31,9 +31,26 @@ recipes=()
 if [ $# -gt 0 ]; then
     recipes=("$@")
 else
+    # distros/*/packages/ covers a distro kept inside this tree. No distro
+    # here has recipes of its own, so that glob has always matched nothing,
+    # and the distro that does bring recipes - InteliBoy - lives in its own
+    # repository and was never linted at all.
+    #
+    # That is not a hypothetical gap. Its kernel recipe and the book's both
+    # declared '# PACKAGE: linux-kernel' at the same version and release, and
+    # the check below is exactly the one that catches it. Nothing ran it over
+    # them, so the collision was found by build-repo.sh refusing to publish,
+    # months later, with a channel already half assembled.
+    #
+    # DISTRO takes what 'make distro-packages' takes: a name in this tree or a
+    # path to one outside it.
     while IFS= read -r r; do recipes+=("$r"); done < <(
         ls scripts/packages/lfs/*.sh scripts/packages/blfs/*.sh 2>/dev/null
         ls distros/*/packages/*.sh 2>/dev/null
+        if [ -n "${DISTRO:-}" ]; then
+            d=$("$BASE_DIR/scripts/resolve-distro.sh" "$DISTRO" 2>/dev/null) \
+                && ls "$d"/packages/*.sh 2>/dev/null
+        fi
     )
 fi
 
