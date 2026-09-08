@@ -302,6 +302,10 @@ $build /scripts/packages/blfs/43-make-gst-plugins-bad.sh
 # After gstreamer, because WebKit plays media through it rather than through
 # anything of its own, and after mesa, because the backend renders through
 # EGL. wpewebkit is the longest build in this file - longer than Firefox.
+# WOFF2 web fonts, and the compression they use. Before wpewebkit, which
+# looks for libwoff2dec at configure time.
+$build /scripts/packages/blfs/9-make-brotli.sh
+$build /scripts/packages/blfs/9-make-woff2.sh
 $build /scripts/packages/blfs/44-make-libwpe.sh
 $build /scripts/packages/blfs/44-make-wpebackend-fdo.sh
 $build /scripts/packages/blfs/44-make-wpewebkit.sh

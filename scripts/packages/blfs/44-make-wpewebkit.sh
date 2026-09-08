@@ -34,6 +34,37 @@ echo "Required disk space: 12 GB"
 # RelWithDebInfo build of WebKit produces several gigabytes of symbols that
 # strip-packages.sh then has to walk.
 #
+# NOTE speech synthesis is off. WebKit's implementation wants Flite, a small
+# text to speech engine, and enabling it would mean carrying a second speech
+# stack: the appliance already synthesises speech through audi, which is the
+# component whose whole job that is. The cost is that a page calling the Web
+# Speech API's speechSynthesis gets nothing - worth knowing if a page is ever
+# expected to talk on its own rather than through the adapters.
+#
+# NOTE five options WebKit turns on by default are turned off here, and the
+# reasoning differs for each rather than being "we did not have the library":
+#
+#   USE_JPEGXL      JPEG XL is barely deployed - Chrome removed support - and
+#                   libjxl would pull brotli and highway to decode it.
+#   USE_AVIF        growing, but a page serving AVIF almost always serves a
+#                   JPEG beside it. Decoding it needs dav1d, an AV1 decoder,
+#                   which is a real dependency to carry for a fallback.
+#   USE_LIBHYPHEN   automatic hyphenation. Cosmetic.
+#   USE_LIBBACKTRACE  symbolised crash traces. A developer aid on a machine
+#                   nobody debugs on.
+#
+# WOFF2 is deliberately NOT in that list. It is how essentially every site
+# ships its fonts, and a browser without it renders real pages in fallback
+# fonts - visibly wrong rather than subtly degraded. brotli and woff2 are
+# built for it.
+#
+# NOTE the bubblewrap sandbox is off, which is a security decision and not a
+# packaging one. With it on, the process that parses HTML, images and fonts
+# from the network runs confined; with it off, a bug in that parser is a bug
+# in the appliance. It is off because this browser is expected to display
+# content the deployment controls. If it is ever pointed at the open web,
+# build bubblewrap and xdg-dbus-proxy and turn this back on.
+#
 # NOTE this is the longest build in the tree, Firefox included. Expect hours.
 
 rm -rf /tmp/wpewebkit
@@ -53,6 +84,12 @@ cmake -DPORT=WPE \
       -DUSE_SOUP2=OFF \
       -DUSE_SYSTEMD=OFF \
       -DENABLE_MINIBROWSER=OFF \
+      -DENABLE_SPEECH_SYNTHESIS=OFF \
+      -DENABLE_BUBBLEWRAP_SANDBOX=OFF \
+      -DUSE_JPEGXL=OFF \
+      -DUSE_AVIF=OFF \
+      -DUSE_LIBHYPHEN=OFF \
+      -DUSE_LIBBACKTRACE=OFF \
       -Wno-dev \
       ..
 ninja
