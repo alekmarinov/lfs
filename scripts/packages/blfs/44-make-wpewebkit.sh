@@ -58,6 +58,12 @@ echo "Required disk space: 12 GB"
 # fonts - visibly wrong rather than subtly degraded. brotli and woff2 are
 # built for it.
 #
+# NOTE USE_SYSTEM_SYSPROF_CAPTURE=NO uses the copy of libsysprof-capture that
+# WebKit already carries, rather than requiring one on the system. sysprof is
+# a profiler's data capture library; nothing here profiles WebKit, and the
+# bundled copy is what upstream builds against anyway. This is the wording the
+# configure error itself suggests.
+#
 # NOTE the bubblewrap sandbox is off, which is a security decision and not a
 # packaging one. With it on, the process that parses HTML, images and fonts
 # from the network runs confined; with it off, a bug in that parser is a bug
@@ -90,6 +96,7 @@ cmake -DPORT=WPE \
       -DUSE_AVIF=OFF \
       -DUSE_LIBHYPHEN=OFF \
       -DUSE_LIBBACKTRACE=OFF \
+      -DUSE_SYSTEM_SYSPROF_CAPTURE=NO \
       -Wno-dev \
       ..
 ninja
