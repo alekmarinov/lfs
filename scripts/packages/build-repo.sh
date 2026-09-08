@@ -321,7 +321,19 @@ for dir in "$INDEX_DIR"/*/; do
             echo "buildrequires=$breq"
         } > "$WORK/src/.meta/SRCINFO"
         mkdir -p "$CHANNEL/src"
-        tar czf "$CHANNEL/src/$lsrc" -C "$WORK/src" .
+        # Built reproducibly, so an unchanged recipe keeps its hash. Without
+        # this the tarball carries this run's mtimes and this user's name, so
+        # every .lsrc changed on every 'make repo' - all 235 of them - and the
+        # index churned 235 lines whether or not anything had happened. That
+        # costs little bandwidth, the files total under a megabyte, but it
+        # buries the lines that did change: comparing a rebuilt index against
+        # the published one showed 235 differences and no way to see which
+        # mattered.
+        #
+        # gzip -n as well as tar --mtime, because the gzip header carries a
+        # timestamp of its own that 'tar czf' does not suppress.
+        tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner \
+            -cf - -C "$WORK/src" . | gzip -n -9 > "$CHANNEL/src/$lsrc"
         lsrc_sha=$(sha256sum "$CHANNEL/src/$lsrc" | cut -d' ' -f1)
 
         if [ -n "${PKG_TARBALL:-}" ] && [ -f "$SOURCES/$PKG_TARBALL" ]; then
