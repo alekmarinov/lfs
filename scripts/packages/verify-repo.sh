@@ -79,18 +79,19 @@ trap 'rm -rf "$WORK"' EXIT
 
 awk '
     /^Package: /   { name = substr($0, 10) }
+    /^Recipe: /    { recipe = substr($0, 9) }
     /^File: /      { file = substr($0, 7) }
     /^Size: /      { size = substr($0, 7) }
     /^SHA256: /    { sha  = substr($0, 9) }
     /^Provides: /            { print "P\t" substr($0, 11) > pf }
     /^Provides-Fallback: /   { print "F\t" substr($0, 20) > pf }
     /^Requires: /            { print name "\t" substr($0, 11) > rf }
-    /^$/ { if (file != "") print file "\t" size "\t" sha "\t" name; file = "" }
-    END  { if (file != "") print file "\t" size "\t" sha "\t" name }
+    /^$/ { if (file != "") print file "\t" size "\t" sha "\t" name "\t" recipe; file = "" }
+    END  { if (file != "") print file "\t" size "\t" sha "\t" name "\t" recipe }
 ' pf="$WORK/prov" rf="$WORK/req" "$CHANNEL/INDEX" > "$WORK/files"
 
 n=0; missing=0; wrongsize=0; wronghash=0
-while IFS=$'\t' read -r file size sha name; do
+while IFS=$'\t' read -r file size sha name recipe; do
     n=$((n + 1))
     p="$CHANNEL/$file"
     if [ ! -f "$p" ]; then
@@ -133,6 +134,49 @@ if [ -s "$WORK/unmet" ]; then
     faults=$((faults + 1))
 else
     echo "  closed - every soname required is provided within the channel"
+fi
+
+# ---- 4. the channel file is the package its stanza names --------------------
+# Checks 1 to 3 cannot see this one. A channel file is a hardlink out of the
+# package cache, and the index is built from whatever that link points at - so
+# a file linked to the wrong package hashes exactly to what the index says
+# about it and passes every check above. Self-consistent, and wrong.
+#
+# Measured: linux-kernel-6.16.1-1.x86_64.lpkg was linked to the InteliBoy
+# kernel and carried vmlinuz-6.16.1-inteliboy. build-repo.sh leaves an
+# existing name alone, because a package file never changes under its name,
+# and --prune keeps it because the index references it. Publishing it would
+# have shipped an appliance kernel to every desktop distro. 'Channel is good'
+# is what this script said at the time.
+#
+# Not part of "the way a system installing would see it": a client has no
+# cache to compare against. It is the publisher's check, and it is skipped
+# with a word rather than silently when the cache is not there - verifying a
+# channel downloaded from R2 is a perfectly ordinary thing to do.
+PACKAGES_DIR="${LFS_PACKAGES:-packages}"
+if [ -d "$PACKAGES_DIR" ]; then
+    mismatched=0; comparable=0
+    while IFS=$'\t' read -r file size sha name recipe; do
+        [ -n "$recipe" ] || continue
+        cache="$PACKAGES_DIR/$recipe.tar.gz"
+        [ -f "$cache" ] && [ -f "$CHANNEL/$file" ] || continue
+        comparable=$((comparable + 1))
+        if [ "$(stat -c%i "$cache")" != "$(stat -c%i "$CHANNEL/$file")" ]; then
+            echo "  $file is not $recipe's package:"
+            echo "    $cache is $(stat -c%s "$cache") bytes"
+            echo "    the channel file is $(stat -c%s "$CHANNEL/$file") bytes"
+            mismatched=$((mismatched + 1))
+        fi
+    done < "$WORK/files"
+    if [ "$mismatched" -gt 0 ]; then
+        echo "  $mismatched file(s) do not come from the recipe the index names."
+        echo "  Delete them from the channel and run 'make repo' again."
+        faults=$((faults + 1))
+    else
+        echo "  $comparable package(s) come from the recipe the index names"
+    fi
+else
+    echo "  no package cache here, so which recipe built each file is unchecked"
 fi
 
 echo
