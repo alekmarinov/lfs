@@ -43,7 +43,7 @@
 # looking for a library version that was never here.
 set -u
 
-VERSION=10
+VERSION=11
 
 # --------------------------------------------------------------------- setup
 
@@ -430,8 +430,16 @@ cmd_sync() {
     [ "$iabi" = "$abi" ] || die "channel is for ABI $iabi, this system is $abi"
 
     mkdir -p "$DB/channels"
-    cp "$WORK/INDEX" "$INDEX"
-    [ -f "$WORK/INDEX.sig" ] && cp "$WORK/INDEX.sig" "$DB/channels/INDEX.sig"
+    # Written through a temporary in the same directory and renamed, because
+    # 'lpkg info' and 'lpkg list --upgradable' sync before they read, and
+    # those are not under the transaction lock below - a plain cp lets one of
+    # them read an index that is half replaced. rename(2) within a directory
+    # is atomic, so a reader sees either the old index or the new one.
+    cp "$WORK/INDEX" "$INDEX.new" && mv -f "$INDEX.new" "$INDEX"
+    if [ -f "$WORK/INDEX.sig" ]; then
+        cp "$WORK/INDEX.sig" "$DB/channels/INDEX.sig.new" \
+            && mv -f "$DB/channels/INDEX.sig.new" "$DB/channels/INDEX.sig"
+    fi
     echo "$(grep -c '^Package: ' "$INDEX") packages in channel $abi/$arch"
     channel_status "$abi"
 }
@@ -1388,6 +1396,44 @@ cmd_verify() {
     [ "$missing" -gt 0 ] && exit 1
     return 0
 }
+
+# One transaction at a time, per root.
+#
+# Nothing stopped two from running at once. A scheduled upgrade on the device
+# and an 'lpkg upgrade' over ssh interleave over the same files: both read the
+# same installed version, both unpack into the same paths, and the owners
+# index and the per-package file lists are rewritten by whichever finishes
+# last. The package database then describes neither transaction.
+#
+# Taken here rather than inside each command, because cmd_upgrade calls
+# cmd_install - acquiring in both would have the process wait for a lock it
+# already holds.
+#
+# Read-only commands are deliberately outside it: 'lpkg list' and 'lpkg info'
+# should answer while a long install runs, and the atomic index write above is
+# what makes that safe. A --dry-run writes nothing either.
+#
+# Under $DB, so --root locks the tree being modified rather than this one, and
+# so a container installing into its own root does not block the host.
+#
+# flock is not fatal if missing: an lpkg that refuses to run because
+# util-linux is not there yet is worse than one that runs unserialised, and
+# the first thing a new root does is install packages.
+case "$CMD" in
+    install|remove|upgrade|build)
+        if [ "${DRY_RUN:-0}" != 1 ] && command -v flock > /dev/null; then
+            LOCK="$DB/lock"
+            [ -e "$LOCK" ] || : > "$LOCK" 2>/dev/null || true
+            if exec 9<"$LOCK" 2>/dev/null; then
+                if ! flock -n 9; then
+                    echo "another lpkg transaction is running on $ROOT; waiting"
+                    flock 9
+                fi
+            else
+                warn "cannot open $LOCK; running without a transaction lock"
+            fi
+        fi ;;
+esac
 
 case "$CMD" in
     sync)    NO_SYNC=1; cmd_sync ;;
