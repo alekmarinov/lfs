@@ -1,7 +1,7 @@
 #!/bin/bash
 # PACKAGE:  mesa
 # SOURCE:   mesa-*.tar.xz
-# RELEASE:  1
+# RELEASE:  2
 # GROUP:    xorg
 # CLASS:    extra
 set -e
@@ -62,7 +62,7 @@ meson --prefix=$XORG_PREFIX \
       --buildtype=release \
       -Dgallium-drivers=nouveau,iris,crocus,llvmpipe,softpipe \
       -Dvulkan-drivers= \
-      -Dplatforms=x11 \
+      -Dplatforms=x11,wayland \
       -Dglx=dri \
       -Degl=enabled \
       -Dgbm=enabled \
