@@ -2,7 +2,7 @@
 # PACKAGE:  freetype
 # SOURCE:   freetype-[0-9]*.tar.xz
 # VERSION:  2.13.3
-# RELEASE:  1
+# RELEASE:  2
 # CLASS:    extra
 set -e
 echo "Building BLFS-freetype2.."
