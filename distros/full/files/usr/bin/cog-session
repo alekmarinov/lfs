@@ -41,4 +41,16 @@ URL="${1:-${COG_URL:-https://www.linuxfromscratch.org/}}"
 COG_PLATFORM_NAME=drm
 export COG_PLATFORM_NAME
 
-exec cog --platform=drm "$URL"
+# renderer=gles, explicitly.
+#
+# Cog's DRM platform has two renderers and picks 'modeset' by default here:
+# it draws into a dumb buffer and the CPU copies it to the scanout, which on
+# this hardware looks exactly like a slow desktop. 'gles' goes through EGL and
+# GBM onto the GPU. Measured on a GeForce GT 610 with nouveau: with the
+# default, cog maps no GL driver at all; with this, it maps libgallium and
+# holds /dev/dri/card0, and the difference is visible.
+#
+# It is not the default because cog cannot always tell in advance that GLES
+# will work, and a browser that starts slowly beats one that does not start.
+# Here we know it works, so we ask for it.
+exec cog --platform=drm -O renderer=gles "$URL"
