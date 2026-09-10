@@ -302,6 +302,10 @@ $build /scripts/packages/blfs/43-make-gst-plugins-base.sh
 $build /scripts/packages/blfs/9-make-opus.sh
 $build /scripts/packages/blfs/9-make-libvpx.sh
 $build /scripts/packages/blfs/43-make-gst-plugins-good.sh
+# H.264 and AAC, which live nowhere else. ffmpeg first - gst-libav is a thin
+# wrapper over libavcodec and builds only if it finds it.
+$build /scripts/packages/blfs/9-make-ffmpeg.sh
+$build /scripts/packages/blfs/43-make-gst-libav.sh
 $build /scripts/packages/blfs/43-make-gst-plugins-bad.sh
 
 # WPE WebKit itself. libwpe is the interface, wpebackend-fdo the Wayland
