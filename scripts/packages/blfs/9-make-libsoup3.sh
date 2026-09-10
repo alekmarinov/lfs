@@ -2,7 +2,7 @@
 # PACKAGE:  libsoup3
 # SOURCE:   libsoup-3*.tar.xz
 # VERSION:  3.6.5
-# RELEASE:  1
+# RELEASE:  2
 # CLASS:    extra
 set -e
 echo "Building BLFS-libsoup 3.."

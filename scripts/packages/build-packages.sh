@@ -312,6 +312,15 @@ $build /scripts/packages/blfs/44-make-wpebackend-fdo.sh
 $build /scripts/packages/blfs/44-make-wpewebkit.sh
 $build /scripts/packages/blfs/44-make-cog.sh
 
+# lpkg itself. It was built by hand for a long time and was therefore always
+# a little behind its source: the channel carried lpkg 10 while the tree said
+# 11, and later a package stamped 11 that was actually 9. Nothing said so,
+# because nothing was building it.
+#
+# It is last because it is a shell script and depends on the build only for
+# the helpers it installs beside itself.
+$build /scripts/packages/blfs/x-make-lpkg.sh
+
 $build /scripts/packages/blfs/27-make-fluxbox.sh
 $build /scripts/packages/blfs/5-make-grub.sh
 
