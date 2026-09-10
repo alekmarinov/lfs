@@ -2,6 +2,7 @@
 # Publishes the built packages as a signed repository.
 #
 #   build-repo.sh [-o <dir>] [--key <file>] [--no-sign] [--force-stale]
+#                 [--force-abi]
 #
 # The layout is one channel per ABI, because that is the thing a package is
 # compatible with:
@@ -74,6 +75,7 @@ fi
 OUT="repo"
 sign=1
 force_stale=0
+force_abi=0
 prune=0
 with_source=1
 
@@ -83,6 +85,7 @@ while [[ $# -gt 0 ]]; do
         --key)         KEY="$2"; shift 2 ;;
         --no-sign)     sign=0; shift ;;
         --force-stale) force_stale=1; shift ;;
+        --force-abi)   force_abi=1; shift ;;
         --prune)       prune=1; shift ;;
         --no-source)   with_source=0; shift ;;
         *) echo "$(basename "$0"): unknown argument $1"; exit 1 ;;
@@ -256,15 +259,32 @@ for dir in "$INDEX_DIR"/*/; do
     # situation the stamp exists to catch, and it is worth catching here
     # rather than on a machine in somebody else's house.
     #
-    # Reported, not fatal. Publishing a mismatched package is wrong but
-    # publishing nothing is worse, and the stamp is only consulted by
-    # 'lpkg install --from': a package fetched from this channel is already
-    # known to belong to it by the path it came down.
+    # This used to report and publish anyway, on the reasoning that publishing
+    # nothing is worse and that the stamp is only consulted by 'lpkg install
+    # --from' - a package fetched from this channel being already known to
+    # belong to it by the path it came down.
+    #
+    # That reasoning rested on every package having been built in this tree
+    # against this core, which made the path true by construction. It is no
+    # longer so. Packages now arrive from the SDK container, built by projects
+    # that keep their own copy of the image, and a stale image publishing into
+    # the current channel is exactly the case where the path says one core and
+    # the bytes are another. The path stops being a shortcut and becomes a
+    # lie, and the one check that would have caught it is the one being
+    # skipped.
+    #
+    # So the package is left out, not the channel. "Publishing nothing is
+    # worse" argued against failing the whole run for one bad package, and it
+    # still does - everything else publishes. --force-abi is for the case
+    # where the mismatch is understood and wanted.
     if [ "$class" != core ]; then
         if [ -s "$dir/abi" ]; then
             stamped=$(cat "$dir/abi")
             if [ "$stamped" != "$ABI" ]; then
                 wrong_abi+=("$name-$version-$release built against $stamped")
+                if [ $force_abi -eq 0 ]; then
+                    continue
+                fi
             fi
         else
             unstamped=$((unstamped + 1))
@@ -479,8 +499,15 @@ if [ ${#wrong_abi[@]} -gt 0 ]; then
     echo
     echo "  ${#wrong_abi[@]} package(s) were compiled against a core that is not $ABI:"
     printf '    %s\n' "${wrong_abi[@]}"
-    echo "  Rebuild them, or 'lpkg install --from' will refuse them on a system"
-    echo "  running this channel. Installing them from the channel is unaffected."
+    if [ $force_abi -eq 1 ]; then
+        echo "  Published anyway (--force-abi). A system installing one of these"
+        echo "  gets a package built against a different core than it runs."
+    else
+        echo "  They are NOT in the channel. Rebuild them against this core - if"
+        echo "  they came from the SDK image, rebuild the image first, because a"
+        echo "  stale one is how a package acquires the wrong core without anyone"
+        echo "  doing anything wrong. --force-abi publishes them regardless."
+    fi
 fi
 if [ "$unstamped" -gt 0 ]; then
     echo
