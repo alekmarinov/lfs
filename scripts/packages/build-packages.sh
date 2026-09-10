@@ -293,6 +293,15 @@ $build /scripts/packages/blfs/24-make-wayland-protocols.sh
 $build /scripts/packages/blfs/24-make-libxkbcommon.sh
 $build /scripts/packages/blfs/43-make-gstreamer.sh
 $build /scripts/packages/blfs/43-make-gst-plugins-base.sh
+# The codecs. gstreamer and -base are the framework and almost no decoders;
+# -good is where qtdemux, matroskademux and the vpx and opus wrappers live.
+# Without them a video page builds a pipeline out of nothing, WebKit connects
+# a signal to the NULL an element factory returned, and the web process dies.
+# libvpx and opus first, because -good only builds those wrappers if it finds
+# them at configure time - and says nothing if it does not.
+$build /scripts/packages/blfs/9-make-opus.sh
+$build /scripts/packages/blfs/9-make-libvpx.sh
+$build /scripts/packages/blfs/43-make-gst-plugins-good.sh
 $build /scripts/packages/blfs/43-make-gst-plugins-bad.sh
 
 # WPE WebKit itself. libwpe is the interface, wpebackend-fdo the Wayland
