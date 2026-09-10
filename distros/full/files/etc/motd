@@ -1,3 +1,11 @@
 
 Welcome to Linux From Scratch.
 
+There is no X server here. The graphical session is the browser: run
+'cog-session' from a virtual console to start it, optionally with a URL.
+
+    cog-session https://example.com
+
+It needs a console rather than ssh, and root, because nothing on this
+system hands out the display device. 'cog-session' says so if either is
+missing.

@@ -17,7 +17,14 @@ echo "Building BLFS-libsoup 3.."
 # https://www.linuxfromscratch.org/blfs/view/12.4/general/libsoup3.html
 #
 # BUILD_REQUIRES: 9-make-glib-networking 9-make-libpsl 9-make-libxml2 9-make-nghttp2 22-make-sqlite 8.57-make-meson 8.56-make-ninja
-# RUNTIME_REQUIRES:
+# RUNTIME_REQUIRES: 9-make-glib-networking
+#
+# glib-networking is a runtime dependency no ELF header can show. It installs
+# a GIO module, /usr/lib/gio/modules/libgiognutls.so, which glib opens by
+# dlopen when a soup session first needs TLS - so the dependency graph, which
+# is derived from DT_NEEDED, cannot see it and a distro list built from that
+# graph leaves it out. The system then resolves, boots, and fails on the first
+# https:// request with no explanation.
 #
 # NOTE the sed on docs/reference/meson.build is the book's: the docs target
 # refers to a variable the current gi-docgen no longer defines, and meson

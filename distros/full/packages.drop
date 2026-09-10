@@ -1,0 +1,20 @@
+# What 'full' subtracts from the generated runtime list.
+#
+# The X server and the session around it, and Firefox. This distro runs cog on
+# DRM: the browser is the graphical session, so an X server, a window manager
+# and a terminal emulator on top of it are three things nothing starts.
+#
+# The X *libraries* are not here - mesa links them, see packages.list.
+24-make-xorg-server.tar.gz
+24-make-xf86-input-libinput.tar.gz
+24-make-xinit.tar.gz
+24-make-twm.tar.gz
+24-make-xclock.tar.gz
+24-make-xterm.tar.gz
+24-make-xorg-apps.tar.gz
+24-make-xcursor-themes.tar.gz
+24-make-xorg-fonts.tar.gz
+24-make-xbitmaps.tar.gz
+24-make-libxcvt.tar.gz
+27-make-fluxbox.tar.gz
+40-make-firefox.tar.gz

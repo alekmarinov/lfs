@@ -1,13 +1,25 @@
-# full - every package the build produces which belongs on a running
-# system, in build order.
+# full - a Wayland system: every package the build produces which belongs on a
+# running system, less the X server and the desktop it carried, in build order.
 #
-# Generated, minus distros/core/packages.list and minus the packages whose
-# build script carries a '# BUILD_ONLY:' line - rust, nodejs, nasm and the
-# rest of the scaffolding, which exist only to compile something else.
-# Regenerate after adding a package with:
+# It used to be every runtime package without exception, and the generator
+# below still produces that. What is subtracted from it now is a choice rather
+# than a rule: the X server, the session that started it, and Firefox. This
+# distro runs cog on DRM instead - the browser draws straight to KMS with no
+# compositor and no X server between it and the screen.
+#
+# The X client libraries stay, and that is not an oversight. mesa is built
+# '-Dplatforms=x11,wayland', so libEGL links libxcb and libX11 whether or not
+# anything ever opens a display. Dropping them means a second mesa built for
+# Wayland alone, which is a bigger change than this one and buys a few
+# megabytes.
+#
+# Generated, minus distros/core/packages.list, minus the packages whose build
+# script carries a '# BUILD_ONLY:' line, minus the X server and Firefox set
+# listed in distros/full/packages.drop. Regenerate after adding a package:
 #
 #   ./scripts/packages/list-runtime-packages.sh \
-#     | grep -vxF -f <(grep -vE '^\s*#|^\s*$' distros/core/packages.list)
+#     | grep -vxF -f <(grep -vE '^\s*#|^\s*$' distros/core/packages.list) \
+#     | grep -vxF -f <(grep -vE '^\s*#|^\s*$' distros/full/packages.drop)
 
 7.7-make-gettext.tar.gz
 7.8-make-bison.tar.gz
@@ -20,16 +32,10 @@
 8.11-make-file.tar.gz
 8.13-make-m4.tar.gz
 8.14-make-bc.tar.gz
-8.15-make-flex.tar.gz
 8.16-make-tcl.tar.gz
 8.17-make-expect.tar.gz
 8.18-make-dejagnu.tar.gz
 8.19-make-pkgconf.tar.gz
-8.20-make-binutils.tar.gz
-8.21-make-gmp.tar.gz
-8.22-make-mpfr.tar.gz
-8.23-make-mpc.tar.gz
-8.29-make-gcc.tar.gz
 8.33-make-gettext.tar.gz
 8.34-make-bison.tar.gz
 8.37-make-libtool.tar.gz
@@ -86,8 +92,6 @@
 4-make-nss.tar.gz
 12-make-fcron.tar.gz
 4-make-make-ca.tar.gz
-x-make-ca-certificates.tar.gz
-17-make-curl.tar.gz
 9-make-libxml2.tar.gz
 9-make-lzo.tar.gz
 4-make-nettle.tar.gz
@@ -140,11 +144,6 @@ x-make-linux-firmware-realtek.tar.gz
 24-make-libxcb.tar.gz
 24-make-xorg-libraries.tar.gz
 24-make-libdrm.tar.gz
-24-make-libxcvt.tar.gz
-24-make-xbitmaps.tar.gz
-24-make-xorg-apps.tar.gz
-24-make-xcursor-themes.tar.gz
-24-make-xorg-fonts.tar.gz
 24-make-xkeyboard-config.tar.gz
 9-make-pcre2.tar.gz
 9-make-glib.tar.gz
@@ -154,23 +153,44 @@ x-make-linux-firmware-realtek.tar.gz
 10-make-libtiff.tar.gz
 25-make-gdk-pixbuf.tar.gz
 25-make-at-spi2-core.tar.gz
+13-make-spirv-headers.tar.gz
+13-make-spirv-tools.tar.gz
+13-make-spirv-llvm-translator.tar.gz
+13-make-libclc.tar.gz
 24-make-mesa.tar.gz
 25-make-libepoxy.tar.gz
 25-make-glu.tar.gz
 25-make-cairo.tar.gz
 25-make-pango.tar.gz
+24-make-xcb-util.tar.gz
+25-make-startup-notification.tar.gz
+25-make-libnotify.tar.gz
 25-make-gtk3.tar.gz
 12-make-zip.tar.gz
 42-make-alsa-lib.tar.gz
+42-make-alsa-utils.tar.gz
 9-make-dbus-glib.tar.gz
-40-make-firefox.tar.gz
-24-make-xorg-server.tar.gz
-24-make-xf86-input-libinput.tar.gz
-24-make-xinit.tar.gz
-24-make-twm.tar.gz
-24-make-xclock.tar.gz
-24-make-xterm.tar.gz
 24-make-dejavu-fonts.tar.gz
-27-make-fluxbox.tar.gz
+9-make-libyaml.tar.gz
+9-make-lcms2.tar.gz
+9-make-libwebp.tar.gz
+9-make-openjpeg2.tar.gz
+9-make-nghttp2.tar.gz
+9-make-libpsl.tar.gz
+9-make-glib-networking.tar.gz
+9-make-libsoup3.tar.gz
+9-make-libgudev.tar.gz
+9-make-libsecret.tar.gz
+24-make-wayland.tar.gz
+24-make-wayland-protocols.tar.gz
+24-make-libxkbcommon.tar.gz
+43-make-gstreamer.tar.gz
+43-make-gst-plugins-base.tar.gz
+43-make-gst-plugins-bad.tar.gz
+9-make-brotli.tar.gz
+44-make-libwpe.tar.gz
+44-make-wpebackend-fdo.tar.gz
+44-make-wpewebkit.tar.gz
+44-make-cog.tar.gz
 5-make-grub.tar.gz
 8.85-clean.tar.gz

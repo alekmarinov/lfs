@@ -1,0 +1,44 @@
+#!/bin/sh
+# Start the browser as the graphical session.
+#
+#   cog-session [url]
+#
+# This is what replaced startx. There is no X server on this system and no
+# compositor either: cog's DRM platform renders straight to KMS, so the
+# browser is the whole graphical stack. Nothing sits between it and the
+# screen, which is the reason to run it this way on a machine with one display
+# and no desktop.
+#
+# It has to run from a virtual console, not from ssh. DRM lets one process be
+# master of a device, and that process is the one on the active VT. From a
+# remote shell the device is already spoken for and cog exits saying it cannot
+# open /dev/dri/card0 - which reads like a permissions problem and is not one.
+#
+# Root, for the same reason. There is no logind or seatd on this system to
+# hand a session the device and the input files, so the caller needs them
+# directly.
+set -e
+
+URL="${1:-${COG_URL:-https://www.linuxfromscratch.org/}}"
+
+[ "$(id -u)" = 0 ] || {
+    echo "cog-session: needs root - there is no seat manager here to grant" >&2
+    echo "  the DRM device and the input devices to an unprivileged session." >&2
+    exit 1
+}
+[ -e /dev/dri/card0 ] || {
+    echo "cog-session: no /dev/dri/card0." >&2
+    echo "  The kernel has not set up a display device. Check that the driver" >&2
+    echo "  for this hardware is built in or loaded - without KMS there is" >&2
+    echo "  nothing for cog to draw on." >&2
+    exit 1
+}
+
+# The platform is named rather than left to cog to guess. Both plugins are
+# installed - drm and wl - and with no compositor running the wayland one
+# would fail after cog had already given up the console, which is a harder
+# failure to read than this one.
+COG_PLATFORM_NAME=drm
+export COG_PLATFORM_NAME
+
+exec cog --platform=drm "$URL"
