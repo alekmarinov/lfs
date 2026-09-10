@@ -28,9 +28,11 @@
 #
 # WHAT IS ADDED
 #
-# The metadata helpers, so a package built in here can describe itself the
-# same way one built by build-package.sh does. Without them an external
-# project can compile but cannot produce a .lpkg the channel would accept.
+# The metadata helpers and the packer, so a package built in here can describe
+# itself the same way one built by build-package.sh does - and be turned into
+# a package by the same code, rather than by each consumer's own version of
+# it. Without them an external project can compile but cannot produce a .lpkg
+# the channel would accept.
 set -e
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -70,6 +72,11 @@ STAGE=$(mktemp -d); trap 'sudo rm -rf "$STAGE"' EXIT
 mkdir -p "$STAGE/usr/lib/lpkg" "$STAGE/etc/lpkg"
 cp "$BASE_DIR/scripts/packages/pkg-elf.sh"      "$STAGE/usr/lib/lpkg/"
 cp "$BASE_DIR/scripts/packages/pkg-header.sh"   "$STAGE/usr/lib/lpkg/"
+# The packer itself. pack.sh sources the two above from /usr/lib/lpkg and
+# reads ABI_ID from /etc/lfs-sdk, so it only runs in here - which is the
+# point: an external project mounts its work into a container and calls this,
+# rather than writing its own idea of what a package looks like.
+cp "$BASE_DIR/scripts/packages/pkg-pack.sh"     "$STAGE/usr/lib/lpkg/"
 cp "$BASE_DIR/scripts/packages/file-policy.conf" "$STAGE/etc/lpkg/"
 cat > "$STAGE/etc/lfs-sdk" <<EOF
 ABI_ID=$ABI

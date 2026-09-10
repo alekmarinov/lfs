@@ -283,12 +283,3 @@ find-package-file:
 
 install-package:
 	./scripts/packages/install-package.sh $(PACKAGE)
-
-# Builds one package inside the SDK container, for a project that has no
-# business waiting for this tree's build to finish
-#
-# RECIPE is the recipe to build, TAG the SDK image. The package lands in the
-# package cache like any other and reaches the channel through 'make repo'.
-sdk-package:
-	@test -n "$(RECIPE)" || { echo "usage: make sdk-package RECIPE=<path> [TAG=12.4]"; exit 1; }
-	./scripts/image/sdk-build.sh --recipe $(RECIPE) --tag $(or $(TAG),12.4)
