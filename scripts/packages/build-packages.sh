@@ -325,6 +325,18 @@ $build /scripts/packages/blfs/44-make-wpebackend-fdo.sh
 $build /scripts/packages/blfs/44-make-wpewebkit.sh
 $build /scripts/packages/blfs/44-make-cog.sh
 
+# A compositor, so cog can run on its Wayland platform instead of its DRM one.
+# lua before weston: the lua shell needs Lua 5.4 at configure time and meson
+# omits the shell silently if it is missing, which is the same trap that left
+# gst-plugins-base without an opus decoder for four days.
+$build /scripts/packages/blfs/9-make-lua.sh
+$build /scripts/packages/blfs/9-make-seatd.sh
+# hwdata before libdisplay-info, which compiles pnp.ids into a lookup table
+# and falls back to reading it from a fixed path if pkg-config cannot find it.
+$build /scripts/packages/blfs/9-make-hwdata.sh
+$build /scripts/packages/blfs/9-make-libdisplay-info.sh
+$build /scripts/packages/blfs/45-make-weston.sh
+
 # lpkg itself. It was built by hand for a long time and was therefore always
 # a little behind its source: the channel carried lpkg 10 while the tree said
 # 11, and later a package stamped 11 that was actually 9. Nothing said so,

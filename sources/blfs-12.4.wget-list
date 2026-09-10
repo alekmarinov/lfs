@@ -233,7 +233,7 @@ https://download.gnome.org/sources/glib-networking/2.80/glib-networking-2.80.1.t
 https://download.gnome.org/sources/libsoup/3.6/libsoup-3.6.5.tar.xz
 https://github.com/lfs-book/libxkbcommon/archive/v1.11.0/libxkbcommon-1.11.0.tar.gz
 https://gitlab.freedesktop.org/wayland/wayland/-/releases/1.24.0/downloads/wayland-1.24.0.tar.xz
-https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/1.45/downloads/wayland-protocols-1.45.tar.xz
+https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/1.46/downloads/wayland-protocols-1.46.tar.xz
 https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-1.26.5.tar.xz
 https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-1.26.5.tar.xz
 https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-1.26.5.tar.xz
@@ -249,3 +249,8 @@ https://github.com/webmproject/libvpx/archive/v1.15.2/libvpx-1.15.2.tar.gz
 https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-1.26.5.tar.xz
 https://ffmpeg.org/releases/ffmpeg-7.1.1.tar.xz
 https://gstreamer.freedesktop.org/src/gst-libav/gst-libav-1.26.5.tar.xz
+https://www.lua.org/ftp/lua-5.4.8.tar.gz
+https://git.sr.ht/~kennylevinsen/seatd/archive/0.9.1.tar.gz
+https://gitlab.freedesktop.org/wayland/weston/-/releases/16.0.0/downloads/weston-16.0.0.tar.xz
+https://github.com/vcrhonek/hwdata/archive/v0.395/hwdata-0.395.tar.gz
+https://gitlab.freedesktop.org/emersion/libdisplay-info/-/releases/0.3.0/downloads/libdisplay-info-0.3.0.tar.xz
