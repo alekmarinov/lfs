@@ -1,0 +1,10 @@
+#!/bin/sh
+# The browser, as weston's autolaunch target.
+#
+# Separate from cog-session because weston.ini's 'path=' takes an executable
+# and nothing else - no arguments, no shell. This is where the arguments live.
+#
+# COG_URL overrides the page, so the same image can point at something else
+# without editing a file inside it.
+set -e
+exec cog -P wl "${COG_URL:-https://youtube.com}"

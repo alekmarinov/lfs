@@ -1,25 +1,23 @@
 #!/bin/sh
-# Start the browser as the graphical session.
+# Start the graphical session: a compositor with the browser inside it.
 #
 #   cog-session [url]
 #
-# This is what replaced startx. There is no X server on this system and no
-# compositor either: cog's DRM platform renders straight to KMS, so the
-# browser is the whole graphical stack. Nothing sits between it and the
-# screen, which is the reason to run it this way on a machine with one display
-# and no desktop.
+# What runs is weston, configured by /etc/xdg/weston/weston.ini, which
+# autolaunches /usr/bin/cog-launch and exits when it exits. cog is not started
+# from here directly - it used to be, drawing straight to KMS, and that path
+# has no fullscreen support and a cursor that never appears.
 #
 # It has to run from a virtual console, not from ssh. DRM lets one process be
 # master of a device, and that process is the one on the active VT. From a
-# remote shell the device is already spoken for and cog exits saying it cannot
-# open /dev/dri/card0 - which reads like a permissions problem and is not one.
+# remote shell the device is already spoken for, and weston exits saying it
+# cannot open /dev/dri/card0 - which reads like a permissions problem and is
+# not one.
 #
-# Root, for the same reason. There is no logind or seatd on this system to
-# hand a session the device and the input files, so the caller needs them
-# directly.
+# Root, for the same reason. libseat is built with its builtin backend, which
+# opens the devices directly when the caller already has the privilege to;
+# there is no logind or seatd here to grant it to anyone else.
 set -e
-
-URL="${1:-${COG_URL:-https://www.linuxfromscratch.org/}}"
 
 [ "$(id -u)" = 0 ] || {
     echo "cog-session: needs root - there is no seat manager here to grant" >&2
@@ -30,27 +28,20 @@ URL="${1:-${COG_URL:-https://www.linuxfromscratch.org/}}"
     echo "cog-session: no /dev/dri/card0." >&2
     echo "  The kernel has not set up a display device. Check that the driver" >&2
     echo "  for this hardware is built in or loaded - without KMS there is" >&2
-    echo "  nothing for cog to draw on." >&2
+    echo "  nothing to draw on." >&2
     exit 1
 }
 
-# The platform is named rather than left to cog to guess. Both plugins are
-# installed - drm and wl - and with no compositor running the wayland one
-# would fail after cog had already given up the console, which is a harder
-# failure to read than this one.
-COG_PLATFORM_NAME=drm
-export COG_PLATFORM_NAME
+# Wayland puts its socket here and refuses to start without it. Nothing on
+# this system creates it: that is normally logind's job at login, and there is
+# no logind. 0700 because the socket in it is the session, and anything able
+# to open it can drive the display and read the input.
+: "${XDG_RUNTIME_DIR:=/run/user/$(id -u)}"
+mkdir -p "$XDG_RUNTIME_DIR"
+chmod 0700 "$XDG_RUNTIME_DIR"
+export XDG_RUNTIME_DIR
 
-# renderer=gles, explicitly.
-#
-# Cog's DRM platform has two renderers and picks 'modeset' by default here:
-# it draws into a dumb buffer and the CPU copies it to the scanout, which on
-# this hardware looks exactly like a slow desktop. 'gles' goes through EGL and
-# GBM onto the GPU. Measured on a GeForce GT 610 with nouveau: with the
-# default, cog maps no GL driver at all; with this, it maps libgallium and
-# holds /dev/dri/card0, and the difference is visible.
-#
-# It is not the default because cog cannot always tell in advance that GLES
-# will work, and a browser that starts slowly beats one that does not start.
-# Here we know it works, so we ask for it.
-exec cog --platform=drm -O renderer=gles "$URL"
+# Passed through to cog-launch, which weston starts.
+[ -n "$1" ] && export COG_URL="$1"
+
+exec weston --backend=drm

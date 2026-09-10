@@ -21,7 +21,6 @@
 #     | grep -vxF -f <(grep -vE '^\s*#|^\s*$' distros/core/packages.list) \
 #     | grep -vxF -f <(grep -vE '^\s*#|^\s*$' distros/full/packages.drop)
 
-
 7.7-make-gettext.tar.gz
 7.8-make-bison.tar.gz
 7.9-make-perl.tar.gz
@@ -198,5 +197,10 @@ x-make-linux-firmware-realtek.tar.gz
 44-make-wpebackend-fdo.tar.gz
 44-make-wpewebkit.tar.gz
 44-make-cog.tar.gz
+9-make-lua.tar.gz
+9-make-seatd.tar.gz
+9-make-hwdata.tar.gz
+9-make-libdisplay-info.tar.gz
+45-make-weston.tar.gz
 5-make-grub.tar.gz
 8.85-clean.tar.gz
