@@ -1,7 +1,7 @@
 #!/bin/bash
 # PACKAGE:  cog
 # SOURCE:   cog-*.tar.xz
-# RELEASE:  1
+# RELEASE:  2
 # CLASS:    extra
 set -e
 echo "Building BLFS-cog.."
@@ -30,6 +30,20 @@ rm -rf /tmp/cog
 tar -xf /sources/cog-*.tar.xz -C /tmp/
 mv /tmp/cog-[0-9]* /tmp/cog
 pushd /tmp/cog
+
+# A connector with no modes is not an error, and cog treats it as one.
+#
+# kms_screen_probe reads the connection state and then copies modes[0]
+# unconditionally. A disconnected output reports count_modes == 0 and a NULL
+# modes pointer, so the memcpy reads address 0 - and every card with more
+# outputs than monitors has such a connector. On a GT 610 with one screen
+# attached it segfaults the moment COG_PLATFORM_DRM_CURSOR is set, which is
+# the only way to get a pointer at all, so the cursor is unusable rather than
+# merely absent.
+sed -i 's|^\(    memcpy(&screen->mode, &con->modes\[0\], sizeof(drmModeModeInfo));\)|    if (con->count_modes < 1) {\n        drmModeFreeConnector(con);\n        return;\n    }\n\n\1|' \
+    platform/drm/kms.c
+grep -q 'count_modes < 1' platform/drm/kms.c || { echo "the connector guard did not apply"; exit 1; }
+
 mkdir build
 cd build
 meson setup --prefix=/usr \
