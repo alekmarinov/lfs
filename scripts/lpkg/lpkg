@@ -43,7 +43,7 @@
 # looking for a library version that was never here.
 set -u
 
-VERSION=11
+VERSION=12
 
 # --------------------------------------------------------------------- setup
 
@@ -1424,7 +1424,22 @@ case "$CMD" in
         if [ "${DRY_RUN:-0}" != 1 ] && command -v flock > /dev/null; then
             LOCK="$DB/lock"
             [ -e "$LOCK" ] || : > "$LOCK" 2>/dev/null || true
-            if exec 9<"$LOCK" 2>/dev/null; then
+            # '{ exec 9<...; } 2>/dev/null' and not 'exec 9<... 2>/dev/null'.
+            #
+            # A redirection written on exec itself is applied to the shell and
+            # stays applied - so the second form sends this process's stderr
+            # to /dev/null for the rest of the run. Every message lpkg would
+            # print afterwards disappears: the core guard's refusal, every
+            # die(), every warn(). It cost exactly that, and the boot test
+            # caught it as an empty line where "these are core packages and
+            # cannot be installed into a running system" should have been.
+            # Inside a group the redirection is scoped to the group while the
+            # descriptor exec opens still outlives it.
+            #
+            # -r first, because a failed redirection on exec makes a
+            # non-interactive shell exit, so the else branch below could never
+            # be reached by trying and failing.
+            if [ -r "$LOCK" ] && { exec 9<"$LOCK"; } 2>/dev/null; then
                 if ! flock -n 9; then
                     echo "another lpkg transaction is running on $ROOT; waiting"
                     flock 9

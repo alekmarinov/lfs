@@ -1,6 +1,6 @@
 #!/bin/bash
 # PACKAGE:  lpkg
-# VERSION:  11
+# VERSION:  12
 # RELEASE:  1
 # CLASS:    system
 set -e
